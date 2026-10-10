@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/DueDateChecker.App/DueDateChecker.App.csproj" />
     <Project Path="src/DueDateChecker.Core/DueDateChecker.Core.csproj" />
   </Folder>
   <Folder Name="/tests/">

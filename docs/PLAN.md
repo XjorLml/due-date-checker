@@ -15,6 +15,8 @@ Learner's answers: no login in v1; dues live in SQLite only; Supabase deferred.
 
 Design proposal (confirmed/changed at checkpoints): `Money` (long centavos, AwayFromZero), `Due` record (Guid id, title, amount, DateOnly due date, notes, is_paid, created/updated/deleted timestamps), `IDueRepository` + `SqliteDueRepository` (Microsoft.Data.Sqlite, raw SQL, `PRAGMA user_version` migrations, embedded `001_create_dues.sql`), two MAUI pages with CommunityToolkit.Mvvm view models, xUnit tests for Money, Due, repository (temp-file DB). Full plan text lives in the learner's Claude plan file; this table is the resume point.
 
+Status 2026-10-10 (evening): V1.1 Core half done and committed (22 tests green). V1.0: VS 2026 + MAUI workload installed; `src/DueDateChecker.App` created, Android-only, builds (AC2, AC5 met). Still open: keystore (learner), Release APK on the phone (no phone connected yet). Then the V1.1 screen half (Build checkpoint: learner designs the two pages and view models).
+
 The original S0–S3 schedule below is superseded by v1; S1–S3 (reminders) and login/sync come after v1 on the same schema.
 
 Offline-first Android app (.NET MAUI) that tracks dues and reminds the user before a due date with
@@ -29,18 +31,17 @@ Done on the laptop:
 - `tests/DueDateChecker.Core.Tests` (xUnit 2.9.3, references Core), `SmokeTests.cs` → `dotnet test` = 1 passed
 - Learner notes in `.vibe-wise/` (profile, progress, project map) are committed so learn mode resumes on any machine
 
-Not done (S-1 remainder), in order:
-1. Install Visual Studio Community 2026 with the .NET MAUI workload. From an **admin** PowerShell:
-   `winget install --id Microsoft.VisualStudio.Community --source winget --override "--add Microsoft.VisualStudio.Workload.NetCrossPlat --includeRecommended --passive --norestart --installPath D:\VisualStudio\2026"`
-   Done when a new terminal's `dotnet workload list` shows `maui-android` / `maui`. Verify current docs if the workload name differs.
-2. Generate the signing keystore (keytool ships with the JDK the workload installs; find it under `C:\Program Files\Microsoft\jdk-*\bin` or wherever VS placed it):
-   `keytool -genkeypair -v -keystore <keys folder outside the repo>\duedatechecker-upload.jks -alias upload -keyalg RSA -keysize 2048 -validity 10000`
-   Keep both passwords; back the `.jks` up outside the machine. Never commit it.
-3. Claude: create `src/DueDateChecker.App` (`dotnet new maui`), trim to `net10.0-android` only, `SupportedOSPlatformVersion` 26, reference Core, add CommunityToolkit.Mvvm.
-4. Claude: `AndroidManifest.xml` → `android:allowBackup="false"`.
-5. Claude: `local.signing.props` (gitignored) imported by `App.csproj` when present; `dotnet publish -f net10.0-android -c Release`; `adb install`; launch from the phone's launcher.
-6. Claude: fix the stale `ANDROID_SDK_ROOT` user env var (currently points to a missing folder) to the SDK VS installed.
-7. Commit "S-1: walking skeleton".
+S-1 remainder, status 2026-10-10:
+1. DONE. Visual Studio Community 2026 (18.10.3) at `D:\VisualStudio\2026` with the .NET MAUI workload (winget, run interactively because VS 2022 was open). `dotnet workload list` shows `android 36.1.69`, `maui-windows`, `ios`, `maccatalyst` (no separate `maui-android` row; a net10.0-android MAUI build works).
+   Also installed by VS: JDK 21 at `C:\Program Files\Android\openjdk\jdk-21.0.8`, Android SDK API 35+36 at `C:\Program Files (x86)\Android\android-sdk` (adb in `platform-tools`).
+2. PENDING (learner). Generate the upload keystore, from any terminal:
+   `& "C:\Program Files\Android\openjdk\jdk-21.0.8\bin\keytool.exe" -genkeypair -v -keystore D:\LEM\keys\duedatechecker-upload.jks -alias upload -keyalg RSA -keysize 2048 -validity 10000`
+   Keep both passwords; back the `.jks` up outside the machine. Never commit it. Then copy `src/DueDateChecker.App/local.signing.props.example` to `local.signing.props` (gitignored) and fill in the passwords.
+3. DONE. `src/DueDateChecker.App`: `dotnet new maui`, trimmed to `net10.0-android` only (iOS/Mac/Windows folders deleted), `SupportedOSPlatformVersion` 26, `ApplicationId` `com.lem.duedatechecker` (permanent once on Play; change before first upload if wanted), references Core, CommunityToolkit.Mvvm 8.4.2.
+4. DONE. `android:allowBackup="false"`; merged manifest verified (minSdk 26, targetSdk 36).
+5. PARTLY. `local.signing.props` import added to `App.csproj` (conditional on the file existing). `dotnet publish src/DueDateChecker.App -c Release` succeeds and writes `bin/Release/net10.0-android/publish/com.lem.duedatechecker-Signed.apk` (signed with the debug key until the keystore exists). `adb install -r <apk>` + launch from the launcher: pending, no phone connected yet.
+6. NOT NEEDED. The stale `ANDROID_SDK_ROOT` does not affect the build (the Android targets find the SDK VS registered); left unchanged.
+7. PENDING. Commit "S-1: walking skeleton" once the APK launches on the phone.
 
 S-1 acceptance criteria: AC1 `dotnet test` passes (met); AC2 App builds for net10.0-android; AC3 signed Release APK installs and launches from the launcher; AC4 first commit, clean status, secrets ignored; AC5 merged manifest shows `allowBackup="false"`.
 

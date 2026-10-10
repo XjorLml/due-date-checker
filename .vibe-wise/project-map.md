@@ -25,9 +25,15 @@ From the learner's plan (product requirements; they do not settle technical choi
 None implemented. Project folder is empty; no Git repository.
 Chosen layout (learner, 2026-10-06; not created yet):
 - `src/DueDateChecker.Core/` — .NET 10 class library, no MAUI reference. `Domain/` (Money, DueDate, Due, reminder rules, INotificationScheduler, IDueRepository), `Data/` (SQLite repository and migrations using Microsoft.Data.Sqlite + raw SQL; chosen 2026-10-06, not implemented).
-- `src/DueDateChecker.App/` — MAUI, Android only; references Core. `Platforms/Android/` holds the AlarmManager scheduler and BroadcastReceivers. View models use CommunityToolkit.Mvvm (chosen 2026-10-06 after revising from hand-written INotifyPropertyChanged; not implemented).
+- `src/DueDateChecker.App/` — MAUI, Android only (created 2026-10-10 from the template, other platforms removed); `net10.0-android`, minSdk 26, targetSdk 36, id `com.lem.duedatechecker`, references Core, CommunityToolkit.Mvvm 8.4.2, `allowBackup=false`, `local.signing.props` imported when present. Still the template MainPage; `Platforms/Android/` will later hold the AlarmManager scheduler and BroadcastReceivers.
 - `tests/DueDateChecker.Core.Tests/` — xUnit; references Core only.
 Boundary rule (discipline, not compiler-enforced): Domain/ must not use SQLite types.
+
+Implemented 2026-10-10 (V1.1 Core half):
+- `Core/Domain/Money.cs` (readonly record struct, centavos), `Due.cs` (record, validated title, `Create` factory), `IDueRepository.cs`.
+- `Core/Data/SqliteConnections.cs`, `DatabaseInitializer.cs` (embedded `Migrations/*.sql`, `PRAGMA user_version`), `SqliteDueRepository.cs` (raw SQL). Package: Microsoft.Data.Sqlite 10.0.12 (brings SQLitePCLRaw.bundle_e_sqlite3).
+- `tests/.../MoneyTests.cs`, `DueTests.cs`, `SqliteDueRepositoryTests.cs` (22 tests, green).
+- Not yet: screens, view models, DI, DB path wiring (FileSystem.AppDataDirectory/dues.db), migrations at startup.
 
 ## Main Flow
 Proposed by the learner's plan, not implemented:
@@ -50,7 +56,7 @@ Alarm lifecycle events the reconcile job must handle: launch, BOOT_COMPLETED, MY
 - Notification content on lock screen: sensitive (amounts); visibility handling deferred to S10.
 
 ## Build and Deployment
-Nothing verified in the repository yet. Targets (from today's verification): .NET 10 MAUI, targetSdk 36, Windows laptop + real Android phone, GitHub Actions. Play publishing is outside the 7-day window (12-tester / 14-day rule).
+Verified 2026-10-10: `dotnet build src/DueDateChecker.App -c Debug` succeeds (VS 2026 18.10.3, .NET SDK 10.0.400, JDK 21 and SDK 36 installed by VS). Targets: .NET 10 MAUI, targetSdk 36, Windows laptop + real Android phone, GitHub Actions. Play publishing is outside the 7-day window (12-tester / 14-day rule).
 
 ## Backlog for the 7-day window (revised with the learner's approval of the review)
 - S-1 (day 1): toolchain (.NET 10 SDK, MAUI workload, JDK, SDK 36, USB debugging), git init + .gitignore, keystore outside git, allowBackup=false, migrations scaffold, UUID/updated_at/deleted_at/currency/timezone columns, signed Release hello-world on the phone.

@@ -1,0 +1,10 @@
+<!-- Copy to local.signing.props (gitignored) and fill in. Release builds are signed with the upload key. -->
+<Project>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <AndroidKeyStore>true</AndroidKeyStore>
+    <AndroidSigningKeyStore>D:\LEM\keys\duedatechecker-upload.jks</AndroidSigningKeyStore>
+    <AndroidSigningKeyAlias>upload</AndroidSigningKeyAlias>
+    <AndroidSigningKeyPass>CHANGE_ME</AndroidSigningKeyPass>
+    <AndroidSigningStorePass>CHANGE_ME</AndroidSigningStorePass>
+  </PropertyGroup>
+</Project>

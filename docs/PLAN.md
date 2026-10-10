@@ -1,5 +1,22 @@
 # due-date-checker: plan and status
 
+## v1 re-scope (2026-10-10, approved)
+
+v1 = the simplest foundation: **local CRUD of dues on the phone**. No login, no Supabase, no reminders yet.
+Learner's answers: no login in v1; dues live in SQLite only; Supabase deferred.
+
+| Slice | User-visible behavior | Exit test on the phone |
+|---|---|---|
+| V1.0 | Toolchain finish (S-1 remainder below) | Hello-world Release APK launches from the launcher |
+| V1.1 | Add a due (title, amount, date); see it in a list sorted by date | Add two, kill app, relaunch → both listed |
+| V1.2 | Edit a due, toggle paid | Edits persist after relaunch |
+| V1.3 | Delete (soft) with confirm | Gone from list; row kept with `deleted_at` |
+| V1.4 (opt.) | CI runs tests on push | Green check |
+
+Design proposal (confirmed/changed at checkpoints): `Money` (long centavos, AwayFromZero), `Due` record (Guid id, title, amount, DateOnly due date, notes, is_paid, created/updated/deleted timestamps), `IDueRepository` + `SqliteDueRepository` (Microsoft.Data.Sqlite, raw SQL, `PRAGMA user_version` migrations, embedded `001_create_dues.sql`), two MAUI pages with CommunityToolkit.Mvvm view models, xUnit tests for Money, Due, repository (temp-file DB). Full plan text lives in the learner's Claude plan file; this table is the resume point.
+
+The original S0–S3 schedule below is superseded by v1; S1–S3 (reminders) and login/sync come after v1 on the same schema.
+
 Offline-first Android app (.NET MAUI) that tracks dues and reminds the user before a due date with
 local scheduled notifications. Users: students and employees in the Philippines (PHP, Asia/Manila).
 Core promise: reminders fire with no internet; the in-app Overdue list is the fallback.

@@ -3,6 +3,9 @@
 ## Purpose
 Offline-first Android app (.NET MAUI) that tracks dues (later budgets and savings) and reminds the user before a due date with local scheduled notifications. Core promise: reminders fire with no internet; an in-app Overdue list is the fallback when a notification fails. Users: students and employees in the Philippines; PHP and Asia/Manila only in v1.
 
+## v1 scope (approved 2026-10-10)
+Local CRUD of dues on the phone: create, list (by due date), edit (incl. paid flag), soft delete; data survives restarts. No login, no Supabase, no reminders in v1. Slices V1.0 (toolchain) → V1.1 create+list → V1.2 edit → V1.3 delete → V1.4 optional CI. Design is proposed, not yet confirmed or implemented.
+
 ## Requirements
 From the learner's plan (product requirements; they do not settle technical choices):
 - Reminders per due at 9:00 AM Asia/Manila (adjustable): 3 days before, 1 day before, due day; one overdue follow-up next morning, then stop.

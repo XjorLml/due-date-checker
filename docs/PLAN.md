@@ -1,19 +1,36 @@
 # due-date-checker: plan and status
 
+> Historical planning record retained in full. Current authority: [PRD](PRD.md) for approved requirements, [SDD](SDD.md) for contracts, and [STATUS](delivery/STATUS.md) for implementation/evidence. All dated status, schedule, and "next stage" statements below describe their recorded time, not the current working tree. The 2026-10-10 re-scope remains product-scope provenance. Historical external-policy claims have not been revalidated; consult current official guidance when those deferred slices begin.
+
 ## v1 re-scope (2026-10-10, approved)
 
 v1 = the simplest foundation: **local CRUD of dues on the phone**. No login, no Supabase, no reminders yet.
 Learner's answers: no login in v1; dues live in SQLite only; Supabase deferred.
 
-| Slice | User-visible behavior | Exit test on the phone |
-|---|---|---|
-| V1.0 | Toolchain finish (S-1 remainder below) | Hello-world Release APK launches from the launcher |
-| V1.1 | Add a due (title, amount, date); see it in a list sorted by date | Add two, kill app, relaunch → both listed |
-| V1.2 | Edit a due, toggle paid | Edits persist after relaunch |
-| V1.3 | Delete (soft) with confirm | Gone from list; row kept with `deleted_at` |
-| V1.4 (opt.) | CI runs tests on push | Green check |
+### Current implementation (2026-10-17)
 
-Design proposal (confirmed/changed at checkpoints): `Money` (long centavos, AwayFromZero), `Due` record (Guid id, title, amount, DateOnly due date, notes, is_paid, created/updated/deleted timestamps), `IDueRepository` + `SqliteDueRepository` (Microsoft.Data.Sqlite, raw SQL, `PRAGMA user_version` migrations, embedded `001_create_dues.sql`), two MAUI pages with CommunityToolkit.Mvvm view models, xUnit tests for Money, Due, repository (temp-file DB). Full plan text lives in the learner's Claude plan file; this table is the resume point.
+**V1.1–V1.3 local CRUD implementations are complete.** V1.2 functional phone checks are user-accepted; V1.3 Cancel/Delete/restart checks passed on the connected phone using temporary verification dues. See the [V1.1](phases/V1.1.md), [V1.2](phases/V1.2.md), and [V1.3](phases/V1.3.md) records for remaining signing/device items. V1.4 CI is optional; release acceptance/signing remains outstanding.
+
+- V1.1 create/list screens, MVVM view models, Shell navigation, DI, app-private DB path, and migration-before-access wiring are implemented. Database work is serialized off the UI thread; startup/read/write failures have retry paths. New dues use PHP and default to today's date in Asia/Manila.
+- The platform-independent App test harness compiles actual view-model/dispatcher sources without MAUI. Current results: 28 Core and 42 App cases pass (70 total), including prior-slice regression checks and V1.3 cancellation, tombstone, retry, and duplicate-action coverage.
+- Database startup now rejects unsupported schema versions without resetting data. Input validation covers amount overflow, and successful saves cannot be submitted twice after a navigation failure.
+- V1.2 adds row selection, id-based navigation, editor loading/retry, field editing, and a paid/unpaid switch persisted on Save. UpdateAsync preserves CreatedAt/DeletedAt and rejects unknown/deleted records; the App re-checks the row before updating.
+- V1.3 adds a destructive Delete due button to the editor and a native confirmation naming the stored due. Cancel performs no write; Confirm soft-deletes and returns to the refreshed list. Failure retains input for retry; successful deletion cannot be repeated through a navigation retry. No schema or repository implementation change was needed.
+- The updated APK installed on the connected phone. Native V1.3 checks passed for hidden Delete on new forms, confirmation, Cancel preserving the due, confirmed deletion, and remaining hidden after process restart. Only temporary verification dues were deleted. Intended-key signing, the V1.0 launcher check, and remaining phone cases are still tracked.
+- Final Android Release build passed with zero warnings/errors. APK: src/DueDateChecker.App/bin/Release/net10.0-android/com.lem.duedatechecker-Signed.apk. local.signing.props is absent, so this is not yet signed with the intended private key.
+- Design and acceptance details are in [SDD.md](SDD.md). The older status/schedule below is retained as history.
+
+| Slice | User-visible behavior | Implementation status | Exit test on the phone |
+|---|---|---|---|
+| V1.0 | Toolchain finish (S-1 remainder below) | Build complete; intended signing and phone launch pending | Release APK launches from the launcher |
+| V1.1 | Add a due (title, amount, date); list by date | Complete; phone acceptance pending | Add two, kill app, relaunch → both listed; repeat offline |
+| V1.2 | Edit a due, toggle paid | Complete; functional phone checks user-accepted | Edits and both paid-state transitions persist after relaunch; offline checks accepted |
+| V1.3 | Delete (soft) with confirm | Complete; phone Cancel/Delete/restart verified; offline/signing checks pending | Gone from list; row kept with `deleted_at` |
+| V1.4 (opt.) | CI runs tests on push | Not implemented | Green check |
+
+Implemented design: `Money` (long centavos, AwayFromZero), `Due` record (Guid id, title, amount, DateOnly due date, notes, is_paid, created/updated/deleted timestamps), `IDueRepository` + `SqliteDueRepository` (Microsoft.Data.Sqlite, raw SQL, `PRAGMA user_version` migrations, embedded `001_create_dues.sql`), two MAUI pages with CommunityToolkit.Mvvm view models (create/list/edit/paid/confirmed-delete paths), and xUnit Core/App tests. [SDD.md](SDD.md) is the repository design reference; the table above is the resume point.
+
+### Historical status (superseded by the current implementation above)
 
 Status 2026-10-10 (evening): V1.1 Core half done and committed (22 tests green). V1.0: VS 2026 + MAUI workload installed; `src/DueDateChecker.App` created, Android-only, builds (AC2, AC5 met). Still open: keystore (learner), Release APK on the phone (no phone connected yet). Then the V1.1 screen half (Build checkpoint: learner designs the two pages and view models).
 

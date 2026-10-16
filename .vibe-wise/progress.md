@@ -1,7 +1,50 @@
 # Learning Progress
 
-## Pending decision
-- V1.1 screen half (DuesListPage, DueEditPage create path, view models, DI, migrations at startup). Toolchain is in place (2026-10-10); next is a Build checkpoint: the learner describes the two pages, what each view model holds, and how the DB path reaches Core, before any screen code. Blocked only on the learner generating the keystore and plugging in the phone for the hello-world launch (S-1 AC3).
+> Historical learning/project record, preserved during the 2026-10-17 documentation refactor. For current scope, contracts, and implementation/verification state use the [documentation index](../docs/README.md), [PRD](../docs/PRD.md), [SDD](../docs/SDD.md), and [STATUS](../docs/delivery/STATUS.md). Dated "current", "not implemented", and next-stage statements below retain their original context; they are not a competing source of current status.
+
+## Current handoff
+
+V1.1–V1.3 local CRUD implementations are complete. Current validation (2026-10-17): 70 passing cases (28 Core + 42 App), a Release build with zero warnings/errors, and native V1.3 confirmation/Cancel/Delete/process-restart checks using temporary verification dues. V1.2 functional checks were previously user-accepted. See the [V1.3 completion record](../docs/phases/V1.3.md) for evidence and remaining signing/phone cases.
+
+Next: finish release acceptance/signing; V1.4 CI is optional. Learning checkpoint: explain why soft deletion updates a timestamp instead of removing the row, why repeated deletion preserves the first timestamp, and how the confirmation response reaches the view model. No new demonstrated understanding was exercised in this slice.
+
+## Pending acceptance
+- V1.2 edit/paid/restart/offline checks are user-accepted. Intended-key signing, the V1.0 launcher check, V1.1's separate acceptance checklist, and unchecked phone hardening items remain tracked. local.signing.props was absent at the last inspection.
+
+## V1.3 confirmed soft delete (implemented 2026-10-17)
+
+- Added a destructive Delete due action to the existing editor. DueEditPage presents the native dialog and passes its Boolean result to DeleteCommand; a false confirmation returns before storage. Confirmation names the original stored title rather than an unsaved form edit.
+- View-model state allows deletion only on a loaded existing due. Pending writes block Save/Delete; failures retain input for a newly confirmed retry. HasCompleted covers saved/deleted outcomes, so navigation retry never resubmits a mutation. Deleting does not validate or save unfinished form edits.
+- Reused SoftDeleteAsync and DatabaseDispatcher without a schema/repository implementation change. A parameterized primary-key UPDATE retains the row and fields, sets deletion/update timestamps together, and ignores missing/already deleted rows. No extra index is needed.
+- Added 8 App cases and 2 Core cases; the first App run failed to compile before implementation. Final results: 42 App + 28 Core cases pass. The earlier NuGet metadata warning remains in test restore assets; cached dependencies worked.
+- Destructive button tokens/outline/minimum height follow docs/DESIGN.md. A source-generation build error with a type-key style reference was fixed by using an explicit BaseButton resource shared by default/destructive styles. Final Release build: zero warnings/errors.
+- Installed with adb install -r and exercised only agent-created zero-amount verification dues. Native Cancel retained the editor and due; confirmed Delete returned to the list and hid it; after force-stop/relaunch it stayed hidden. Existing user dues were not edited/deleted. The app was left on the list; verification rows remain hidden tombstones as intended.
+- Remaining V1.3 phone cases: airplane mode, Back/dismissal, both themes/large text, repeated taps during a write, and intended-key signing. The broader DESIGN.md Undo interaction is deferred under the approved v1 SDD scope (no restore flow).
+- OOP links: IDueRepository hides persistence details (abstraction); the fake and SQLite implementation share that contract (polymorphism); the view model inherits binding notifications from ObservableObject (inheritance); the delete command's state/confirmation guards control valid transitions (encapsulation).
+
+## V1.2 edit/paid (implemented 2026-10-16, functional checks user-accepted)
+
+- User requested the next phase after V1.1. Added row selection and id-only Shell navigation; DueEditPage uses IQueryAttributable and awaits loading on appearance. Clear selection after each tap so the same due can reopen; do not reload an already populated form and overwrite unsaved input.
+- Reused DueEditViewModel for create/edit. Edit mode loads all fields, shows a paid switch, persists status only on Save, and preserves Id/CreatedAt. Fresh records remain unpaid by default. Missing/deleted/invalid targets cannot save or become accidental inserts. Load/read/write failures support retry while preserving input.
+- Save re-reads and checks the record inside one dispatcher operation. SqliteDueRepository.UpdateAsync additionally uses `WHERE id = @id AND deleted_at IS NULL` and stops writing deleted_at. It preserves CreatedAt/DeletedAt and throws for missing/deleted ids. The primary-key lookup remains appropriate; no extra index or schema migration was needed.
+- Tests-first: new App tests initially failed to compile against the absent feature; two new repository tests failed against the old update behavior. Final results: 26 Core and 34 App cases pass. Added 17 App cases and 3 Core cases for edit/paid persistence, id/timestamp preservation, cancellation, invalid/stale/deleted targets, failures/retries, and repeated saves. Existing V1.1 checks still pass.
+- Release build: zero warnings/errors. Successful `adb install -r` on the connected phone, explicit MainActivity launch returned Status: ok, and the process remained alive. Native UI verification was blocked by the phone lock screen; an unlock request was sent. Existing saved dues were not edited. Intended-key signing is not configured.
+- Follow-up after the user unlocked the phone: the list and editor rendered without storage errors, saved fields populated, the paid switch responded, Cancel returned to the list, and the same row reopened with the original fields/status. A second Cancel left the app on the list. No Save was used. Saved mutations, process-restart persistence, and airplane-mode checks remain pending.
+- Acceptance follow-up: the user replied “checks accepted” after the remaining V1.2 saved-edit/paid/restart/offline checks were identified. Record those functional checks as user-accepted; retain the earlier limited agent-observed UI results as history. V1.3 is the next stage; intended-key signing is not covered by this confirmation.
+- OOP links: the view model continues to depend on IDueRepository (abstraction); real SQLite and controlled failure repositories satisfy the same contract in tests (polymorphism). Immutable Due copies preserve identity while changing editable fields (encapsulation of the title rule). ObservableObject supplies binding notifications (inheritance).
+- No new learner explanation was exercised. Authorization to implement is not evidence of demonstrated understanding. NuGet vulnerability metadata retains the earlier NU1900 warning; cached dependencies and the tests themselves worked.
+
+## V1.1 screen half (implemented 2026-10-16, not yet phone-accepted)
+
+- User authorized implementation with “proceed” after the create/list and startup-wiring next step was described. Used docs/SDD.md as the design baseline; did not require another implementation approval.
+- Implemented DuesListPage and DueEditPage (create path), toolkit view models, display rows, DI, Shell navigation, and dues.db under FileSystem.AppDataDirectory. Replaced the template MainPage. Load on appearance/resume; initialize before repository use; keep Add disabled on startup failure.
+- DatabaseDispatcher uses SemaphoreSlim plus Task.Run because Microsoft.Data.Sqlite's Task methods still perform synchronous database work. Bound state updates resume on the UI context. All operations use short-lived connections and the same injected path.
+- Validation: trimmed required title, required nonnegative decimal PHP amount (no grouping/symbols), centavo rounding/overflow handling, required calendar date defaulted from TimeProvider in Asia/Manila, optional notes. Preserve input on failure and preserve the successful save identity to prevent duplicate inserts on navigation retry.
+- Added tests/DueDateChecker.App.Tests: a net10.0 harness linking the actual platform-independent App sources and using the same toolkit package. No MAUI dependencies added to Core.Tests. Initial test run failed because implementation was missing; 17 App cases now pass. Core has 23 passing cases after adding a failing-then-fixed test for newer-schema rejection.
+- OOP links: view models inherit ObservableObject for property notifications (inheritance); they depend on IDueRepository, satisfied by SQLite in production and a controlled fake in failure tests (abstraction/polymorphism); Money factories keep conversion/range rules together (encapsulation).
+- No learner reasoning was exercised in this turn; implementation authorization is not evidence of demonstrated understanding. Review the database-path flow and why await alone does not move SQLite off the UI thread at the next learning checkpoint.
+- Device check: ADB started successfully after sandbox escalation; no devices attached. Intended signing and phone exit tests remain outstanding. NuGet vulnerability metadata was unavailable during the App test restore; cached packages restored and the tests themselves passed.
+- Final Android Release build passed with zero warnings/errors after allowing the MAUI cache writes required outside the sandbox. APK: src/DueDateChecker.App/bin/Release/net10.0-android/com.lem.duedatechecker-Signed.apk. No local.signing.props exists on this machine, so intended-key release signing is still not configured.
 
 ## V1.1 Core half (implemented 2026-10-10, commit "V1.1 core")
 - Learner chose option A (Core half first, tests-first) to overlap with the VS install; approved the implementation checkpoint.

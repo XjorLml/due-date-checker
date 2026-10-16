@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:DueDateChecker.App.ViewModels"
+             x:Class="DueDateChecker.App.Pages.DueEditPage"
+             x:DataType="vm:DueEditViewModel"
+             Title="{Binding PageTitle}">
+    <Shell.BackButtonBehavior>
+        <BackButtonBehavior IsEnabled="{Binding IsIdle}" />
+    </Shell.BackButtonBehavior>
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="12">
+            <Label Text="{Binding PageTitle}" FontSize="28" FontAttributes="Bold" SemanticProperties.HeadingLevel="Level1" />
+            <Label Text="Title" />
+            <Entry Text="{Binding Title}" Placeholder="For example, electricity" IsEnabled="{Binding CanEdit}"
+                   SemanticProperties.Description="Due title, required" />
+            <Label Text="{Binding TitleError}" IsVisible="{Binding HasTitleError}"
+                   TextColor="{AppThemeBinding Light=#B3261E, Dark=#FFB4AB}" />
+            <Label Text="Amount (PHP)" />
+            <Entry Text="{Binding AmountText}" Keyboard="Numeric" Placeholder="1250.50" IsEnabled="{Binding CanEdit}"
+                   SemanticProperties.Description="Amount in Philippine pesos, required" />
+            <Label Text="Use a decimal point, without commas or a peso symbol." FontSize="12" />
+            <Label Text="{Binding AmountPreview}" FontAttributes="Bold" SemanticProperties.Description="Amount after rounding to centavos" />
+            <Label Text="{Binding AmountError}" IsVisible="{Binding HasAmountError}"
+                   TextColor="{AppThemeBinding Light=#B3261E, Dark=#FFB4AB}" />
+            <Label Text="Due date" />
+            <DatePicker Date="{Binding SelectedDate}" Format="yyyy-MM-dd" MinimumDate="0001-01-01" MaximumDate="9999-12-31"
+                        IsEnabled="{Binding CanEdit}" SemanticProperties.Description="Due date, required" />
+            <Label Text="{Binding DateError}" IsVisible="{Binding HasDateError}"
+                   TextColor="{AppThemeBinding Light=#B3261E, Dark=#FFB4AB}" />
+            <Label Text="Notes (optional)" />
+            <Editor Text="{Binding Notes}" AutoSize="TextChanges" MinimumHeightRequest="100" IsEnabled="{Binding CanEdit}"
+                    SemanticProperties.Description="Optional notes" />
+            <VerticalStackLayout IsVisible="{Binding IsEditMode}" Spacing="4">
+                <Label Text="Payment status" />
+                <HorizontalStackLayout Spacing="12">
+                    <Switch IsToggled="{Binding IsPaid}" IsEnabled="{Binding CanEdit}"
+                            SemanticProperties.Description="Mark this due as paid"
+                            SemanticProperties.Hint="Payment status changes are stored when you save" />
+                    <Label Text="{Binding PaymentStatusText}" VerticalOptions="Center" />
+                </HorizontalStackLayout>
+                <Label Text="Changes apply when you save." FontSize="12" />
+            </VerticalStackLayout>
+            <Label Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}"
+                   TextColor="{AppThemeBinding Light=#B3261E, Dark=#FFB4AB}" />
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"
+                               SemanticProperties.Description="{Binding BusyMessage}" />
+            <Button Text="Retry loading" Command="{Binding LoadCommand}" IsVisible="{Binding ShowLoadRetry}" />
+            <Button Text="{Binding SaveButtonText}" Clicked="OnSaveClicked" IsEnabled="{Binding CanSubmit}" />
+            <Button Text="{Binding CancelButtonText}" Clicked="OnCancelClicked" IsEnabled="{Binding IsIdle}" />
+            <Button Text="Delete due" Clicked="OnDeleteClicked" IsVisible="{Binding ShowDelete}" IsEnabled="{Binding CanDelete}"
+                    Style="{StaticResource DestructiveButton}"
+                    SemanticProperties.Description="Delete this due"
+                    SemanticProperties.Hint="Opens a confirmation before removing this due from your list" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

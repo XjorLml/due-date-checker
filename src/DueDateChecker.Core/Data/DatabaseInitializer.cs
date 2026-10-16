@@ -17,8 +17,14 @@ public sealed class DatabaseInitializer(string databasePath)
     {
         using var connection = SqliteConnections.Open(databasePath);
         var currentVersion = ReadUserVersion(connection);
+        var migrations = LoadMigrations().ToArray();
+        var supportedVersion = migrations.Length == 0 ? 0 : migrations.Max(m => m.Version);
+        if (currentVersion < 0 || currentVersion > supportedVersion)
+        {
+            throw new InvalidOperationException("The database schema is not supported by this version of the app.");
+        }
 
-        foreach (var (version, sql) in LoadMigrations().Where(m => m.Version > currentVersion))
+        foreach (var (version, sql) in migrations.Where(m => m.Version > currentVersion))
         {
             using var transaction = connection.BeginTransaction();
             Execute(connection, transaction, sql);

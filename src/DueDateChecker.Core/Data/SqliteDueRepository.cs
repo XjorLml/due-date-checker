@@ -56,6 +56,9 @@ public sealed class SqliteDueRepository(string databasePath) : IDueRepository
             """;
         AddEditableParameters(command, due);
         command.Parameters.AddWithValue("@created_at", due.CreatedAt.ToString(TimestampFormat, CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("@deleted_at", due.DeletedAt is { } deleted
+            ? deleted.ToString(TimestampFormat, CultureInfo.InvariantCulture)
+            : DBNull.Value);
 
         await command.ExecuteNonQueryAsync();
     }
@@ -68,15 +71,15 @@ public sealed class SqliteDueRepository(string databasePath) : IDueRepository
             """
             UPDATE dues
             SET title = @title, amount_centavos = @amount, due_date = @due_date, notes = @notes,
-                is_paid = @is_paid, updated_at = @updated_at, deleted_at = @deleted_at
-            WHERE id = @id
+                is_paid = @is_paid, updated_at = @updated_at
+            WHERE id = @id AND deleted_at IS NULL
             """;
         AddEditableParameters(command, due);
 
         var rows = await command.ExecuteNonQueryAsync();
         if (rows == 0)
         {
-            throw new KeyNotFoundException($"Due {due.Id} does not exist.");
+            throw new KeyNotFoundException($"Due {due.Id} does not exist or has been deleted.");
         }
     }
 
@@ -100,9 +103,6 @@ public sealed class SqliteDueRepository(string databasePath) : IDueRepository
         command.Parameters.AddWithValue("@notes", (object?)due.Notes ?? DBNull.Value);
         command.Parameters.AddWithValue("@is_paid", due.IsPaid ? 1 : 0);
         command.Parameters.AddWithValue("@updated_at", due.UpdatedAt.ToString(TimestampFormat, CultureInfo.InvariantCulture));
-        command.Parameters.AddWithValue("@deleted_at", due.DeletedAt is { } deleted
-            ? deleted.ToString(TimestampFormat, CultureInfo.InvariantCulture)
-            : DBNull.Value);
     }
 
     // Column order matches SelectColumns.

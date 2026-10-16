@@ -14,7 +14,10 @@ public interface IDueRepository
 
     Task AddAsync(Due due);
 
-    /// <summary>Overwrites every editable column; throws if the id is unknown.</summary>
+    /// <summary>
+    /// Updates editable fields and UpdatedAt on an active due, preserving CreatedAt and DeletedAt.
+    /// Throws if the id is unknown or soft-deleted.
+    /// </summary>
     Task UpdateAsync(Due due);
 
     /// <summary>Marks the due deleted at <paramref name="when"/>; the row is kept for later sync.</summary>

@@ -1,5 +1,7 @@
 # Learner Profile
 
+> Learning preferences remain applicable. The original product description and seven-day goal below are historical; approved scope is now owned by the [PRD](../docs/PRD.md), with current delivery evidence in [STATUS](../docs/delivery/STATUS.md). This annotation does not change the learner profile or infer demonstrated understanding.
+
 Learning mode: active
 Onboarding: complete
 

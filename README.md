@@ -30,7 +30,7 @@ Start with the [documentation index](docs/README.md).
 - [Software design](docs/SDD.md): architecture, data contracts, and implementation boundaries.
 - [UI/UX design](docs/DESIGN.md): visual standards and clearly scoped future concepts.
 - [Delivery status](docs/delivery/STATUS.md) and [test plan](docs/delivery/TEST-PLAN.md): evidence, remaining acceptance, and procedures.
-- [V1.3 soft-delete specification](specs/v1.3-soft-delete/spec.md): scenarios, technical plan, and tasks.
+- [V1.3 soft-delete](specs/v1.3-soft-delete/spec.md) and [V1.4 CI](specs/v1.4-ci/spec.md) specifications: scenarios, technical plans, and tasks.
 - [Agent workflow](AGENTS.md) and [ADR index](docs/adr/README.md): development and documentation governance.
 - [Refactor audit and migration map](docs/delivery/DOCS-REFACTOR.md): preservation, findings, and validation.
 - [Historical plan](docs/PLAN.md), [V1.1](docs/phases/V1.1.md), [V1.2](docs/phases/V1.2.md), [V1.3](docs/phases/V1.3.md), and [learning progress](.vibe-wise/progress.md): retained provenance and evidence.

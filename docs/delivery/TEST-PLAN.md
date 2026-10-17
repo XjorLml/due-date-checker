@@ -55,7 +55,7 @@ Unknown/deleted targets must not become a new due. Process termination before a 
 
 Mandatory v1 acceptance requires passing relevant automated checks, a Release build, TP01 with the intended signing identity, and completion of the CRUD/restart/offline/native checks. Keep failures and unchecked items visible in STATUS. User acceptance of V1.2 does not close V1.1 or V1.3 gates.
 
-Optional CI gate (R08): when implemented, a push triggers the Core test project and reports its result. No current workflow was found. Notification, Doze, boot-receiver, sync, and notification deep-link checks are excluded from v1.
+Optional CI gate (R08): a push triggers `.github/workflows/ci.yml`, which runs the Core and App test projects on a GitHub-hosted Linux runner and reports the result on the commit. The gate passes on an observed passing run; see the [V1.4 spec](../../specs/v1.4-ci/spec.md#acceptance-scenarios). A passing run is not device or release acceptance. Notification, Doze, boot-receiver, sync, and notification deep-link checks are excluded from v1.
 
 ## Documentation checks
 

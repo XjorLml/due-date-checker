@@ -11,7 +11,7 @@ This index owns documentation navigation and authority. Read the documents relev
 | [DESIGN](DESIGN.md) | UI/UX standards, brand, tokens, appearance, interaction, accessibility; the branding inspiration image is non-normative | Changing the interface; apply its v1 scope notice |
 | [Delivery status](delivery/STATUS.md) | Current implementation state, evidence attribution, remaining acceptance | Resuming delivery or reporting completion |
 | [Test plan](delivery/TEST-PLAN.md) | Verification procedures, environments, expected outcomes, acceptance gates | Planning or performing verification |
-| [Feature specifications](../specs/v1.3-soft-delete/spec.md) | Feature scenarios, approach, tasks, links to governing contracts | Working on an independently implementable change |
+| Feature specifications: [V1.3 soft delete](../specs/v1.3-soft-delete/spec.md), [V1.4 CI](../specs/v1.4-ci/spec.md) | Feature scenarios, approach, tasks, links to governing contracts | Working on an independently implementable change |
 | [ADR index](adr/README.md) | Recorded architecture decision rationale and ADR process | Making or revisiting a significant architecture decision |
 | [Agent instructions](../AGENTS.md) | Development workflow and documentation maintenance rules | Working as a coding agent |
 

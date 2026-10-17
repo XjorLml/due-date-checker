@@ -6,7 +6,9 @@
 
 V1.1–V1.3 local CRUD implementations are complete. Current validation (2026-10-17): 70 passing cases (28 Core + 42 App), a Release build with zero warnings/errors, and native V1.3 confirmation/Cancel/Delete/process-restart checks using temporary verification dues. V1.2 functional checks were previously user-accepted. See the [V1.3 completion record](../docs/phases/V1.3.md) for evidence and remaining signing/phone cases.
 
-Next: finish release acceptance/signing; V1.4 CI is optional. Learning checkpoint: explain why soft deletion updates a timestamp instead of removing the row, why repeated deletion preserves the first timestamp, and how the confirmation response reaches the view model. No new demonstrated understanding was exercised in this slice.
+V1.4 (2026-10-17): a GitHub Actions workflow runs the Core + App tests on a Linux runner on every push; the first GitHub run is pending a push. Decisions (Core + App tests, Linux runner, phone checks stay manual) are in the [V1.4 spec](../specs/v1.4-ci/spec.md). Learning checkpoint: explain why CI targets the test projects rather than the solution, and why a green check is not phone acceptance.
+
+Next: finish release acceptance/signing. Learning checkpoint: explain why soft deletion updates a timestamp instead of removing the row, why repeated deletion preserves the first timestamp, and how the confirmation response reaches the view model. No new demonstrated understanding was exercised in this slice.
 
 ## Pending acceptance
 - V1.2 edit/paid/restart/offline checks are user-accepted. Intended-key signing, the V1.0 launcher check, V1.1's separate acceptance checklist, and unchecked phone hardening items remain tracked. local.signing.props was absent at the last inspection.

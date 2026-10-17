@@ -190,7 +190,7 @@ Requirement definitions and product acceptance outcomes remain in the [PRD](PRD.
 | R04, R05 | ID-only navigation, editor load/save, immutable copy, guarded UpdateAsync | Edit/reopen/race tests plus native edit/paid/restart. |
 | R06 | Page confirmation, DeleteCommand, SoftDeleteAsync, active filtering | [Soft-delete plan](../specs/v1.3-soft-delete/plan.md), delete tests, native confirmation/tombstone checks. |
 | R07 | App-private SQLite and local operations; no account/server dependency | Offline phone procedures for all CRUD paths. |
-| R08 | Core test project is available; no CI workflow found | Optional future push-triggered workflow. |
+| R08 | `.github/workflows/ci.yml` runs the Core and App test projects on a Linux runner on every push ([V1.4 plan](../specs/v1.4-ci/plan.md)) | Observed passing GitHub run, recorded in STATUS. |
 
 ## Verification strategy
 

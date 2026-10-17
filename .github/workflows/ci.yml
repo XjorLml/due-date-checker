@@ -1,0 +1,25 @@
+# V1.4 / PRD R08: run the unit tests on every push. See specs/v1.4-ci/spec.md.
+name: CI
+
+on:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      # Test projects only: the MAUI App project needs the Android workload.
+      - name: Core tests
+        run: dotnet test tests/DueDateChecker.Core.Tests/DueDateChecker.Core.Tests.csproj
+
+      - name: App tests
+        run: dotnet test tests/DueDateChecker.App.Tests/DueDateChecker.App.Tests.csproj

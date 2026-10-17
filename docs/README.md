@@ -8,7 +8,7 @@ This index owns documentation navigation and authority. Read the documents relev
 |---|---|---|
 | [PRD](PRD.md) | Approved product requirements, business rules, acceptance outcomes, scope | Defining or changing user-visible behavior |
 | [SDD](SDD.md) | Technical contracts, architecture, data, startup, concurrency, implementation constraints | Implementing or reviewing code |
-| [DESIGN](DESIGN.md) | UI/UX standards, tokens, appearance, interaction, accessibility | Changing the interface; apply its v1 scope notice |
+| [DESIGN](DESIGN.md) | UI/UX standards, brand, tokens, appearance, interaction, accessibility; the branding inspiration image is non-normative | Changing the interface; apply its v1 scope notice |
 | [Delivery status](delivery/STATUS.md) | Current implementation state, evidence attribution, remaining acceptance | Resuming delivery or reporting completion |
 | [Test plan](delivery/TEST-PLAN.md) | Verification procedures, environments, expected outcomes, acceptance gates | Planning or performing verification |
 | [Feature specifications](../specs/v1.3-soft-delete/spec.md) | Feature scenarios, approach, tasks, links to governing contracts | Working on an independently implementable change |
@@ -27,10 +27,10 @@ The PRD owns approved behavior; source inspection establishes implemented behavi
 
 ## History and migration
 
-- [Documentation refactor audit and migration map](delivery/DOCS-REFACTOR.md): findings, unresolved decisions, preservation map, and validation.
+- [Documentation refactor audit and migration map](delivery/DOCS-REFACTOR.md): findings, unresolved decisions, preservation map, and validation. The refactor's task brief is retained as [docs-revamp.md](docs-revamp.md); it is an instruction record, not a product or technical authority.
 - [Historical plan](PLAN.md): approved 2026-10-10 re-scope provenance, original schedule, toolchain history, decisions, and deferred backlog.
-- [V1.1 record](phases/V1.1.md), [V1.2 record](phases/V1.2.md), and [V1.3 record](phases/V1.3.md): dated implementation/test evidence and attributed phone acceptance. [V1.3 execution evidence](delivery/evidence/V1.3-2026-10-17.md) identifies the environment, artifact, and source hashes.
-- [V1.3 record](phases/V1.3.md) and [execution evidence](delivery/evidence/V1.3-2026-10-17.md): 2026-10-17 soft-delete automated/build/native checks, artifact/source identity, and explicit remaining gates. Current feature tracking is in the linked spec/tasks and delivery status.
+- [V1.1 record](phases/V1.1.md), [V1.2 record](phases/V1.2.md), and [V1.3 record](phases/V1.3.md): dated implementation/test evidence and attributed phone acceptance.
+- [V1.3 execution evidence](delivery/evidence/V1.3-2026-10-17.md): 2026-10-17 soft-delete environment, artifact, and source hashes, plus the post-record check of those hashes against committed source. Current feature tracking is in the linked spec/tasks and delivery status.
 - [Pre-refactor SDD snapshot](delivery/SDD-2026-10-17.md): original review, requirements, contracts, and evidence before responsibility separation.
 - [Learning profile](../.vibe-wise/profile.md), [progress](../.vibe-wise/progress.md), and [project map](../.vibe-wise/project-map.md): learning preferences and historical context; not current product or delivery authority.
 

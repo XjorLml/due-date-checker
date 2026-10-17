@@ -4,9 +4,9 @@ An offline-first Android app built with .NET MAUI and SQLite for tracking dues i
 
 ## Project status
 
-The approved v1 scope is Android local create/list/edit/paid/soft-delete, without reminders, login, or synchronization. Duewise is the design/documentation brand; existing projects and the app title still use Due Date Checker.
+The approved v1 scope is Android local create/list/edit/paid/soft-delete, without reminders, login, or synchronization. Duewise is the chosen product name (user decision, 2026-10-17); existing projects and the app title still use Due Date Checker.
 
-Create/list/edit/paid and delete confirmation code are present in the working tree inspected on 2026-10-17. See [delivery status](docs/delivery/STATUS.md) for dated automated results, attributed phone checks, and outstanding signing/V1.3 acceptance. Source presence does not establish release acceptance.
+Create/list/edit/paid and delete confirmation code are committed through `7c22b4b` (source inspected 2026-10-17). See [delivery status](docs/delivery/STATUS.md) for dated automated results, attributed phone checks, and outstanding signing/V1.3 acceptance. Source presence does not establish release acceptance.
 
 ## Build and test
 

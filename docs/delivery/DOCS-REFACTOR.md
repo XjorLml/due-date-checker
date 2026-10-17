@@ -56,7 +56,7 @@ DateOnly, DateTimeOffset, TimeProvider, signed 64-bit centavos, immutable Due re
 | Item | Competing evidence / gap | Required future decision |
 |---|---|---|
 | Future design behavior | DESIGN proposes optional amounts, title 1–120, completed-last sorting, immediate switch persistence, unsaved-change prompts, Undo, locale-driven currency/timezone; approved v1 rules differ. | Product owner must approve any change through PRD/feature specs before implementation. Current v1 authority is explicit; refactor does not adopt these proposals. |
-| Brand/design adoption | DESIGN uses Duewise/Plus Jakarta Sans and token standards; App project/Shell still use Due Date Checker, MauiProgram registers OpenSans, and pages use their existing layout. | Decide adoption scope and acceptance in a UI change; this refactor does not rename the binary, replace assets, or assert design compliance. |
+| Brand/design adoption | DESIGN uses Duewise/Plus Jakarta Sans and token standards; App project/Shell still use Due Date Checker, MauiProgram registers OpenSans, and pages use their existing layout. The name is decided: Duewise (user decision, 2026-10-17). The unreferenced branding image's "Duely" name is superseded, and its palette (primary `#4F6BFF`) is non-normative inspiration. | Decide app/project renaming and font/token adoption scope and acceptance in a UI change; this refactor does not rename the binary, replace assets, or assert design compliance. |
 | Future reminder policy | Historical project map proposes 3-days/1-day/due-day plus an overdue follow-up and permission on first due; DESIGN proposes different schedules and opt-in timing. | Reconcile when reminders are approved. Neither proposal is a v1 requirement. |
 | Legacy ADR references | Comments cite ADR 001/002; project map lists 001–007 as unwritten proposals; some rationale is missing. | Confirm number assignments, status, and rationale when writing retrospective ADRs; do not infer approval from comments. |
 | V1.3 remaining acceptance | The concurrent feature task supplied automated/build/basic phone results and source/artifact hashes in the [execution record](evidence/V1.3-2026-10-17.md). Offline, native edge/failure/accessibility, phone-private tombstone, and intended-key gates remain unchecked. | Complete only the outstanding gates; preserve completed results and their attribution. Documentation inspection does not close device acceptance. |
@@ -69,6 +69,8 @@ Created by this refactor: `AGENTS.md`, `docs/README.md`, `docs/PRD.md`, `docs/ad
 
 Modified: root `README.md`, `docs/SDD.md`, `docs/DESIGN.md`, `docs/PLAN.md`, the phase-record authority notices, and `.vibe-wise/{profile,progress,project-map}.md`. No pre-existing file was deleted or moved; the new SDD snapshot was added with rebased links. The concurrent task added `docs/phases/V1.3.md` and `docs/delivery/evidence/V1.3-2026-10-17.md`, and contributed updates to STATUS and feature specs; these are retained and attributed separately.
 
+The 2026-10-17 validation follow-up modified root `README.md`, `docs/README.md`, `docs/SDD.md`, `docs/delivery/STATUS.md`, this record, `specs/v1.3-soft-delete/tasks.md`, and the V1.3 execution record (an appended section only). A same-day alignment edit then labeled the branding image as non-normative and recorded the Duewise name decision in `docs/DESIGN.md`, `docs/README.md`, root `README.md`, and this record.
+
 ```text
 AGENTS.md
 README.md
@@ -77,7 +79,9 @@ docs/
   PRD.md
   SDD.md
   DESIGN.md
+  Duely App Branding Showcase - chatgpt.png   (design inspiration; not normative)
   PLAN.md                         (historical)
+  docs-revamp.md                  (refactor task brief; not authority)
   adr/
     README.md
   delivery/
@@ -103,7 +107,20 @@ The existing branding image and all other non-documentation files remain in plac
 
 ## Validation results
 
-Validation is pending final local-link, preservation, requirement, and file-boundary checks. Concurrent updates to historical documentation are checked against their reconciled content separately from the initial file-hash baseline; application files remain compared to the initial baseline. No application tests, builds, device checks, or external-policy validation are part of this documentation refactor.
+The original run stopped before this step. Validation was completed on 2026-10-17 by a follow-up agent session (agent-observed). By then the refactor output, the pre-existing application work, and the V1.3 feature changes had been committed together in `59cf578` and `7c22b4b`. The follow-up therefore validated the clean `7c22b4b` tree plus its own Markdown edits; the original initial-working-tree hash baseline was not available to it.
+
+| Check | Result |
+|---|---|
+| Required documents | All target files exist. Additional delivery files (this record, the SDD snapshot, `evidence/`) are justified above; PLAN and phase records stay in place as history. The [task brief](../docs-revamp.md) remains in `docs/` as an instruction record, linked from the index and not treated as authority. |
+| Local links and anchors | 276 local links in 23 tracked Markdown files resolve to existing files and GitHub-style heading anchors. A temporary dependency-free Node script outside the repository was used; it was self-tested against deliberately broken file and anchor links. External URLs were not checked. |
+| Requirement accounting | R01–R08 are defined once in the [PRD](../PRD.md#approved-requirements). Requirement, slice, and acceptance text is identical to [snapshot §3](SDD-2026-10-17.md#3-requirements-and-traceability); the component column moved to the [SDD mapping](../SDD.md#requirement-to-component-mapping). Other ID tables are mappings, test coverage, or the labeled snapshot. Every ID appears in PRD traceability. |
+| Technical contracts | The nine preserved decisions (DateOnly, DateTimeOffset, TimeProvider, signed 64-bit centavos, immutable Due, DeletedAt, numbered migrations, DatabaseDispatcher, domain/data/App separation) are in SDD §§4–7. Every original SDD section has a destination in the migration map. |
+| Source-claim spot check | Matched source: DI lifetimes including transient AppShell; declared package versions, `$(MauiVersion)`, no global.json; Money rounding and `₱`/`N2` formatting; SemaphoreSlim dispatcher with post-success initialization flag; `ORDER BY due_date, created_at`; active-row guards on update and soft delete; schema defaults and partial index without CHECK constraints; initializer rejection of negative/newer versions; `allowBackup="false"` with template network permissions; OpenSans font registration; `dd MMM yyyy`, `yyyy-MM-dd`, "Amount (PHP)", and the unavailable-due message; no CI workflow. |
+| Deferred scope | PRD exclusions, SDD extension points, the DESIGN scope notice, and STATUS limits consistently keep reminders, notifications, recurrence, authentication, sync, budgets, savings, export, iOS, and Play distribution deferred. |
+| Competing authority | Each canonical document has an authority statement; historical files carry notices pointing to it. The follow-up merged a duplicated V1.3 entry in the index. |
+| Stale claims | "Uncommitted working tree" / "source is not committed" statements in STATUS, SDD, and README were updated to the committed state. The execution record's original statement is retained, with an appended [source-commit check](evidence/V1.3-2026-10-17.md#post-record-source-commit-check): all eight recorded hashes match the committed files (four after line-ending normalization). The tasks scenario range now matches the spec's SD09. |
+| File boundary | The follow-up changed only Markdown files listed under [Files and structure](#files-and-structure). Commit `7c22b4b` also contains non-documentation files: colors/styles and SqliteDueRepositoryTests (matching V1.3 recorded hashes), App/AppShell wiring (described by the [V1.1 record](../phases/V1.1.md), dated 2026-10-16), and an unrelated `.vscode/launch.json`. The refactor record states it changed no application files; that cannot be independently re-proven from the combined commit. |
+| Not performed | No application tests, builds, device checks, or external-policy checks. None are required for documentation-only changes, and none of the evidence above is runtime verification. |
 
 ## Next work
 

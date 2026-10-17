@@ -14,6 +14,8 @@ Product-facing exceptions for v1 are governed by the [PRD rules](PRD.md#business
 
 The design brand/fonts/token system are not fully adopted by the existing MAUI screens. Preserve the standard without claiming compliance or changing code during documentation work. Unresolved product/design adoption decisions are recorded in the [audit](delivery/DOCS-REFACTOR.md#unresolved-decisions).
 
+The [branding showcase image](Duely%20App%20Branding%20Showcase%20-%20chatgpt.png) is early AI-generated inspiration, not a specification. Its "Duely" name and other name candidates, accent palette, typography, and screens do not override this document: where they differ, the brand and tokens here apply. Its onboarding and reminder screens are outside v1 like the concepts above. Duewise is the chosen name (user decision, 2026-10-17).
+
 ## Table of Contents
 
 1. [Overview](#1-overview)

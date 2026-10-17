@@ -5,7 +5,7 @@ Implementation and basic verification recorded 2026-10-17. See [spec scenarios](
 ## Completed implementation and verification
 
 - [x] Link approved R06/R07 scope and existing repository/navigation contracts.
-- [x] Define observable scenarios SD01–SD08; distinguish implemented behavior from remaining acceptance.
+- [x] Define observable scenarios SD01–SD09; distinguish implemented behavior from remaining acceptance.
 - [x] Add tests before delete implementation; record the initial missing-feature compilation failure.
 - [x] Add editor-only destructive action and original-title native confirmation.
 - [x] Keep false confirmation/dismissal away from storage; preserve unfinished input.

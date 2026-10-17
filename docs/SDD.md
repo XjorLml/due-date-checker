@@ -2,7 +2,7 @@
 
 Authority: technical architecture and contracts supporting the [PRD](PRD.md). [DESIGN](DESIGN.md) owns visual/interaction standards; [STATUS](delivery/STATUS.md) owns delivery evidence; [TEST-PLAN](delivery/TEST-PLAN.md) owns execution procedures.
 
-Source inspection: 2026-10-17, including pre-existing uncommitted implementation. This document describes inspected code unless explicitly labeled proposed or deferred. Reading source/tests is not runtime verification. The [previous SDD](delivery/SDD-2026-10-17.md) preserves the original review and history; the [migration record](delivery/DOCS-REFACTOR.md) maps all old sections.
+Source inspection: 2026-10-17, covering implementation that was uncommitted at the time and has since been committed through `7c22b4b`. This document describes inspected code unless explicitly labeled proposed or deferred. Reading source/tests is not runtime verification. The [previous SDD](delivery/SDD-2026-10-17.md) preserves the original review and history; the [migration record](delivery/DOCS-REFACTOR.md) maps all old sections.
 
 ## 1. Scope
 

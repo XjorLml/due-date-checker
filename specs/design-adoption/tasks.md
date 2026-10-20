@@ -10,6 +10,7 @@ Authority: execution tracking for [DA01–DA10](spec.md#acceptance-scenarios).
 - [x] Run Core/App regression and Android Release build: 28 Core + 43 App passed; final Release build 0 warnings/errors.
 - [x] Perform available native checks: both themes at 100%/200%, validation, retained maximum amount, paid edit, delete Cancel/confirm/restart, and offline operation; creation separately attributed to the preceding artifact.
 - [x] Record unperformed TalkBack/device/release gates explicitly.
+- [x] Create future-page spec/plan/tasks without implementing future pages.
 - [x] Update canonical documentation and validate links/diff.
 
 Execution evidence: [2026-10-17 design adoption](../../docs/delivery/evidence/DESIGN-ADOPTION-2026-10-17.md). The final artifact reused the verification due created on the startup-corrected artifact; do not attribute creation to the final native-chrome artifact.

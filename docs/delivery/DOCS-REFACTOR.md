@@ -107,7 +107,7 @@ The existing branding image and all other non-documentation files remain in plac
 
 ### Subsequent design-adoption resolution
 
-After this refactor, the user authorized existing-page design adoption and future-page planning on 2026-10-17. The [adoption spec/plan](../../specs/design-adoption/spec.md) scopes Duewise display/icon/splash branding, bundled typography, theme tokens, responsive list/editor layouts and component/accessibility states. Project names, Android package identity and storage contracts remain unchanged. Actual source/artifact/device evidence is recorded in [design-adoption execution](evidence/DESIGN-ADOPTION-2026-10-17.md); this does not retroactively claim design compliance for the refactor or earlier artifacts.
+After this refactor, the user authorized existing-page design adoption and future-page planning on 2026-10-17. The [adoption spec/plan](../../specs/design-adoption/spec.md) scopes Duewise display/icon/splash branding, bundled typography, theme tokens, responsive list/editor layouts and component/accessibility states. Project names, Android package identity and storage contracts remain unchanged. Actual source/artifact/device evidence is recorded in [design-adoption execution](evidence/DESIGN-ADOPTION-2026-10-17.md); this does not retroactively claim design compliance for the refactor or earlier artifacts. The [future-page roadmap](../../specs/future-pages/plan.md) records the unresolved behavior/reminder decisions above without adopting them as v1 requirements.
 
 ## Validation results
 
@@ -129,3 +129,7 @@ The original run stopped before this step. Validation was completed on 2026-10-1
 ## Next work
 
 Complete the current implementation's [verification and acceptance tasks](../../specs/v1.3-soft-delete/tasks.md), intended-key signing, and outstanding phone checks listed in STATUS. Resolve future design/ADR questions only when their corresponding scope is taken up; do not expand v1 to clear a documentation conflict.
+
+## F05 follow-up, 2026-10-18
+
+The reminder-policy conflict above is historical. The subsequent F05 implementation request and confirmed day-before plus due-date default resolve current date-only behavior in [PRD](../PRD.md#f05-reminder-rules). [ADR 007](../adr/007-local-reminder-reconciliation.md) reconciles the historically proposed number and records the current technical choice. Timed/recurring/per-due reminder variants remain deferred. This does not retroactively change refactor evidence or establish runtime acceptance; see [F05 evidence](evidence/F05-REMINDERS-2026-10-18.md).

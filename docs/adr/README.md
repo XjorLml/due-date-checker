@@ -8,6 +8,8 @@ No individual ADR files were present at the 2026-10-17 documentation audit. Sour
 
 Supported decision history remains in [PLAN decisions](../PLAN.md#decisions-made-2026-10-06): raw SQL was chosen to understand and structure each query; Visual Studio was chosen for its integrated toolchain. The solution-layout rationale and reason for the MVVM toolkit switch were not recorded. Do not fill those gaps with invented rationale.
 
+On 2026-10-18, [007: Local reminder reconciliation](007-local-reminder-reconciliation.md) records the F05 implementation choice and explicitly reconciles the historical proposed 007 identity. Other legacy proposals remain unwritten; this record does not establish their approval.
+
 ## Recording a decision
 
 Create an ADR for a significant architecture choice or change, using `NNN-short-title.md`. Check the historical number references before assigning an ID; reconcile them explicitly rather than silently reusing them.

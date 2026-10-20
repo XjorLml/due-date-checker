@@ -34,6 +34,13 @@ The PRD owns approved behavior; source inspection establishes implemented behavi
 - Release check: delivery status → test plan → referenced evidence records.
 - Documentation-only change: relevant canonical documents → local links and traceability validation; application builds are unnecessary unless another change requires them.
 
+## Templates for future projects
+
+- [Reusable MAUI starter kit](templates/maui-starter/README.md): documentation templates, a proposed project structure, development standards, and a reusable setup prompt for a new application.
+- [Repository review and template validation](templates/maui-starter/REVIEW.md): source-backed findings, improvement priorities, evidence limits, and documentation checks for the kit.
+
+These are adaptation materials for future projects. They do not expand Duewise requirements, change its architecture, or close its release gates.
+
 ## History and migration
 
 - [Documentation refactor audit and migration map](delivery/DOCS-REFACTOR.md): findings, unresolved decisions, preservation map, and validation. The refactor's task brief is retained as [docs-revamp.md](docs-revamp.md); it is an instruction record, not a product or technical authority.

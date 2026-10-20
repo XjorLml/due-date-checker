@@ -10,4 +10,5 @@ public sealed record DueListItem(Due Due)
     public string AmountText => Due.Amount.ToString();
     public string DateText => Due.DueDate.ToString("dd MMM yyyy", CultureInfo.InvariantCulture);
     public string StatusText => Due.IsPaid ? "Paid" : "Unpaid";
+    public string AccessibilityText => $"{Title}, {StatusText}, due {Due.DueDate.ToString("dd MMMM yyyy", CultureInfo.InvariantCulture)}, {AmountText}. Opens edit due.";
 }

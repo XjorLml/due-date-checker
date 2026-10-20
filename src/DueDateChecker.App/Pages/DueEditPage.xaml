@@ -3,55 +3,119 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:DueDateChecker.App.ViewModels"
              x:Class="DueDateChecker.App.Pages.DueEditPage"
-             x:DataType="vm:DueEditViewModel"
-             Title="{Binding PageTitle}">
+             x:DataType="vm:DueEditViewModel" Title="{Binding PageTitle}">
     <Shell.BackButtonBehavior>
         <BackButtonBehavior IsEnabled="{Binding IsIdle}" />
     </Shell.BackButtonBehavior>
     <ScrollView>
-        <VerticalStackLayout Padding="20" Spacing="12">
-            <Label Text="{Binding PageTitle}" FontSize="28" FontAttributes="Bold" SemanticProperties.HeadingLevel="Level1" />
-            <Label Text="Title" />
-            <Entry Text="{Binding Title}" Placeholder="For example, electricity" IsEnabled="{Binding CanEdit}"
-                   SemanticProperties.Description="Due title, required" />
-            <Label Text="{Binding TitleError}" IsVisible="{Binding HasTitleError}"
-                   TextColor="{AppThemeBinding Light=#B3261E, Dark=#FFB4AB}" />
-            <Label Text="Amount (PHP)" />
-            <Entry Text="{Binding AmountText}" Keyboard="Numeric" Placeholder="1250.50" IsEnabled="{Binding CanEdit}"
-                   SemanticProperties.Description="Amount in Philippine pesos, required" />
-            <Label Text="Use a decimal point, without commas or a peso symbol." FontSize="12" />
-            <Label Text="{Binding AmountPreview}" FontAttributes="Bold" SemanticProperties.Description="Amount after rounding to centavos" />
-            <Label Text="{Binding AmountError}" IsVisible="{Binding HasAmountError}"
-                   TextColor="{AppThemeBinding Light=#B3261E, Dark=#FFB4AB}" />
-            <Label Text="Due date" />
-            <DatePicker Date="{Binding SelectedDate}" Format="yyyy-MM-dd" MinimumDate="0001-01-01" MaximumDate="9999-12-31"
-                        IsEnabled="{Binding CanEdit}" SemanticProperties.Description="Due date, required" />
-            <Label Text="{Binding DateError}" IsVisible="{Binding HasDateError}"
-                   TextColor="{AppThemeBinding Light=#B3261E, Dark=#FFB4AB}" />
-            <Label Text="Notes (optional)" />
-            <Editor Text="{Binding Notes}" AutoSize="TextChanges" MinimumHeightRequest="100" IsEnabled="{Binding CanEdit}"
-                    SemanticProperties.Description="Optional notes" />
-            <VerticalStackLayout IsVisible="{Binding IsEditMode}" Spacing="4">
-                <Label Text="Payment status" />
-                <HorizontalStackLayout Spacing="12">
-                    <Switch IsToggled="{Binding IsPaid}" IsEnabled="{Binding CanEdit}"
-                            SemanticProperties.Description="Mark this due as paid"
-                            SemanticProperties.Hint="Payment status changes are stored when you save" />
-                    <Label Text="{Binding PaymentStatusText}" VerticalOptions="Center" />
-                </HorizontalStackLayout>
-                <Label Text="Changes apply when you save." FontSize="12" />
+        <VerticalStackLayout x:Name="PageContent" Spacing="24">
+            <VerticalStackLayout Spacing="8">
+                <Label Text="{Binding PageTitle}" Style="{StaticResource Heading1}" />
+                <Label Text="A clear plan for your next payment." Style="{StaticResource SupportingLabel}" />
             </VerticalStackLayout>
-            <Label Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}"
-                   TextColor="{AppThemeBinding Light=#B3261E, Dark=#FFB4AB}" />
-            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"
-                               SemanticProperties.Description="{Binding BusyMessage}" />
-            <Button Text="Retry loading" Command="{Binding LoadCommand}" IsVisible="{Binding ShowLoadRetry}" />
-            <Button Text="{Binding SaveButtonText}" Clicked="OnSaveClicked" IsEnabled="{Binding CanSubmit}" />
-            <Button Text="{Binding CancelButtonText}" Clicked="OnCancelClicked" IsEnabled="{Binding IsIdle}" />
-            <Button Text="Delete due" Clicked="OnDeleteClicked" IsVisible="{Binding ShowDelete}" IsEnabled="{Binding CanDelete}"
-                    Style="{StaticResource DestructiveButton}"
-                    SemanticProperties.Description="Delete this due"
-                    SemanticProperties.Hint="Opens a confirmation before removing this due from your list" />
+            <VerticalStackLayout Spacing="8">
+                <Label Text="Title" Style="{StaticResource FieldLabel}" />
+                <Border Style="{StaticResource FieldBorder}">
+                    <Border.Triggers>
+                        <DataTrigger TargetType="Border" Binding="{Binding Source={x:Reference TitleEntry}, Path=IsFocused}" Value="True">
+                            <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource FocusLight}, Dark={StaticResource FocusDark}}" />
+                            <Setter Property="StrokeThickness" Value="2" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="Border" Binding="{Binding HasTitleError}" Value="True">
+                            <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource DestructiveLight}, Dark={StaticResource DestructiveDark}}" />
+                            <Setter Property="StrokeThickness" Value="2" />
+                        </DataTrigger>
+                    </Border.Triggers>
+                    <Entry x:Name="TitleEntry" Text="{Binding Title}" Placeholder="For example, electricity"
+                           IsEnabled="{Binding CanEdit}" Unfocused="OnTitleUnfocused"
+                           SemanticProperties.Description="Due title, required" />
+                </Border>
+                <Label Text="{Binding TitleError}" IsVisible="{Binding HasTitleError}" Style="{StaticResource ErrorLabel}" />
+            </VerticalStackLayout>
+            <VerticalStackLayout Spacing="8">
+                <Label Text="Amount (PHP)" Style="{StaticResource FieldLabel}" />
+                <Border Style="{StaticResource FieldBorder}">
+                    <Border.Triggers>
+                        <DataTrigger TargetType="Border" Binding="{Binding Source={x:Reference AmountEntry}, Path=IsFocused}" Value="True">
+                            <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource FocusLight}, Dark={StaticResource FocusDark}}" />
+                            <Setter Property="StrokeThickness" Value="2" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="Border" Binding="{Binding HasAmountError}" Value="True">
+                            <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource DestructiveLight}, Dark={StaticResource DestructiveDark}}" />
+                            <Setter Property="StrokeThickness" Value="2" />
+                        </DataTrigger>
+                    </Border.Triggers>
+                    <Entry x:Name="AmountEntry" Text="{Binding AmountText}" Keyboard="Numeric" Placeholder="1250.50"
+                           IsEnabled="{Binding CanEdit}" Unfocused="OnAmountUnfocused"
+                           SemanticProperties.Description="Amount in Philippine pesos, required" />
+                </Border>
+                <Label Text="Use a decimal point, without commas or a peso symbol." Style="{StaticResource SupportingLabel}" />
+                <Label Text="{Binding AmountPreview}" FontFamily="JakartaSemibold" LineBreakMode="CharacterWrap"
+                       SemanticProperties.Description="Amount after rounding to centavos" />
+                <Label Text="{Binding AmountError}" IsVisible="{Binding HasAmountError}" Style="{StaticResource ErrorLabel}" />
+            </VerticalStackLayout>
+            <VerticalStackLayout Spacing="8">
+                <Label Text="Due date" Style="{StaticResource FieldLabel}" />
+                <Border Style="{StaticResource FieldBorder}">
+                    <Border.Triggers>
+                        <DataTrigger TargetType="Border" Binding="{Binding Source={x:Reference DueDatePicker}, Path=IsFocused}" Value="True">
+                            <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource FocusLight}, Dark={StaticResource FocusDark}}" />
+                            <Setter Property="StrokeThickness" Value="2" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="Border" Binding="{Binding HasDateError}" Value="True">
+                            <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource DestructiveLight}, Dark={StaticResource DestructiveDark}}" />
+                            <Setter Property="StrokeThickness" Value="2" />
+                        </DataTrigger>
+                    </Border.Triggers>
+                    <DatePicker x:Name="DueDatePicker" Date="{Binding SelectedDate}" Format="yyyy-MM-dd"
+                                MinimumDate="0001-01-01" MaximumDate="9999-12-31" IsEnabled="{Binding CanEdit}"
+                                Unfocused="OnDateUnfocused" SemanticProperties.Description="Due date, required" />
+                </Border>
+                <Label Text="{Binding DateError}" IsVisible="{Binding HasDateError}" Style="{StaticResource ErrorLabel}" />
+            </VerticalStackLayout>
+            <VerticalStackLayout Spacing="8">
+                <Label Text="Notes (optional)" Style="{StaticResource FieldLabel}" />
+                <Border Style="{StaticResource FieldBorder}">
+                    <Border.Triggers>
+                        <DataTrigger TargetType="Border" Binding="{Binding Source={x:Reference NotesEditor}, Path=IsFocused}" Value="True">
+                            <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource FocusLight}, Dark={StaticResource FocusDark}}" />
+                            <Setter Property="StrokeThickness" Value="2" />
+                        </DataTrigger>
+                    </Border.Triggers>
+                    <Editor x:Name="NotesEditor" Text="{Binding Notes}" AutoSize="TextChanges" MinimumHeightRequest="112"
+                            Placeholder="Add a reference or anything useful" IsEnabled="{Binding CanEdit}"
+                            SemanticProperties.Description="Optional notes" />
+                </Border>
+            </VerticalStackLayout>
+            <Border Style="{StaticResource SurfaceCard}" IsVisible="{Binding IsEditMode}">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Payment status" Style="{StaticResource FieldLabel}" />
+                    <HorizontalStackLayout Spacing="16">
+                        <Switch IsToggled="{Binding IsPaid}" IsEnabled="{Binding CanEdit}"
+                                SemanticProperties.Description="Mark this due as paid"
+                                SemanticProperties.Hint="Payment status changes are stored when you save" />
+                        <Label Text="{Binding PaymentStatusText}" VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+                    <Label Text="Changes apply when you save." Style="{StaticResource SupportingLabel}" />
+                </VerticalStackLayout>
+            </Border>
+            <Border Style="{StaticResource SurfaceCard}" IsVisible="{Binding HasError}">
+                <Label Text="{Binding ErrorMessage}" Style="{StaticResource ErrorLabel}" />
+            </Border>
+            <VerticalStackLayout Spacing="8" IsVisible="{Binding IsBusy}">
+                <ActivityIndicator IsRunning="{Binding IsBusy}" SemanticProperties.Description="{Binding BusyMessage}" />
+                <Label Text="{Binding BusyMessage}" Style="{StaticResource SupportingLabel}" HorizontalTextAlignment="Center" />
+            </VerticalStackLayout>
+            <VerticalStackLayout Spacing="16">
+                <Button Text="Retry loading" Command="{Binding LoadCommand}" IsVisible="{Binding ShowLoadRetry}"
+                        Style="{StaticResource SecondaryButton}" />
+                <Button Text="{Binding SaveButtonText}" Clicked="OnSaveClicked" IsEnabled="{Binding CanSubmit}" />
+                <Button Text="{Binding CancelButtonText}" Clicked="OnCancelClicked" IsEnabled="{Binding IsIdle}"
+                        Style="{StaticResource SecondaryButton}" />
+                <Button Text="Delete due" Clicked="OnDeleteClicked" IsVisible="{Binding ShowDelete}" IsEnabled="{Binding CanDelete}"
+                        Style="{StaticResource DestructiveButton}" SemanticProperties.Description="Delete this due"
+                        SemanticProperties.Hint="Opens a confirmation before removing this due from your list" />
+            </VerticalStackLayout>
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

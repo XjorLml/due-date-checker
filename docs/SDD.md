@@ -117,7 +117,13 @@ Add future changes as `002_*.sql`, `003_*.sql`, and so on; do not edit an alread
 
 ## 6. UI and navigation
 
-The App contains Pages/DuesListPage and Pages/DueEditPage, with corresponding view models in ViewModels/. AppShell hosts the injected list root and registers the form route; App receives AppShell through constructor injection. The template MainPage is removed. Add opens a fresh form; selecting a row opens the same page in edit mode.
+### Design resource and layout mapping
+
+The authorized [design adoption](../specs/design-adoption/spec.md) maps DESIGN theme pairs to `Resources/Styles/Colors.xaml` and component/type styles to `Styles.xaml`. MauiProgram registers four bundled Plus Jakarta Sans aliases; license/provenance are bundled under `Resources/Raw/Fonts`. ApplicationTitle changes to Duewise; ApplicationId and database path remain unchanged. App icon/splash use source SVG assets rather than an image-generation or icon-library runtime.
+
+`Pages/PageLayout` applies DESIGN width breakpoints, margins and maximum readable width in logical units when page size changes. List header/actions scroll within CollectionView; cards and the editor stay single-column, and amounts wrap separately. Existing handlers retain ID-only edit navigation and mutation guards. The editor's Unfocused handlers call no-write field validation; Save revalidates, focuses the first invalid control and announces its error. Field border triggers show focus/error state; Android handler mappings remove redundant native underlines inside the outlines. Native day/night colors keep status-bar contrast consistent with the canvas. Paid/Unpaid badges keep literal status text.
+
+The App contains Pages/DuesListPage and Pages/DueEditPage, with corresponding view models in ViewModels/. AppShell hosts the injected list root and registers the form route. App receives IServiceProvider and resolves Shell in CreateWindow, after InitializeComponent has loaded application resources; eagerly injecting Shell would construct the list before its StaticResource styles exist. The window retains Shell for its lifetime. The template MainPage is removed. Add opens a fresh form; selecting a row opens the same page in edit mode.
 
 V1.2 navigates using only a due id and loads its data through the repository. No id means create mode; a supplied invalid id is unavailable and cannot become an insert. DueEditPage uses IQueryAttributable and observes its load command on appearance. Once loaded, repeated query/appearance events do not overwrite unsaved input. The following table includes the V1.3 deletion implementation; [STATUS](delivery/STATUS.md) distinguishes observed verification from remaining release acceptance.
 
@@ -156,7 +162,7 @@ Back/Cancel discards unsaved fields without writing. A deleted or unknown naviga
 | IDueRepository → SqliteDueRepository | Singleton | Holds only the path; connections are per operation. |
 | TimeProvider.System | Singleton | One injectable clock source; tests substitute a fixed clock. |
 | Database operation dispatcher | Singleton | Serializes initialization/reads/writes off the UI thread. |
-| AppShell | Transient registration; retained by App for its single window | Root navigation container. |
+| AppShell | Transient registration; resolved after app resources load and retained by the single Window | Root navigation container. |
 | Pages and view models | Transient | Separate form state per navigation. |
 
 The bootstrap sequence is: build DI registrations, display the list's startup/loading state, initialize SQLite in the dispatcher, then enable Add. The load task is awaited; startup errors remain visible and retry must complete initialization before Add becomes available. There is one Android window and no background writers in v1.

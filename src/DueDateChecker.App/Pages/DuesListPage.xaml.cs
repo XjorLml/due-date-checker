@@ -12,6 +12,7 @@ public partial class DuesListPage : ContentPage
     {
         InitializeComponent();
         BindingContext = _viewModel = viewModel;
+        PageLayout.Connect(this, PageContent);
         Appearing += async (_, _) => await RefreshAsync();
     }
 

@@ -12,6 +12,7 @@ public partial class DueEditPage : ContentPage, IQueryAttributable
     {
         InitializeComponent();
         BindingContext = _viewModel = viewModel;
+        PageLayout.Connect(this, PageContent);
         Appearing += async (_, _) => await _viewModel.LoadCommand.ExecuteAsync(null);
     }
 
@@ -34,6 +35,7 @@ public partial class DueEditPage : ContentPage, IQueryAttributable
         {
             await _viewModel.SaveCommand.ExecuteAsync(null);
             if (_viewModel.HasCompleted) await ReturnToListAsync();
+            else FocusFirstError();
         }
         finally
         {
@@ -92,6 +94,28 @@ public partial class DueEditPage : ContentPage, IQueryAttributable
             if (_viewModel.HasCompleted) _viewModel.ReportNavigationError();
             else await DisplayAlertAsync("Couldn't return", "Try the back button to return to your dues.", "OK");
         }
+    }
+
+    private void OnTitleUnfocused(object? sender, FocusEventArgs e)
+    {
+        if (_viewModel.CanEdit) _viewModel.ValidateTitle();
+    }
+
+    private void OnAmountUnfocused(object? sender, FocusEventArgs e)
+    {
+        if (_viewModel.CanEdit) _viewModel.ValidateAmount();
+    }
+
+    private void OnDateUnfocused(object? sender, FocusEventArgs e)
+    {
+        if (_viewModel.CanEdit) _viewModel.ValidateDate();
+    }
+
+    private void FocusFirstError()
+    {
+        if (_viewModel.HasTitleError) { TitleEntry.Focus(); SemanticScreenReader.Default.Announce(_viewModel.TitleError); }
+        else if (_viewModel.HasAmountError) { AmountEntry.Focus(); SemanticScreenReader.Default.Announce(_viewModel.AmountError); }
+        else if (_viewModel.HasDateError) { DueDatePicker.Focus(); SemanticScreenReader.Default.Announce(_viewModel.DateError); }
     }
 
     protected override bool OnBackButtonPressed() => _handlingAction || _viewModel.IsBusy || base.OnBackButtonPressed();

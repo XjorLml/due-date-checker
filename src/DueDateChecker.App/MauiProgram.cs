@@ -12,13 +12,12 @@ public static class MauiProgram
 {
 	public static MauiApp CreateMauiApp()
 	{
+		ConfigureOutlinedFields();
 		var builder = MauiApp.CreateBuilder();
 		builder
 			.UseMauiApp<App>()
 			.ConfigureFonts(fonts =>
 			{
-				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
-				fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
 				fonts.AddFont("PlusJakartaSans-Regular.ttf", "JakartaRegular");
 				fonts.AddFont("PlusJakartaSans-Medium.ttf", "JakartaMedium");
 				fonts.AddFont("PlusJakartaSans-SemiBold.ttf", "JakartaSemibold");
@@ -41,5 +40,18 @@ public static class MauiProgram
 		builder.Services.AddTransient<AppShell>();
 
 		return builder.Build();
+	}
+
+	private static void ConfigureOutlinedFields()
+	{
+#if ANDROID
+		// FieldBorder owns focus/error outlines; remove the native underline inside it.
+		Microsoft.Maui.Handlers.EntryHandler.Mapper.AppendToMapping("DuewiseOutline", (handler, _) =>
+			handler.PlatformView.BackgroundTintList = Android.Content.Res.ColorStateList.ValueOf(Android.Graphics.Color.Transparent));
+		Microsoft.Maui.Handlers.EditorHandler.Mapper.AppendToMapping("DuewiseOutline", (handler, _) =>
+			handler.PlatformView.BackgroundTintList = Android.Content.Res.ColorStateList.ValueOf(Android.Graphics.Color.Transparent));
+		Microsoft.Maui.Handlers.DatePickerHandler.Mapper.AppendToMapping("DuewiseOutline", (handler, _) =>
+			handler.PlatformView.BackgroundTintList = Android.Content.Res.ColorStateList.ValueOf(Android.Graphics.Color.Transparent));
+#endif
 	}
 }

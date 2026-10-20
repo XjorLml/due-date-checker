@@ -105,6 +105,10 @@ specs/
 
 The existing branding image and all other non-documentation files remain in place.
 
+### Subsequent design-adoption resolution
+
+After this refactor, the user authorized existing-page design adoption and future-page planning on 2026-10-17. The [adoption spec/plan](../../specs/design-adoption/spec.md) scopes Duewise display/icon/splash branding, bundled typography, theme tokens, responsive list/editor layouts and component/accessibility states. Project names, Android package identity and storage contracts remain unchanged. Actual source/artifact/device evidence is recorded in [design-adoption execution](evidence/DESIGN-ADOPTION-2026-10-17.md); this does not retroactively claim design compliance for the refactor or earlier artifacts.
+
 ## Validation results
 
 The original run stopped before this step. Validation was completed on 2026-10-17 by a follow-up agent session (agent-observed). By then the refactor output, the pre-existing application work, and the V1.3 feature changes had been committed together in `59cf578` and `7c22b4b`. The follow-up therefore validated the clean `7c22b4b` tree plus its own Markdown edits; the original initial-working-tree hash baseline was not available to it.

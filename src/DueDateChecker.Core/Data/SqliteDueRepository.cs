@@ -16,7 +16,7 @@ public sealed class SqliteDueRepository(string databasePath) : IDueRepository
     private const string TimestampFormat = "O";
 
     private const string SelectColumns =
-        "SELECT id, title, amount_centavos, due_date, notes, is_paid, created_at, updated_at, deleted_at FROM dues";
+        "SELECT id, title, amount_centavos, due_date, notes, is_paid, created_at, updated_at, deleted_at, category FROM dues";
 
     public async Task<IReadOnlyList<Due>> ListActiveAsync()
     {
@@ -51,8 +51,8 @@ public sealed class SqliteDueRepository(string databasePath) : IDueRepository
         using var command = connection.CreateCommand();
         command.CommandText =
             """
-            INSERT INTO dues (id, title, amount_centavos, due_date, notes, is_paid, created_at, updated_at, deleted_at)
-            VALUES (@id, @title, @amount, @due_date, @notes, @is_paid, @created_at, @updated_at, @deleted_at)
+            INSERT INTO dues (id, title, amount_centavos, due_date, notes, is_paid, created_at, updated_at, deleted_at, category)
+            VALUES (@id, @title, @amount, @due_date, @notes, @is_paid, @created_at, @updated_at, @deleted_at, @category)
             """;
         AddEditableParameters(command, due);
         command.Parameters.AddWithValue("@created_at", due.CreatedAt.ToString(TimestampFormat, CultureInfo.InvariantCulture));
@@ -71,7 +71,7 @@ public sealed class SqliteDueRepository(string databasePath) : IDueRepository
             """
             UPDATE dues
             SET title = @title, amount_centavos = @amount, due_date = @due_date, notes = @notes,
-                is_paid = @is_paid, updated_at = @updated_at
+                is_paid = @is_paid, updated_at = @updated_at, category = @category
             WHERE id = @id AND deleted_at IS NULL
             """;
         AddEditableParameters(command, due);
@@ -102,6 +102,7 @@ public sealed class SqliteDueRepository(string databasePath) : IDueRepository
         command.Parameters.AddWithValue("@due_date", due.DueDate.ToString(DateFormat, CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("@notes", (object?)due.Notes ?? DBNull.Value);
         command.Parameters.AddWithValue("@is_paid", due.IsPaid ? 1 : 0);
+        command.Parameters.AddWithValue("@category", (int)due.Category);
         command.Parameters.AddWithValue("@updated_at", due.UpdatedAt.ToString(TimestampFormat, CultureInfo.InvariantCulture));
     }
 
@@ -115,7 +116,8 @@ public sealed class SqliteDueRepository(string databasePath) : IDueRepository
         IsPaid: reader.GetInt64(5) != 0,
         CreatedAt: ParseTimestamp(reader.GetString(6)),
         UpdatedAt: ParseTimestamp(reader.GetString(7)),
-        DeletedAt: reader.IsDBNull(8) ? null : ParseTimestamp(reader.GetString(8)));
+        DeletedAt: reader.IsDBNull(8) ? null : ParseTimestamp(reader.GetString(8)),
+        Category: (DueCategory)checked((int)reader.GetInt64(9)));
 
     private static DateTimeOffset ParseTimestamp(string value)
         => DateTimeOffset.ParseExact(value, TimestampFormat, CultureInfo.InvariantCulture);

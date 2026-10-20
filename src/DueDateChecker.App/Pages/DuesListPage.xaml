@@ -15,11 +15,13 @@
         <!-- The header scrolls with the list, so large text never consumes a fixed viewport. -->
         <CollectionView x:Name="DuesCollection" ItemsSource="{Binding Dues}"
                         SelectionMode="Single" SelectionChanged="OnDueSelected"
-                        SemanticProperties.Description="Your saved dues; select a due to edit it">
+                        SemanticProperties.Description="Your saved dues; select a due to view its details">
             <CollectionView.Header>
                 <VerticalStackLayout Spacing="16" Padding="0,8,0,24">
                     <VerticalStackLayout Spacing="8">
                         <Label Text="Your dues" Style="{StaticResource Heading1}" />
+                        <Button Text="Settings" Clicked="OnSettingsClicked" Style="{StaticResource SecondaryButton}" SemanticProperties.Hint="Set appearance and calendar preferences" AutomationId="OpenSettings" />
+                        <Button Text="Reminders" Clicked="OnRemindersClicked" Style="{StaticResource SecondaryButton}" SemanticProperties.Hint="Set up optional local due-date reminders" />
                         <Label Text="Keep track of what you need to pay, one due at a time."
                                Style="{StaticResource SupportingLabel}" />
                     </VerticalStackLayout>
@@ -33,7 +35,7 @@
                         <ActivityIndicator IsRunning="{Binding IsBusy}" SemanticProperties.Description="Loading your dues" />
                         <Label Text="Loading your dues…" Style="{StaticResource SupportingLabel}" HorizontalTextAlignment="Center" />
                     </VerticalStackLayout>
-                    <Label Text="Soonest due first · Amounts in PHP · Tap a due to edit"
+                    <Label Text="Soonest due first · Amounts in PHP · Tap a due for details"
                            Style="{StaticResource CaptionLabel}" />
                 </VerticalStackLayout>
             </CollectionView.Header>
@@ -53,6 +55,7 @@
                     <Border Style="{StaticResource DueCard}" SemanticProperties.Description="{Binding AccessibilityText}">
                         <VerticalStackLayout Spacing="8">
                             <Label Text="{Binding Title}" Style="{StaticResource Heading3}" />
+                            <Label Text="{Binding CategoryText}" Style="{StaticResource CaptionLabel}" />
                             <Label Text="{Binding AmountText}" Style="{StaticResource Heading2}"
                                    LineBreakMode="CharacterWrap" />
                             <Label Text="{Binding DateText, StringFormat='Due {0}'}" Style="{StaticResource SupportingLabel}" />

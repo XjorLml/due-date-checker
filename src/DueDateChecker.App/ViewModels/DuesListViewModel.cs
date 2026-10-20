@@ -56,5 +56,5 @@ public partial class DuesListViewModel(DatabaseDispatcher database, IDueReposito
         }
     }
 
-    public void ReportNavigationError() => ErrorMessage = "Couldn't open the due form. Try again.";
+    public void ReportNavigationError() => ErrorMessage = "Couldn't open the requested page. Try again.";
 }

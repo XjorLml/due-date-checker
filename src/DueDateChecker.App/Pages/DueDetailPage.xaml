@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:DueDateChecker.App.ViewModels"
+             x:Class="DueDateChecker.App.Pages.DueDetailPage"
+             x:DataType="vm:DueDetailViewModel" Title="Due details" Shell.TabBarIsVisible="False">
+    <ScrollView>
+        <VerticalStackLayout x:Name="PageContent" Spacing="24">
+            <Label Text="Due details" Style="{StaticResource Heading1}" />
+            <Label Text="Saved information · Amounts in PHP · Calendar dates use Asia/Manila"
+                   Style="{StaticResource SupportingLabel}" />
+            <VerticalStackLayout Spacing="16" IsVisible="{Binding HasDetails}">
+                <Border Style="{StaticResource SurfaceCard}">
+                    <VerticalStackLayout Spacing="12">
+                        <Label Text="{Binding Item.Title}" Style="{StaticResource Heading2}" />
+                        <Label Text="{Binding Item.AmountText}" Style="{StaticResource Heading1}" LineBreakMode="CharacterWrap" />
+                        <Label Text="Category" Style="{StaticResource FieldLabel}" />
+                        <Label Text="{Binding Item.CategoryText}" AutomationId="DetailsCategory" />
+                        <Label Text="Payment status" Style="{StaticResource FieldLabel}" />
+                        <Label Text="{Binding Item.StatusText}" Style="{StaticResource Heading3}" />
+                        <Label Text="Due date" Style="{StaticResource FieldLabel}" />
+                        <Label Text="{Binding Item.DateText}" />
+                    </VerticalStackLayout>
+                </Border>
+                <Border Style="{StaticResource SurfaceCard}">
+                    <VerticalStackLayout Spacing="12">
+                        <Label Text="Notes" Style="{StaticResource FieldLabel}" />
+                        <Label Text="{Binding NotesText}" />
+                    </VerticalStackLayout>
+                </Border>
+                <Border Style="{StaticResource SurfaceCard}">
+                    <VerticalStackLayout Spacing="12">
+                        <Label Text="Created" Style="{StaticResource FieldLabel}" />
+                        <Label Text="{Binding CreatedText}" />
+                        <Label Text="Last updated" Style="{StaticResource FieldLabel}" />
+                        <Label Text="{Binding UpdatedText}" />
+                    </VerticalStackLayout>
+                </Border>
+            </VerticalStackLayout>
+            <VerticalStackLayout Spacing="8" IsVisible="{Binding IsBusy}">
+                <ActivityIndicator IsRunning="{Binding IsBusy}" SemanticProperties.Description="Loading due details" />
+                <Label Text="Loading due details…" Style="{StaticResource SupportingLabel}" />
+            </VerticalStackLayout>
+            <Border Style="{StaticResource SurfaceCard}" IsVisible="{Binding HasError}">
+                <Label Text="{Binding ErrorMessage}" Style="{StaticResource ErrorLabel}" />
+            </Border>
+            <VerticalStackLayout Spacing="16">
+                <Button Text="Retry loading" Command="{Binding LoadCommand}" IsVisible="{Binding ShowRetry}"
+                        Style="{StaticResource SecondaryButton}" />
+                <Button Text="Edit due" Clicked="OnEditClicked" IsEnabled="{Binding CanEdit}"
+                        SemanticProperties.Hint="Edit this saved due; changes apply when saved" />
+                <Button Text="Back to list" Clicked="OnBackClicked" Style="{StaticResource SecondaryButton}" />
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:DueDateChecker.App.ViewModels" x:Class="DueDateChecker.App.Pages.ReminderSettingsPage"
+             x:DataType="vm:ReminderSettingsViewModel" Title="Reminders" Shell.TabBarIsVisible="False">
+    <ScrollView>
+        <VerticalStackLayout x:Name="PageContent" Spacing="24">
+            <Label Text="Reminders" Style="{StaticResource Heading1}" />
+            <Label Text="Local reminders for unpaid dues. All times below use Asia/Manila." Style="{StaticResource SupportingLabel}" />
+            <Border Style="{StaticResource SurfaceCard}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="{Binding EnabledText}" Style="{StaticResource Heading3}" AutomationId="ReminderEnabledState" />
+                    <Label Text="{Binding StatusText}" AutomationId="ReminderPermissionState" />
+                    <Label Text="{Binding BackgroundText}" AutomationId="ReminderBackgroundState" />
+                    <Label Text="{Binding ScheduleText}" Style="{StaticResource SupportingLabel}" />
+                </VerticalStackLayout>
+            </Border>
+            <Label Text="Schedule" Style="{StaticResource Heading2}" />
+            <Label Text="A reminder is scheduled on each unpaid due date. Include the day before for an additional reminder." />
+            <HorizontalStackLayout Spacing="12">
+                <Switch IsToggled="{Binding DayBefore}" IsEnabled="{Binding CanEdit}" SemanticProperties.Description="Also remind one day before" AutomationId="ReminderDayBefore" />
+                <Label Text="Also one day before" VerticalOptions="Center" />
+            </HorizontalStackLayout>
+            <Label Text="Reminder time (Asia/Manila)" Style="{StaticResource FieldLabel}" />
+            <Border Style="{StaticResource FieldBorder}"><TimePicker Time="{Binding ReminderTime}" Format="HH:mm" IsEnabled="{Binding CanEdit}" AutomationId="ReminderTime" SemanticProperties.Description="Reminder time, Asia/Manila" /></Border>
+            <Label Text="Quiet hours" Style="{StaticResource Heading2}" />
+            <Label Text="Reminders inside quiet hours move to the next permitted time. Equal start and end times turn quiet hours off. Reminders are skipped if a delay goes past the due date." Style="{StaticResource SupportingLabel}" />
+            <Label Text="Quiet hours start" Style="{StaticResource FieldLabel}" />
+            <Border Style="{StaticResource FieldBorder}"><TimePicker Time="{Binding QuietStart}" Format="HH:mm" IsEnabled="{Binding CanEdit}" SemanticProperties.Description="Quiet hours start, Asia/Manila" AutomationId="ReminderQuietStart" /></Border>
+            <Label Text="Quiet hours end" Style="{StaticResource FieldLabel}" />
+            <Border Style="{StaticResource FieldBorder}"><TimePicker Time="{Binding QuietEnd}" Format="HH:mm" IsEnabled="{Binding CanEdit}" SemanticProperties.Description="Quiet hours end, Asia/Manila" AutomationId="ReminderQuietEnd" /></Border>
+            <Label Text="Save applies this schedule. Save and enable asks Android for permission. Notification text hides titles, amounts and notes." Style="{StaticResource SupportingLabel}" />
+            <Button Text="Save schedule" Command="{Binding SaveCommand}" IsEnabled="{Binding CanEdit}" />
+            <Button Text="Save and enable reminders" Command="{Binding EnableCommand}" IsEnabled="{Binding CanEdit}" />
+            <Button Text="Disable reminders" Command="{Binding DisableCommand}" IsEnabled="{Binding CanEdit}" Style="{StaticResource SecondaryButton}" />
+            <Button Text="Test notification" Command="{Binding TestCommand}" IsEnabled="{Binding CanEdit}" Style="{StaticResource SecondaryButton}" />
+            <Button Text="Android notification settings" Command="{Binding OpenSystemSettingsCommand}" Style="{StaticResource SecondaryButton}" />
+            <Button Text="Android app / battery settings" Command="{Binding OpenAppSettingsCommand}" Style="{StaticResource SecondaryButton}" />
+            <Button Text="Refresh / Retry" Command="{Binding LoadCommand}" Style="{StaticResource SecondaryButton}" />
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" SemanticProperties.Description="Updating reminders" />
+            <Label Text="{Binding Message}" AutomationId="ReminderMessage" />
+            <Label Text="Android may delay reminders due to battery restrictions. Force-stop can prevent reminders until you reopen Duewise. Newly elapsed times are skipped; delivery is not guaranteed." Style="{StaticResource CaptionLabel}" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

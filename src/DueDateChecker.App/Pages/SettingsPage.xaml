@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:DueDateChecker.App.ViewModels"
+             x:Class="DueDateChecker.App.Pages.SettingsPage" x:DataType="vm:SettingsViewModel"
+             Title="Settings" Shell.TabBarIsVisible="False">
+    <ScrollView>
+        <VerticalStackLayout x:Name="PageContent" Spacing="24">
+            <Label Text="Settings" Style="{StaticResource Heading1}" />
+            <Label Text="Make Duewise feel right for you. These preferences are saved on this device." Style="{StaticResource SupportingLabel}" />
+            <Border Style="{StaticResource SurfaceCard}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Appearance" Style="{StaticResource Heading2}" />
+                    <Label Text="Choose a theme" Style="{StaticResource FieldLabel}" />
+                    <Border Style="{StaticResource FieldBorder}">
+                        <Picker Title="Choose a theme" ItemsSource="{Binding Themes}" SelectedIndex="{Binding SelectedThemeIndex}"
+                                SemanticProperties.Description="Appearance, System, Light or Dark" AutomationId="SettingsTheme" />
+                    </Border>
+                    <Label Text="System follows your device's light or dark appearance. Your saved choice applies when you save below." Style="{StaticResource SupportingLabel}" />
+                </VerticalStackLayout>
+            </Border>
+            <Border Style="{StaticResource SurfaceCard}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Calendar" Style="{StaticResource Heading2}" />
+                    <Label Text="Start of week" Style="{StaticResource FieldLabel}" />
+                    <Border Style="{StaticResource FieldBorder}">
+                        <Picker Title="Start of week" ItemsSource="{Binding WeekStarts}" SelectedIndex="{Binding SelectedWeekStartIndex}"
+                                SemanticProperties.Description="Calendar week starts on Monday or Sunday" AutomationId="SettingsWeekStart" />
+                    </Border>
+                    <Label Text="This changes the calendar layout. Your due dates and reminders continue to use Asia/Manila." Style="{StaticResource SupportingLabel}" />
+                </VerticalStackLayout>
+            </Border>
+            <Label Text="Changes apply only when you save. Back discards unsaved choices." Style="{StaticResource SupportingLabel}" />
+            <Button Text="Save preferences" Command="{Binding SaveCommand}" AutomationId="SettingsSave" />
+            <Label Text="{Binding Message}" AutomationId="SettingsMessage" />
+            <Button Text="Refresh / Retry" Command="{Binding LoadCommand}" Style="{StaticResource SecondaryButton}" />
+            <Label Text="Notifications" Style="{StaticResource Heading2}" />
+            <Button Text="Reminders" Clicked="OnRemindersClicked" Style="{StaticResource SecondaryButton}"
+                    SemanticProperties.Hint="Open optional due-date reminders without changing these preferences" AutomationId="SettingsReminders" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

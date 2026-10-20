@@ -34,7 +34,7 @@ public partial class DueEditPage : ContentPage, IQueryAttributable
         try
         {
             await _viewModel.SaveCommand.ExecuteAsync(null);
-            if (_viewModel.HasCompleted) await ReturnToListAsync();
+            if (_viewModel.HasCompleted) await ReturnToParentAsync();
             else FocusFirstError();
         }
         finally
@@ -49,7 +49,7 @@ public partial class DueEditPage : ContentPage, IQueryAttributable
         _handlingAction = true;
         try
         {
-            await ReturnToListAsync();
+            await ReturnToParentAsync();
         }
         finally
         {
@@ -75,7 +75,7 @@ public partial class DueEditPage : ContentPage, IQueryAttributable
             }
 
             await _viewModel.DeleteCommand.ExecuteAsync(confirmed);
-            if (_viewModel.HasDeleted) await ReturnToListAsync();
+            if (_viewModel.HasDeleted) await ReturnToParentAsync();
         }
         finally
         {
@@ -83,7 +83,7 @@ public partial class DueEditPage : ContentPage, IQueryAttributable
         }
     }
 
-    private async Task ReturnToListAsync()
+    private async Task ReturnToParentAsync()
     {
         try
         {
@@ -111,9 +111,15 @@ public partial class DueEditPage : ContentPage, IQueryAttributable
         if (_viewModel.CanEdit) _viewModel.ValidateDate();
     }
 
+    private void OnCategoryUnfocused(object? sender, FocusEventArgs e)
+    {
+        if (_viewModel.CanEdit) _viewModel.ValidateCategory();
+    }
+
     private void FocusFirstError()
     {
         if (_viewModel.HasTitleError) { TitleEntry.Focus(); SemanticScreenReader.Default.Announce(_viewModel.TitleError); }
+        else if (_viewModel.HasCategoryError) { CategoryPicker.Focus(); SemanticScreenReader.Default.Announce(_viewModel.CategoryError); }
         else if (_viewModel.HasAmountError) { AmountEntry.Focus(); SemanticScreenReader.Default.Announce(_viewModel.AmountError); }
         else if (_viewModel.HasDateError) { DueDatePicker.Focus(); SemanticScreenReader.Default.Announce(_viewModel.DateError); }
     }

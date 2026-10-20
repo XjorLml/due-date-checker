@@ -24,6 +24,13 @@ public partial class DueEditViewModel : ObservableObject
         SelectedDate = TimeZoneInfo.ConvertTime(clock.GetUtcNow(), TimeZoneInfo.FindSystemTimeZoneById("Asia/Manila")).Date;
     }
 
+    public IReadOnlyList<DueCategory> Categories { get; } = Array.AsReadOnly(new[] { DueCategory.Bill, DueCategory.Task, DueCategory.Subscription, DueCategory.Other });
+    [ObservableProperty] private DueCategory? _selectedCategory = DueCategory.Bill;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasCategoryError))]
+    private string _categoryError = "";
+    public bool HasCategoryError => !string.IsNullOrEmpty(CategoryError);
+
     [ObservableProperty] private string _title = "";
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(AmountPreview))]
@@ -131,13 +138,13 @@ public partial class DueEditViewModel : ObservableObject
     public bool ShowLoadRetry => IsEditMode && !IsLoaded && !IsUnavailable && !IsBusy;
     public string PageTitle => IsEditMode ? "Edit due" : "Add due";
     public string PaymentStatusText => IsPaid ? "Paid" : "Unpaid";
-    public string CancelButtonText => IsUnavailable || HasCompleted ? "Back to dues" : "Cancel";
+    public string CancelButtonText => IsUnavailable || HasCompleted ? "Go back" : "Cancel";
     public string BusyMessage => IsDeleting ? "Deleting your due" : IsLoaded ? "Saving your due" : "Loading your due";
     public bool HasError => !string.IsNullOrEmpty(ErrorMessage);
     public bool HasTitleError => !string.IsNullOrEmpty(TitleError);
     public bool HasAmountError => !string.IsNullOrEmpty(AmountError);
     public bool HasDateError => !string.IsNullOrEmpty(DateError);
-    public string SaveButtonText => HasCompleted ? "Back to dues" : IsEditMode ? "Save changes" : "Save due";
+    public string SaveButtonText => HasCompleted ? "Go back" : IsEditMode ? "Save changes" : "Save due";
     public string AmountPreview => TryGetAmount(out var amount) ? amount.ToString() : "";
     public string DeleteConfirmationMessage => $"Delete “{_loadedTitle}”? It will be removed from your dues list. You cannot undo this in the app.";
 
@@ -174,6 +181,7 @@ public partial class DueEditViewModel : ObservableObject
             SelectedDate = due.DueDate.ToDateTime(TimeOnly.MinValue);
             Notes = due.Notes ?? "";
             IsPaid = due.IsPaid;
+            SelectedCategory = due.Category;
             IsLoaded = true;
         }
         catch (Exception)
@@ -195,7 +203,8 @@ public partial class DueEditViewModel : ObservableObject
         ValidateTitle();
         ValidateAmount(out var amount);
         ValidateDate();
-        if (HasTitleError || HasAmountError || HasDateError) return;
+        ValidateCategory();
+        if (HasTitleError || HasAmountError || HasDateError || HasCategoryError) return;
 
         IsBusy = true;
         try
@@ -204,6 +213,7 @@ public partial class DueEditViewModel : ObservableObject
             var dueDate = DateOnly.FromDateTime(SelectedDate!.Value);
             var notes = string.IsNullOrWhiteSpace(Notes) ? null : Notes;
             var isPaid = IsPaid;
+            var category = SelectedCategory!.Value;
             var now = _clock.GetUtcNow();
             Due? due;
             if (IsEditMode)
@@ -216,7 +226,7 @@ public partial class DueEditViewModel : ObservableObject
                     var edited = current with
                     {
                         Title = title, Amount = amount, DueDate = dueDate, Notes = notes,
-                        IsPaid = isPaid, UpdatedAt = now
+                        IsPaid = isPaid, UpdatedAt = now, Category = category
                     };
                     await _repository.UpdateAsync(edited);
                     return edited;
@@ -229,7 +239,7 @@ public partial class DueEditViewModel : ObservableObject
             }
             else
             {
-                due = Due.Create(title, amount, dueDate, now, notes);
+                due = Due.Create(title, amount, dueDate, now, notes, category);
                 await _database.RunAsync(() => _repository.AddAsync(due));
             }
             SavedDueId = due.Id;
@@ -282,6 +292,8 @@ public partial class DueEditViewModel : ObservableObject
     }
 
     // Blur and Save share field rules; validation never normalizes input or touches storage.
+    public void ValidateCategory() => CategoryError = SelectedCategory is { } category && Enum.IsDefined(category) ? "" : "Choose a category.";
+
     public void ValidateTitle() => TitleError = string.IsNullOrWhiteSpace(Title) ? "Enter a title." : "";
 
     public void ValidateAmount() => ValidateAmount(out _);
@@ -315,8 +327,8 @@ public partial class DueEditViewModel : ObservableObject
     }
 
     public void ReportNavigationError() => ErrorMessage = HasDeleted
-        ? "Your due was deleted. Tap Back to dues to return to the list."
-        : "Your due was saved. Tap Back to dues to return to the list.";
+        ? "Your due was deleted. Tap Go back to return."
+        : "Your due was saved. Tap Go back to return.";
 
     public void ReportDeleteConfirmationError() => ErrorMessage = "Couldn't show the delete confirmation. No due was deleted. Try again.";
 }

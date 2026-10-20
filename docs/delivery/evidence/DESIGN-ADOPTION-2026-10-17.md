@@ -47,6 +47,10 @@ Local ignored screenshots under `artifacts/design-adoption/` contain only blank 
 
 Full TalkBack/keyboard/switch-access testing, tablet/compact-width devices, native controlled-failure injection, repeated taps during writes, inspection of phone-private tombstones, and intended-key signing/release acceptance remain open. Screenshot inspection and reachable controls do not prove full WCAG compliance. Earlier V1.3/core-flow passes do not automatically accept this changed UI. Only completed checks are attributed above; source review and a build are not device acceptance.
 
+## Future-page planning
+
+The [future-page spec](../../../specs/future-pages/spec.md), [roadmap](../../../specs/future-pages/plan.md), and [tasks](../../../specs/future-pages/tasks.md) map all DESIGN screens and later discovery work to dependencies, decisions and observable acceptance. No future page, route, tab, schema, scheduler, account/network service or finance feature was implemented. Planning does not change PRD R01–R08 or approve conflicting future product rules.
+
 ## Documentation and snapshot verification
 
 Agent-observed: 310 local Markdown path/heading-anchor checks passed across 21 changed/new documents, and `git diff --check` passed. All 53 normalized source/test manifest hashes matched after the final device checks. Pre-existing documentation work and historical evidence were preserved; no signing keys/passwords or existing user financial details were added to these records.

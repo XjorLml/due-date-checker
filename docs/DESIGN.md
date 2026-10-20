@@ -10,11 +10,17 @@ This document owns UI/UX standards, brand, tokens, components, interaction, acce
 
 The original design baseline below intentionally retains broader future concepts. For approved v1, apply visual/accessibility standards to the local dues list and editor. Onboarding, categories, calendar/dashboard, timed/recurring items, reminders, notifications, widgets, export, sync, iOS, and settings concepts are outside approved v1 scope. Their appearance here does not authorize implementation.
 
+The subsequent 2026-10-17 request authorizes [dashboard/calendar mock previews](../specs/future-pages/spec.md#mock-acceptance-scenarios) only. They adapt §8 summary/filter and calendar/agenda layouts to native MAUI using read-only sample cards, a fixed sample date and Monday week start. Explicit preview labels and working navigation distinguish them from saved dues. Omit settings/FAB/mutation controls until those real actions ship; the mock does not approve future product rules or establish full accessibility acceptance.
+
+The later [bottom-navigation request](../specs/future-pages/spec.md#bottom-navigation-acceptance) adopts a native Shell bar for the three implemented destinations: Dues, Dashboard and Calendar. Use 24-unit vector icons, visible native labels/selection semantics and semantic surface/primary/secondary colors. The bar has a 64-unit minimum, grows with system text to separate icons/captions, and retains Android's safe-area insets and native caption metrics. Three equal slots replace the future four-destination proposal below. Retain the sample headers, remove duplicate page switches/exits, and hide the bar in the editor. Verify light/dark, 200% text and Back/retained state at the device boundary; do not infer full accessibility acceptance from the native control.
+
 Product-facing exceptions for v1 are governed by the [PRD rules](PRD.md#business-rules-and-validation) and [workflows](PRD.md#user-workflows): required PHP amounts, no approved title-length cap, Asia/Manila calendar dates, date-sorted active dues including paid rows, payment changes on Save, Back/Cancel without a write, and confirmed soft deletion without Undo/restore. The future optional-amount, 120-character title, completed-last, automatic-timezone/localization, immediate-toggle, unsaved-confirmation, and Undo descriptions below do not override those requirements.
 
 Design adoption for the existing MAUI list/editor was authorized on 2026-10-17 and is tracked in the [adoption spec](../specs/design-adoption/spec.md), [implementation plan](../specs/design-adoption/plan.md), and [tasks](../specs/design-adoption/tasks.md). Implementation and observed verification remain distinct; see STATUS for actual results. The earlier [audit](delivery/DOCS-REFACTOR.md#unresolved-decisions) preserves the pre-adoption findings.
 
 The [branding showcase image](Duely%20App%20Branding%20Showcase%20-%20chatgpt.png) is early AI-generated inspiration, not a specification. Its "Duely" name and other name candidates, accent palette, typography, and screens do not override this document: where they differ, the brand and tokens here apply. Its onboarding and reminder screens are outside v1 like the concepts above. Duewise is the chosen name (user decision, 2026-10-17).
+
+Prototype review, 2026-10-18: the user-supplied Duewise overview is compared with code in the [prototype comparison](delivery/PROTOTYPE-REVIEW-2026-10-18.md). It introduces an explicit Statistics/Insights planning gap (F12), but its detailed screen/metric design is still to be specified. The attachment's Inter/SF Pro, bright blue palette, Sunday-first calendar and Home/Calendar/Add/Stats/Settings composition do not replace the adopted fonts/tokens, Monday-first samples or three current native tabs. Resolve these differences per approved slice. Shared empty/error illustrations may be adapted later; an offline screen must not block working local CRUD. No account/profile feature is implied by its greeting/avatar. The [roadmap](../specs/future-pages/plan.md#priority-order-after-prototype-review) owns priority rather than the image's numbered order.
 
 ## Table of Contents
 
@@ -35,11 +41,15 @@ The [branding showcase image](Duely%20App%20Branding%20Showcase%20-%20chatgpt.pn
 
 ### Native MAUI adoption for v1
 
+F02 adaptation, authorized 2026-10-18: [production Dashboard](../specs/f02-dashboard/spec.md) replaces its fixture preview. Use global paid progress/counts, labeled title search, All/Overdue/Due today/Upcoming/Paid filters with selected semantics, chronological saved-data cards and distinct empty/no-match/loading/stale-error states. [PRD rules](PRD.md#f02-dashboard-rules) supersede the future Home section's Completed/completed-last grouping for F02. Keep Dues initial; the later F03 adaptation below replaces Calendar samples. Add is a working existing-form action; rows open Details. Details' explicit return caption is Back to list for either parent. Use CollectionView as the only scroll owner so large-text headers/actions remain reachable. No settings/profile/category/reminder affordance ships in this slice.
+
+F01 adaptation, authorized 2026-10-18: [saved due details](../specs/f01-item-details/spec.md) uses read-only semantic cards for existing fields, explicit Paid/Unpaid and absent-notes text, and Created/Last updated timestamps labeled UTC. Retain the Asia/Manila DateOnly due date and PHP amount. Edit opens the existing editor; Back to dues returns to the list. Hide the bottom bar in Details as in the editor. Refresh on return/resume, with loading, retryable error and unavailable states. The future Item detail section's category/recurrence/reminder/Complete/Reopen/Undo actions remain outside F01. This scoped exception supersedes the future layout only for this slice; it does not approve those capabilities.
+
 The existing list/editor map semantic colors to `Resources/Styles/Colors.xaml`, and type/component roles to `Styles.xaml`. Four unmodified, licensed static Plus Jakarta Sans weights are bundled and registered locally. Duewise display/icon/splash branding retains the existing Android package/data identity.
 
 V1 keeps native Android controls/dialogs and a single-column form/card layout at every text scale. Margins follow §5; wide views center bounded content rather than adding the future two-pane navigation. List headings/actions scroll with the CollectionView to remain reachable at large text sizes. Amounts have a dedicated wrapping line. Paid/Unpaid retain literal text with a textual status symbol; future lifecycle statuses and category icons are not introduced. Native pressed feedback uses a brief opacity state, with disabled opacity and focus/error outlines; no custom motion dependency is added. Platform input metrics provide vertical field padding; the minimum outlined field height is 56 logical units. Validation on blur shares Save's rules and does not write or normalize input.
 
-These are scoped native adaptations, not a claim of full compliance. Test theme changes, 200% text, TalkBack/keyboard focus, wrapping and native picker/action behavior using [DA01–DA10](../specs/design-adoption/spec.md#acceptance-scenarios). Remaining gaps and observed devices belong in delivery evidence.
+These are scoped native adaptations, not a claim of full compliance. Test theme changes, 200% text, TalkBack/keyboard focus, wrapping and native picker/action behavior using [DA01–DA10](../specs/design-adoption/spec.md#acceptance-scenarios). Remaining gaps and observed devices belong in delivery evidence. Future screens and the authorized mock milestone are mapped in the [roadmap](../specs/future-pages/plan.md).
 
 ## 1. Overview
 
@@ -490,6 +500,10 @@ App bar → appearance System/Light/Dark → start of week System → timezone A
 
 **Behavior:** Appearance updates instantly; export uses system share sheet; deletion requires confirmation.
 
+### F04 settings adaptation
+
+The later "implement f04" request authorizes [preferences](../specs/f04-preferences/spec.md), governed by [PRD](PRD.md#f04-preference-rules). Use a pushed scrollable Settings page from Dues, hidden bottom tabs, shared typography/surface cards and labeled native pickers for System/Light/Dark and Monday/Sunday. The defaults are System/Monday. Explicit **Save preferences** commits both choices and immediately applies appearance; this scoped adaptation replaces the future instant-selection rule. Back discards unsaved choices; returning from Reminders/resume retains the active draft. Literal save/error messages and Refresh/Retry remain reachable at 200% text. Opening existing Reminders is a working secondary action; retain the existing Dues shortcut. Calendar headings/date alignment/caption follow the saved week start together. The fixed Manila timezone is explanatory text, not a dead selector. Export, About/privacy, accounts, currency/timezone selectors, data deletion and future bottom-tab composition remain outside this slice. Record actual theme/text/focus/picker/navigation acceptance separately from implementation.
+
 ### Empty and error
 
 ```text
@@ -527,7 +541,7 @@ Use platform haptics only when supported and user-enabled; no vibration for pass
 
 ## 10. Notifications and Status Logic
 
-Deferred design proposal, not an implemented or approved v1 scheduler/status contract. The word "canonical" below applies within this future concept only. Earlier reminder proposals differ; reconcile them before approving a reminder feature.
+The original broader design proposal below is not the current scheduler/status contract. F05 now resolves current date-only reminder policy in [PRD](PRD.md#f05-reminder-rules) and presentation in the [F05 adaptation](#f05-reminder-adaptation). Timed/recurring/per-due variants remain deferred. The word "canonical" below applies within this future concept only.
 
 **Canonical status algorithm:** evaluate using device-local current time in the item’s stored IANA timezone. A date-only due item is due at the end of its calendar day (`23:59:59.999`); a timed item uses its exact local date/time resolved to a UTC instant. For DST gaps, move to next valid local instant; for overlaps, choose earlier offset. Completed takes precedence over all statuses. `dueToday` means due calendar date equals today; `dueSoon` means due date is within the next 3 local calendar days excluding today; `upcoming` means 4+ days away; `overdue` means due instant is strictly earlier than now. If date is earlier than today, overdue regardless of stored time. Recalculate on app foreground, local midnight, timezone change, edit, completion, and notification delivery.
 
@@ -821,3 +835,17 @@ This checklist spans the full design vision. Deferred-feature rows are not manda
 - [ ] No input is lost on validation, failure, back navigation, or permission denial.
 - [ ] Widget protects private content and displays correct next-three items.
 - [ ] All displayed dates, amounts, plurals, and notification copy are localized.
+
+## F03 Calendar adaptation
+
+Authorized 2026-10-18: [production Calendar](../specs/f03-calendar/spec.md) replaces the fixture preview. [PRD policy](PRD.md#f03-calendar-rules) deliberately keeps Monday first, numeric total counts including Paid, explicit Manila Today and session selection. This overrides future locale-start/Sunday-prototype suggestions for this slice; no stored preference is added. Use the adopted semantic resources and single vertical CollectionView owner, a persistent month/agenda header, horizontal overflow for seven minimum 48-unit date targets and wrapping agenda cards. Mark selected dates with the primary style and today with an outline plus explicit semantic descriptions. Agenda status text reuses F02 rules. All dates announce full date/count/selected/today; Add and rows are working actions. Details/editor hide tabs and return to the selected Calendar. Loading, global empty, selected-day empty and stale errors remain distinct. Full assistive-technology/other-width acceptance requires separate native evidence.
+
+## F07 category adaptation
+
+The authorized [category slice](../specs/f07-categories/spec.md) uses a labeled native Picker inside the existing outlined field, shared typography/themes, focus/error states, disabled busy/completed state and explicit validation announcement. A fixed selector replaces the prototype's horizontally crowded chips so all four names remain reachable at large text. Saved cards/Details show literal category text; row semantics include it. Dashboard's category Picker composes with search/status and Clear filters without changing the persistent header or global summary. No category icons, custom category management, optional amounts or recurrence controls are introduced. [PRD](PRD.md#f07-category-rules) overrides the future form's amount/timing rules; full assistive-technology/visual acceptance remains separately verified.
+
+## F05 reminder adaptation
+
+F05 is a separately authorized exception to the original deferred reminder concept. [PRD reminder rules](PRD.md#f05-reminder-rules) replace the conflicting historical/future schedule proposals for current date-only dues. The pushed Reminders page uses PageLayout, one vertical scroll owner, semantic cards/labels, full-width wrapping actions and outlined native TimePickers. Dues exposes a labeled Reminders entry; the pushed page hides tabs and uses native Back.
+
+Show app opt-in separately from Android permission/channel state and a literal Android-reported battery/background status. Provide a working Android app / battery settings action for late-reminder recovery. Returning refreshes status and retains schedule drafts; no automatic power-policy change or exemption request. Use an explicit Save and enable action, a day-before switch, editable Manila time and quiet-hour labels, Save schedule, Disable, Refresh/Retry, Android settings and static Test notification. Do not show per-due presets, timed/recurring controls or general Settings destinations. Schedule controls are drafts; status refresh retains them. State/error text is literal, with busy/not-loaded actions disabled. Explain inexact delivery and force-stop/battery limits in the page. Generic notifications omit financial details and use the app-owned monochrome calendar/check icon. Test actions require opt-in and Android access. Verify themes, large text, native time dialogs, focus, permission flow and tap draft preservation at the device boundary; implementation alone does not establish full accessibility acceptance.

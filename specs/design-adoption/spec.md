@@ -8,7 +8,7 @@ Apply [DESIGN scope](../../docs/DESIGN.md#scope-and-authority), [brand](../../do
 
 Adopt Duewise as the launcher/display name, a calendar/checkmark vector identity, bundled licensed Plus Jakarta Sans, semantic theme resources, responsive spacing, readable cards, outlined fields, and primary/secondary/destructive controls. Keep package identity, SQLite path/schema, IDs, list ordering, PHP validation, Manila dates, payment-on-Save, Cancel/Back, and confirmation without Undo.
 
-Existing behavior: local CRUD, retry/busy/error states and persistence. Proposed changes: presentation plus field validation on blur (same rules as Save); never write from blur. New pages, statuses, categories, reminders, navigation tabs and data contracts are excluded. Future-page planning is separate from this visual-adoption slice.
+Existing behavior: local CRUD, retry/busy/error states and persistence. Proposed changes: presentation plus field validation on blur (same rules as Save); never write from blur. New pages, statuses, categories, reminders, navigation tabs and data contracts are excluded. Their separate [future-page plan](../future-pages/plan.md) is planning only.
 
 ## Acceptance scenarios
 

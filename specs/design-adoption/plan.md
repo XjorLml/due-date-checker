@@ -12,7 +12,9 @@
 5. Apply shared responsive margins/max-width through a small page-layout helper; avoid display-scale heuristics or a new framework.
 6. Run the existing Core and App suites sequentially (shared Core output), add one meaningful blur/no-write regression, and build Android Release per [TEST-PLAN](../../docs/delivery/TEST-PLAN.md#automated-execution). Check native themes/large text and basic workflows when a phone is available. Building locally is verification; release remains on hold.
 7. Record source/artifact identity, observed results and remaining acceptance. Review PRD/SDD/DESIGN and update their links without duplicating their contracts.
+8. After adoption, create the [future-page roadmap](../future-pages/plan.md) with page-to-design mappings, dependencies, decisions and acceptance outcomes. Do not register or build future routes within this original adoption milestone. Later user requests separately authorized dashboard/calendar mocks and bottom navigation; see that roadmap for their delivered scope.
 
+The 2026-10-18 prototype analysis is a subsequent documentation milestone: [comparison](../../docs/delivery/PROTOTYPE-REVIEW-2026-10-18.md), [priority order](../future-pages/plan.md#priority-order-after-prototype-review). Preserve the adopted visual foundation and existing evidence. Future production pages follow their own slice/spec and do not reopen this adoption plan as permission to implement all pictured capabilities.
 
 ## Dependencies and risks
 

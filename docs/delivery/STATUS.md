@@ -4,14 +4,18 @@ Authority: current delivery state and attributed verification evidence. Approved
 
 Last documentation/source inspection: **2026-10-17**. Latest automated/build and V1.3 device evidence: **2026-10-17**, from the authorized soft-delete feature task, recorded in the [execution evidence](evidence/V1.3-2026-10-17.md). The documentation refactor itself performed no application tests/build/device checks; the feature-task evidence below is separately attributed.
 
+## Current focus
+
+Earlier direction was to complete/verify basic flows first (R02–R07). **That earlier functional verification passed** with 28 Core + 42 App tests and native create/list/edit/paid/unpaid/delete/restart in airplane mode, including Cancel, system Back and dialog dismissal. See [core-flow evidence](evidence/CORE-FLOWS-2026-10-17.md) for its exact source/artifact and attribution; no application source fix was needed in that task.
+
 ## Release slices
 
 | Slice / requirements | Implementation state | Automated evidence | Device evidence / remaining acceptance |
 |---|---|---|---|
 | V1.0 / R01 | Android project and conditional signing configuration present | Historical Release build passed; manifest recorded minSdk 26, targetSdk 36, allowBackup=false | V1.2 install and explicit activity-start observed historically. Intended-key signing and launcher acceptance remain pending; activity-start is not a launcher check. |
-| V1.1 / R02, R03, R07 | Create/list implementation present | Historical 23 Core + 17 App cases passed at V1.1; included in later V1.2 regression run | Separate create/list/restart/offline phone checklist remains open in [V1.1](../phases/V1.1.md#remaining-acceptance). |
-| V1.2 / R04, R05, R07 | Edit/paid implementation present | Historical 26 Core + 34 App cases passed (60 total); Release build had zero warnings/errors | Navigation/loading/Cancel observed by agent; saved edits, paid/unpaid, restart, and airplane-mode checks user-accepted. Intended-key run and unchecked hardening remain open in [V1.2](../phases/V1.2.md#phone-acceptance-record). |
-| V1.3 / R06, R07 | Confirmed soft-delete implementation complete; committed through `7c22b4b` after the evidence run, with [matching feature-file hashes](evidence/V1.3-2026-10-17.md#post-record-source-commit-check) | Agent-observed 28 Core + 42 App passed (70 total); final Release build: zero warnings/errors. See [artifact/environment evidence](evidence/V1.3-2026-10-17.md). | Agent verified named confirmation, native Cancel retention, confirmed list removal, and hidden state after process restart using temporary dues only. Offline, Back/dismissal, physical phone tombstone inspection, hardening, and intended-key gates remain open. See [feature tasks](../../specs/v1.3-soft-delete/tasks.md). |
+| V1.1 / R02, R03, R07 | Create/list implementation present | Historical 23 Core + 17 App cases passed at V1.1; included in later V1.2 regression run | Agent verified create/list/restart in airplane mode on the V1.3 artifact; see [core-flow evidence](evidence/CORE-FLOWS-2026-10-17.md#native-checks). Remaining native hardening/intended-key checks stay open in [V1.1](../phases/V1.1.md#remaining-acceptance). |
+| V1.2 / R04, R05, R07 | Edit/paid implementation present | Historical 26 Core + 34 App cases passed (60 total); Release build had zero warnings/errors | Historical user acceptance and the [core-flow follow-up](evidence/CORE-FLOWS-2026-10-17.md#native-checks) record offline edit/payment/restart/Cancel/Back checks for their artifacts. Intended-key and unchecked hardening remain in [V1.2](../phases/V1.2.md#phone-acceptance-record). |
+| V1.3 / R06, R07 | Confirmed soft-delete implementation complete; committed through `7c22b4b` after the evidence run, with [matching feature-file hashes](evidence/V1.3-2026-10-17.md#post-record-source-commit-check) | Agent-observed 28 Core + 42 App passed (70 total); final Release build: zero warnings/errors. See [artifact/environment evidence](evidence/V1.3-2026-10-17.md). | Native confirmation/Cancel/removal/restart passed; the [follow-up](evidence/CORE-FLOWS-2026-10-17.md#native-checks) also verifies airplane mode and Back/dismissal. Phone tombstone inspection, remaining hardening and intended-key gates stay open in [tasks](../../specs/v1.3-soft-delete/tasks.md). |
 | V1.4 optional / R08 | GitHub Actions workflow committed locally (not yet pushed) per the [V1.4 spec](../../specs/v1.4-ci/spec.md): Core + App tests on a Linux runner on every push | Its two test commands passed locally on 2026-10-17 (28 Core + 42 App). No GitHub run yet. | Optional; does not block mandatory v1 acceptance. R08 closes on an observed passing GitHub run. |
 
 “Implementation present” is a source-inspection finding, not a claim of passing tests or release acceptance. Historical test totals must not be presented as results for the newer working tree.
@@ -30,13 +34,16 @@ Last documentation/source inspection: **2026-10-17**. Latest automated/build and
 | Local test run on committed source | 2026-10-17, agent-observed; Windows, .NET SDK 10.0.401 | 28 Core + 42 App passed on `7c22b4b` plus uncommitted Markdown and workflow files (no application source changes). Run while adding [V1.4](../../specs/v1.4-ci/tasks.md); not a CI run, Release build, or device check. |
 | Documentation validation | 2026-10-17 | See [refactor validation](DOCS-REFACTOR.md#validation-results); does not validate application runtime behavior. |
 
+| [Core-flow automated checks](evidence/CORE-FLOWS-2026-10-17.md#automated-checks) | 2026-10-17, agent-observed; Windows, .NET SDK 10.0.400 | 28 Core + 42 App passed on `c0ab21c`; no application source/test changes. NU1900 retained. This was functional verification, with no new application build or publication. |
+| [Core-flow native checks](evidence/CORE-FLOWS-2026-10-17.md#native-checks) | 2026-10-17, agent-observed on M2101K6G / Android 13 API 33 | Existing installed APK hash matches the V1.3 execution artifact; at that run `src`/`tests` matched `7c22b4b`. Native basic-flow results and limits are recorded in the linked evidence. Intended-key and remaining hardening gates stay open. |
+
 ## Remaining release work
 
 1. Current delete implementation has recorded automated/build evidence. Keep that evidence tied to its source/artifact hashes; rerun relevant checks after further implementation changes.
 2. Configure and verify intended-key signing using the ignored local signing configuration. Historical absence of `local.signing.props` is not a fresh inspection of signing identity.
 3. Complete [TP01–TP07](TEST-PLAN.md#device-procedures), preserving already attributed evidence and recording the outstanding V1.1/V1.2 checks explicitly.
-4. Complete remaining [V1.3 acceptance tasks](../../specs/v1.3-soft-delete/tasks.md), including offline/native edge cases and phone tombstone evidence in an authorized test environment. Native named confirmation, Cancel, confirmed removal, and restart visibility already have agent-observed evidence.
-5. Optional R08: push the V1.4 workflow and record the first passing GitHub run in [V1.4 tasks](../../specs/v1.4-ci/tasks.md).
+4. Complete remaining [V1.3 acceptance tasks](../../specs/v1.3-soft-delete/tasks.md): controlled failures, repeated taps during writes, accessibility/themes, and phone tombstone evidence in an authorized test environment. Native named confirmation, Cancel, Back/dismissal, confirmed removal, and restart visibility now also have offline evidence; the final intended-key artifact pass remains pending.
+5. Optional R08 is deferred under the current user direction. When resumed, push the V1.4 workflow and record the first passing GitHub run in [V1.4 tasks](../../specs/v1.4-ci/tasks.md).
 
 Known verification gaps include controlled migration rollback and explicit equal-due-date ordering coverage. See the [automated coverage inventory](TEST-PLAN.md#automated-coverage-inventory).
 

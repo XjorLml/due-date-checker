@@ -19,8 +19,9 @@ Implementation and basic verification recorded 2026-10-17. See [spec scenarios](
 
 ## Remaining acceptance
 
-- [ ] SD08: repeat native delete/cancel/restart in airplane mode.
-- [ ] Exercise native dialog Back/dismissal and repeated taps during a write.
+- [x] SD08: repeat native delete/cancel/restart in airplane mode. Agent-observed on 2026-10-17 using the existing V1.3 APK; see [core-flow evidence](../../docs/delivery/evidence/CORE-FLOWS-2026-10-17.md#native-checks). Final intended-key artifact pass remains pending.
+- [x] Exercise native dialog Back/dismissal. Same follow-up verified retained unsaved input and an active saved due after dismissal/restart.
+- [ ] Exercise repeated taps during a native write.
 - [ ] Exercise controlled native confirmation-display, storage-write, and return-navigation failures from TP05.
 - [ ] Verify both themes, large text, accessibility focus, and the destructive action on-device.
 - [ ] Inspect retained tombstones in an authorized phone test database; automated SQLite retention evidence does not establish this device-level gate.
@@ -32,4 +33,4 @@ The unchecked items do not negate the completed implementation/observed checks. 
 
 Implementation dependency order: repository contract -> view-model confirmation/state guards -> page confirmation/navigation -> automated/build verification -> native verification. The checked steps above retain the feature task's evidence in the [execution record](../../docs/delivery/evidence/V1.3-2026-10-17.md).
 
-Remaining tasks use [TEST-PLAN](../../docs/delivery/TEST-PLAN.md) expected outcomes: native edge/failure/accessibility checks require a controlled test build and phone; SD08 requires airplane-mode cancel/confirm/restart; physical tombstone checks require an authorized test database. Intended-key signing precedes the final signed-artifact pass. Record environment, artifact/source identity, date, expected/actual outcome, and observer before checking off an item. Feature release acceptance remains open until all required remaining checks have evidence; old passes do not satisfy a changed implementation automatically.
+Remaining tasks use [TEST-PLAN](../../docs/delivery/TEST-PLAN.md) expected outcomes: native edge/failure/accessibility checks require a controlled test build and phone; physical tombstone checks require an authorized test database. SD08 now has airplane-mode cancel/confirm/restart evidence on the existing artifact. Intended-key signing precedes the final signed-artifact pass. Record environment, artifact/source identity, date, expected/actual outcome, and observer before checking off an item. Feature release acceptance remains open until all required remaining checks have evidence; old passes do not satisfy a changed implementation automatically.

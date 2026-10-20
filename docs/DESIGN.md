@@ -12,7 +12,7 @@ The original design baseline below intentionally retains broader future concepts
 
 Product-facing exceptions for v1 are governed by the [PRD rules](PRD.md#business-rules-and-validation) and [workflows](PRD.md#user-workflows): required PHP amounts, no approved title-length cap, Asia/Manila calendar dates, date-sorted active dues including paid rows, payment changes on Save, Back/Cancel without a write, and confirmed soft deletion without Undo/restore. The future optional-amount, 120-character title, completed-last, automatic-timezone/localization, immediate-toggle, unsaved-confirmation, and Undo descriptions below do not override those requirements.
 
-The design brand/fonts/token system are not fully adopted by the existing MAUI screens. Preserve the standard without claiming compliance or changing code during documentation work. Unresolved product/design adoption decisions are recorded in the [audit](delivery/DOCS-REFACTOR.md#unresolved-decisions).
+Design adoption for the existing MAUI list/editor was authorized on 2026-10-17 and is tracked in the [adoption spec](../specs/design-adoption/spec.md), [implementation plan](../specs/design-adoption/plan.md), and [tasks](../specs/design-adoption/tasks.md). Implementation and observed verification remain distinct; see STATUS for actual results. The earlier [audit](delivery/DOCS-REFACTOR.md#unresolved-decisions) preserves the pre-adoption findings.
 
 The [branding showcase image](Duely%20App%20Branding%20Showcase%20-%20chatgpt.png) is early AI-generated inspiration, not a specification. Its "Duely" name and other name candidates, accent palette, typography, and screens do not override this document: where they differ, the brand and tokens here apply. Its onboarding and reminder screens are outside v1 like the concepts above. Duewise is the chosen name (user decision, 2026-10-17).
 
@@ -32,6 +32,14 @@ The [branding showcase image](Duely%20App%20Branding%20Showcase%20-%20chatgpt.pn
 12. [Design Tokens](#12-design-tokens)
 13. [Implementation Notes](#13-implementation-notes)
 14. [Quality Checklist](#quality-checklist)
+
+### Native MAUI adoption for v1
+
+The existing list/editor map semantic colors to `Resources/Styles/Colors.xaml`, and type/component roles to `Styles.xaml`. Four unmodified, licensed static Plus Jakarta Sans weights are bundled and registered locally. Duewise display/icon/splash branding retains the existing Android package/data identity.
+
+V1 keeps native Android controls/dialogs and a single-column form/card layout at every text scale. Margins follow §5; wide views center bounded content rather than adding the future two-pane navigation. List headings/actions scroll with the CollectionView to remain reachable at large text sizes. Amounts have a dedicated wrapping line. Paid/Unpaid retain literal text with a textual status symbol; future lifecycle statuses and category icons are not introduced. Native pressed feedback uses a brief opacity state, with disabled opacity and focus/error outlines; no custom motion dependency is added. Platform input metrics provide vertical field padding; the minimum outlined field height is 56 logical units. Validation on blur shares Save's rules and does not write or normalize input.
+
+These are scoped native adaptations, not a claim of full compliance. Test theme changes, 200% text, TalkBack/keyboard focus, wrapping and native picker/action behavior using [DA01–DA10](../specs/design-adoption/spec.md#acceptance-scenarios). Remaining gaps and observed devices belong in delivery evidence.
 
 ## 1. Overview
 

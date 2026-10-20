@@ -192,9 +192,9 @@ public partial class DueEditViewModel : ObservableObject
         // Also guard direct ExecuteAsync calls and navigation retries after a successful save.
         if (!CanEdit) return;
         ErrorMessage = "";
-        TitleError = string.IsNullOrWhiteSpace(Title) ? "Enter a title." : "";
-        AmountError = TryGetAmount(out var amount) ? "" : "Enter a valid PHP amount, for example 1250.50, within the supported range.";
-        DateError = SelectedDate.HasValue ? "" : "Choose a due date.";
+        ValidateTitle();
+        ValidateAmount(out var amount);
+        ValidateDate();
         if (HasTitleError || HasAmountError || HasDateError) return;
 
         IsBusy = true;
@@ -279,6 +279,20 @@ public partial class DueEditViewModel : ObservableObject
     {
         IsUnavailable = true;
         ErrorMessage = "This due is no longer available. Return to your dues.";
+    }
+
+    // Blur and Save share field rules; validation never normalizes input or touches storage.
+    public void ValidateTitle() => TitleError = string.IsNullOrWhiteSpace(Title) ? "Enter a title." : "";
+
+    public void ValidateAmount() => ValidateAmount(out _);
+
+    public void ValidateDate() => DateError = SelectedDate.HasValue ? "" : "Choose a due date.";
+
+    private bool ValidateAmount(out Money amount)
+    {
+        var valid = TryGetAmount(out amount);
+        AmountError = valid ? "" : "Enter a valid PHP amount, for example 1250.50, within the supported range.";
+        return valid;
     }
 
     private bool TryGetAmount(out Money amount)

@@ -124,6 +124,53 @@ public sealed class CreateAndListTests : IDisposable
     }
 
     [Fact]
+    public async Task Blur_validation_retains_input_without_storage_access_and_save_revalidates()
+    {
+        var editor = NewEditor();
+        editor.Title = "   ";
+        editor.AmountText = "1,000";
+        editor.SelectedDate = null;
+        editor.Notes = "  keep this note  ";
+        editor.ValidateTitle();
+        editor.ValidateAmount();
+        editor.ValidateDate();
+        Assert.True(editor.HasTitleError);
+        Assert.True(editor.HasAmountError);
+        Assert.True(editor.HasDateError);
+        Assert.Equal("   ", editor.Title);
+        Assert.Equal("1,000", editor.AmountText);
+        Assert.Equal("  keep this note  ", editor.Notes);
+        Assert.False(File.Exists(_path));
+
+        editor.Title = "  Valid title  ";
+        editor.AmountText = "1.235";
+        editor.SelectedDate = new DateTime(2026, 10, 17);
+        editor.ValidateTitle();
+        editor.ValidateAmount();
+        editor.ValidateDate();
+        Assert.False(editor.HasTitleError);
+        Assert.False(editor.HasAmountError);
+        Assert.False(editor.HasDateError);
+        Assert.Equal("  Valid title  ", editor.Title);
+        Assert.Equal("1.235", editor.AmountText);
+        Assert.False(File.Exists(_path));
+
+        // Validating a field does not bypass the validation performed by Save.
+        editor.AmountText = "-1";
+        await editor.SaveCommand.ExecuteAsync(null);
+        Assert.True(editor.HasAmountError);
+        Assert.False(editor.HasSaved);
+        Assert.False(File.Exists(_path));
+        editor.AmountText = "1.235";
+        await editor.SaveCommand.ExecuteAsync(null);
+        var saved = await _repository.GetAsync(editor.SavedDueId!.Value);
+        Assert.NotNull(saved);
+        Assert.Equal("Valid title", saved.Title);
+        Assert.Equal(124, saved.Amount.Centavos);
+        Assert.Equal("  keep this note  ", saved.Notes);
+    }
+
+    [Fact]
     public async Task Save_failure_preserves_input_and_retry_writes_once()
     {
         var fake = new ControlledRepository { Fail = true };

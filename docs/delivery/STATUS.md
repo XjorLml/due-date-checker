@@ -2,7 +2,7 @@
 
 Authority: current delivery state and attributed verification evidence. Approved scope is in the [PRD](../PRD.md); procedures and gates are in the [test plan](TEST-PLAN.md). Historical phase records remain evidence, not current status definitions.
 
-Last documentation/source inspection: **2026-10-17**. Latest automated/build and V1.3 device evidence: **2026-10-17**, from the authorized soft-delete feature task, recorded in the [execution evidence](evidence/V1.3-2026-10-17.md). The documentation refactor itself performed no application tests/build/device checks; the feature-task evidence below is separately attributed.
+Last documentation/source inspection: **2026-10-17**, design adoption. **28 Core + 43 App passed (71 total)**; final Android Release build 0 warnings/errors. The [execution evidence](evidence/DESIGN-ADOPTION-2026-10-17.md) distinguishes startup-corrected creation from final-artifact theme/text/edit/delete checks. Core-flow results remain historical; full accessibility/other widths/intended-key acceptance remain open. Release and optional CI activation stay held.
 
 ## Current focus
 
@@ -17,6 +17,8 @@ Earlier direction was to complete/verify basic flows first (R02–R07). **That e
 | V1.2 / R04, R05, R07 | Edit/paid implementation present | Historical 26 Core + 34 App cases passed (60 total); Release build had zero warnings/errors | Historical user acceptance and the [core-flow follow-up](evidence/CORE-FLOWS-2026-10-17.md#native-checks) record offline edit/payment/restart/Cancel/Back checks for their artifacts. Intended-key and unchecked hardening remain in [V1.2](../phases/V1.2.md#phone-acceptance-record). |
 | V1.3 / R06, R07 | Confirmed soft-delete implementation complete; committed through `7c22b4b` after the evidence run, with [matching feature-file hashes](evidence/V1.3-2026-10-17.md#post-record-source-commit-check) | Agent-observed 28 Core + 42 App passed (70 total); final Release build: zero warnings/errors. See [artifact/environment evidence](evidence/V1.3-2026-10-17.md). | Native confirmation/Cancel/removal/restart passed; the [follow-up](evidence/CORE-FLOWS-2026-10-17.md#native-checks) also verifies airplane mode and Back/dismissal. Phone tombstone inspection, remaining hardening and intended-key gates stay open in [tasks](../../specs/v1.3-soft-delete/tasks.md). |
 | V1.4 optional / R08 | GitHub Actions workflow committed locally (not yet pushed) per the [V1.4 spec](../../specs/v1.4-ci/spec.md): Core + App tests on a Linux runner on every push | Its two test commands passed locally on 2026-10-17 (28 Core + 42 App). No GitHub run yet. | Optional; does not block mandatory v1 acceptance. R08 closes on an observed passing GitHub run. |
+
+| Design adoption / R01–R07 presentation | [Existing list/editor adoption](../../specs/design-adoption/spec.md) implemented in the working tree: Duewise identity, local typography, semantic resources, responsive layouts/states, blur validation and resource-before-page startup | Agent-observed 28 Core + 43 App passed; final Release build 0 warnings/errors; source manifest and APK hashes in [execution evidence](evidence/DESIGN-ADOPTION-2026-10-17.md) | Data-preserving update; both themes at 100%/200%; validation, retained maximum amount, offline paid edit and delete Cancel/confirm/restart. Creation observed on preceding artifact. TalkBack, other widths and remaining gates stay open in [tasks](../../specs/design-adoption/tasks.md#remaining-native-acceptance). |
 
 “Implementation present” is a source-inspection finding, not a claim of passing tests or release acceptance. Historical test totals must not be presented as results for the newer working tree.
 
@@ -36,6 +38,8 @@ Earlier direction was to complete/verify basic flows first (R02–R07). **That e
 
 | [Core-flow automated checks](evidence/CORE-FLOWS-2026-10-17.md#automated-checks) | 2026-10-17, agent-observed; Windows, .NET SDK 10.0.400 | 28 Core + 42 App passed on `c0ab21c`; no application source/test changes. NU1900 retained. This was functional verification, with no new application build or publication. |
 | [Core-flow native checks](evidence/CORE-FLOWS-2026-10-17.md#native-checks) | 2026-10-17, agent-observed on M2101K6G / Android 13 API 33 | Existing installed APK hash matches the V1.3 execution artifact; at that run `src`/`tests` matched `7c22b4b`. Native basic-flow results and limits are recorded in the linked evidence. Intended-key and remaining hardening gates stay open. |
+
+| [Design-adoption execution](evidence/DESIGN-ADOPTION-2026-10-17.md) | 2026-10-17, agent-observed; Windows SDK 10.0.400; M2101K6G / API 33 | 71 tests, clean final build, bundled fonts/license, manifest review, source manifest and artifact-specific native results. Initial startup resource-order failure corrected before final checks. Device settings restored; no user dues changed. |
 
 ## Remaining release work
 

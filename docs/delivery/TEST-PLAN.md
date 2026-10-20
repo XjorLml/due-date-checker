@@ -60,3 +60,11 @@ Optional CI gate (R08): a push triggers `.github/workflows/ci.yml`, which runs t
 ## Documentation checks
 
 For documentation changes, check required files, local Markdown paths and heading anchors, stable requirement IDs, technical-contract coverage, history preservation, feature scope, and the final diff against the initial working tree. Existing platform references in historical records are not evidence of current external policy; revalidate them when that work begins.
+
+## Design-adoption verification
+
+Scope and expected outcomes are owned by [DA01–DA10](../../specs/design-adoption/spec.md#acceptance-scenarios). Use the automated commands above (sequentially, since test projects share Core output) and a fresh Android Release build after UI changes. Inspect the APK for the four local font weights/license and the merged manifest for Duewise display identity, unchanged ApplicationId and disabled backup.
+
+On a supported phone, update with data preserved; never uninstall/clear data to bypass signing failure. Inspect list, new form, existing editor and validation errors in both system themes at normal and 200% text, scrolling all actions into view. Check focus/error outlines, wrapped amounts/dates/action labels, persistent labels, paid text, field preview, native picker, primary/secondary/destructive roles, loading/error/empty state and TalkBack/keyboard navigation. Use temporary dues only for create/edit/paid/delete/restart/offline checks. Restore original theme/font/radio settings after testing. Capture only controlled verification UI, without persisting existing user financial details.
+
+Record actual source/artifact hashes, SDK/device, theme/text scale, exact checks and observer in the design-adoption evidence linked from STATUS. Unperformed widths, TalkBack, controlled failures and final intended-key acceptance remain open. Historical V1.3/core-flow evidence is not a native pass for the changed UI artifact. Building a Release configuration is local verification; it does not release the app.

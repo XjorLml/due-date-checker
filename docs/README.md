@@ -12,6 +12,7 @@ This index owns documentation navigation and authority. Read the documents relev
 | [Delivery status](delivery/STATUS.md) | Current implementation state, evidence attribution, remaining acceptance | Resuming delivery or reporting completion |
 | [Test plan](delivery/TEST-PLAN.md) | Verification procedures, environments, expected outcomes, acceptance gates | Planning or performing verification |
 | Feature specifications: [V1.3 soft delete](../specs/v1.3-soft-delete/spec.md), [V1.4 CI](../specs/v1.4-ci/spec.md) | Feature scenarios, approach, tasks, links to governing contracts | Working on an independently implementable change |
+| [Design adoption](../specs/design-adoption/spec.md), [implementation plan](../specs/design-adoption/plan.md), [tasks](../specs/design-adoption/tasks.md) | Existing list/editor adoption of DESIGN within v1 scope | Styling, branding, responsive layout, field states and native verification |
 | [ADR index](adr/README.md) | Recorded architecture decision rationale and ADR process | Making or revisiting a significant architecture decision |
 | [Agent instructions](../AGENTS.md) | Development workflow and documentation maintenance rules | Working as a coding agent |
 

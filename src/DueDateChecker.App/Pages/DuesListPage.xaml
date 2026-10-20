@@ -3,39 +3,86 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:DueDateChecker.App.ViewModels"
              x:Class="DueDateChecker.App.Pages.DuesListPage"
-             x:DataType="vm:DuesListViewModel"
-             Title="Your dues">
-    <Grid Padding="20" RowDefinitions="Auto,Auto,Auto,Auto,*" RowSpacing="12">
-        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-            <Label Text="Your dues" FontSize="28" FontAttributes="Bold"
-                   VerticalOptions="Center" SemanticProperties.HeadingLevel="Level1" />
-            <Button x:Name="AddButton" Grid.Column="1" Text="Add due" IsEnabled="{Binding CanAdd}"
-                    Clicked="OnAddClicked" SemanticProperties.Hint="Create a new due" />
-        </Grid>
-        <Label Grid.Row="1" Text="Soonest due first · Tap a due to edit · Amounts in PHP" />
-        <VerticalStackLayout Grid.Row="2" Spacing="8">
-            <Label Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}"
-                   TextColor="{AppThemeBinding Light=#B3261E, Dark=#FFB4AB}" />
-            <Button Text="Refresh / Retry" Command="{Binding LoadCommand}" HorizontalOptions="Start" />
-            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"
-                               SemanticProperties.Description="Loading your dues" />
-        </VerticalStackLayout>
-        <VerticalStackLayout Grid.Row="3" IsVisible="{Binding IsEmpty}" Spacing="6" Padding="0,20">
-            <Label Text="No dues yet" FontSize="22" FontAttributes="Bold" />
-            <Label Text="Add a due to keep track of what you need to pay." />
-        </VerticalStackLayout>
-        <CollectionView x:Name="DuesCollection" Grid.Row="4" ItemsSource="{Binding Dues}"
-                        SelectionMode="Single" SelectionChanged="OnDueSelected" IsEnabled="{Binding CanAdd}"
+             x:DataType="vm:DuesListViewModel" Title="Duewise">
+    <Shell.TitleView>
+        <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+            <Image Source="brand_mark.png" WidthRequest="32" HeightRequest="32"
+                   AutomationProperties.IsInAccessibleTree="False" />
+            <Label Text="Duewise" FontFamily="JakartaBold" FontSize="20" VerticalOptions="Center" />
+        </HorizontalStackLayout>
+    </Shell.TitleView>
+    <Grid x:Name="PageContent">
+        <!-- The header scrolls with the list, so large text never consumes a fixed viewport. -->
+        <CollectionView x:Name="DuesCollection" ItemsSource="{Binding Dues}"
+                        SelectionMode="Single" SelectionChanged="OnDueSelected"
                         SemanticProperties.Description="Your saved dues; select a due to edit it">
+            <CollectionView.Header>
+                <VerticalStackLayout Spacing="16" Padding="0,8,0,24">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="Your dues" Style="{StaticResource Heading1}" />
+                        <Label Text="Keep track of what you need to pay, one due at a time."
+                               Style="{StaticResource SupportingLabel}" />
+                    </VerticalStackLayout>
+                    <Button x:Name="AddButton" Text="Add due" IsEnabled="{Binding CanAdd}"
+                            Clicked="OnAddClicked" SemanticProperties.Hint="Create a new due" />
+                    <Border Style="{StaticResource SurfaceCard}" IsVisible="{Binding HasError}">
+                        <Label Text="{Binding ErrorMessage}" Style="{StaticResource ErrorLabel}" />
+                    </Border>
+                    <Button Text="Refresh / Retry" Command="{Binding LoadCommand}" Style="{StaticResource SecondaryButton}" />
+                    <VerticalStackLayout Spacing="8" IsVisible="{Binding IsBusy}">
+                        <ActivityIndicator IsRunning="{Binding IsBusy}" SemanticProperties.Description="Loading your dues" />
+                        <Label Text="Loading your dues…" Style="{StaticResource SupportingLabel}" HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                    <Label Text="Soonest due first · Amounts in PHP · Tap a due to edit"
+                           Style="{StaticResource CaptionLabel}" />
+                </VerticalStackLayout>
+            </CollectionView.Header>
+            <CollectionView.EmptyView>
+                <Border Style="{StaticResource SurfaceCard}" IsVisible="{Binding IsEmpty}">
+                    <VerticalStackLayout Spacing="16" Padding="8,16">
+                        <Image Source="brand_mark.png" WidthRequest="56" HeightRequest="56" HorizontalOptions="Start"
+                               AutomationProperties.IsInAccessibleTree="False" />
+                        <Label Text="A little clarity starts here" Style="{StaticResource Heading2}" />
+                        <Label Text="No dues yet. Add your first due using the Add due button above."
+                               Style="{StaticResource SupportingLabel}" />
+                    </VerticalStackLayout>
+                </Border>
+            </CollectionView.EmptyView>
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="vm:DueListItem">
-                    <Border Margin="0,0,0,12" Padding="16" StrokeShape="RoundRectangle 12">
-                        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="8">
-                            <Label Text="{Binding Title}" FontSize="18" FontAttributes="Bold" LineBreakMode="WordWrap" />
-                            <Label Grid.Column="1" Text="{Binding AmountText}" FontAttributes="Bold" VerticalOptions="Start" />
-                            <Label Grid.Row="1" Text="{Binding DateText}" />
-                            <Label Grid.Row="1" Grid.Column="1" Text="{Binding StatusText}" HorizontalOptions="End" />
-                        </Grid>
+                    <Border Style="{StaticResource DueCard}" SemanticProperties.Description="{Binding AccessibilityText}">
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="{Binding Title}" Style="{StaticResource Heading3}" />
+                            <Label Text="{Binding AmountText}" Style="{StaticResource Heading2}"
+                                   LineBreakMode="CharacterWrap" />
+                            <Label Text="{Binding DateText, StringFormat='Due {0}'}" Style="{StaticResource SupportingLabel}" />
+                            <Border Padding="8,4" StrokeThickness="0" StrokeShape="RoundRectangle 16"
+                                    HorizontalOptions="Start"
+                                    BackgroundColor="{AppThemeBinding Light={StaticResource SurfaceMutedLight}, Dark={StaticResource SurfaceMutedDark}}">
+                                <Border.Triggers>
+                                    <DataTrigger TargetType="Border" Binding="{Binding Due.IsPaid}" Value="True">
+                                        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource PaidSurfaceLight}, Dark={StaticResource PaidSurfaceDark}}" />
+                                    </DataTrigger>
+                                </Border.Triggers>
+                                <HorizontalStackLayout Spacing="8">
+                                    <Label Text="○" AutomationProperties.IsInAccessibleTree="False">
+                                        <Label.Triggers>
+                                            <DataTrigger TargetType="Label" Binding="{Binding Due.IsPaid}" Value="True">
+                                                <Setter Property="Text" Value="✓" />
+                                                <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource CompletedLight}, Dark={StaticResource CompletedDark}}" />
+                                            </DataTrigger>
+                                        </Label.Triggers>
+                                    </Label>
+                                    <Label Text="{Binding StatusText}" FontFamily="JakartaMedium">
+                                        <Label.Triggers>
+                                            <DataTrigger TargetType="Label" Binding="{Binding Due.IsPaid}" Value="True">
+                                                <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource CompletedLight}, Dark={StaticResource CompletedDark}}" />
+                                            </DataTrigger>
+                                        </Label.Triggers>
+                                    </Label>
+                                </HorizontalStackLayout>
+                            </Border>
+                        </VerticalStackLayout>
                     </Border>
                 </DataTemplate>
             </CollectionView.ItemTemplate>

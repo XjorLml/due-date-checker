@@ -69,6 +69,8 @@ The v1 deliverable is an Android app distributed as a sideloaded Release APK. It
 - Local privacy constraints include app-private storage and disabled Android backup. No account recovery, export, or server backup exists in v1; uninstalling or clearing app data loses dues. See [SDD privacy and limits](SDD.md#8-failure-handling-privacy-and-practical-limits).
 - Requirements are accepted using the [test plan](delivery/TEST-PLAN.md), including real-phone checks with the intended signed Release APK. Builds or unit tests alone do not establish release acceptance.
 
+- Design adoption for the existing list/editor was authorized on 2026-10-17: Duewise display identity, bundled typography, semantic themes, responsive layouts, and accessible component states. [Design-adoption scenarios](../specs/design-adoption/spec.md) refine verification without adding future pages or changing R01–R08. Field rules run on blur and Save; blur retains input and performs no storage write.
+
 ## Exclusions and deferred capabilities
 
 Reminders, notification permissions/scheduling, the Overdue fallback, recurrence, authentication, Supabase/synchronization, budgets, savings, and Play publishing remain outside v1. CI is optional under R08.

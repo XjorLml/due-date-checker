@@ -15,9 +15,17 @@ public sealed record Due(
     bool IsPaid,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,
-    DateTimeOffset? DeletedAt)
+    DateTimeOffset? DeletedAt,
+    DueCategory Category = DueCategory.Other)
 {
     private readonly string _title = ValidateTitle(Title);
+    private readonly DueCategory _category = ValidateCategory(Category);
+
+    public DueCategory Category
+    {
+        get => _category;
+        init => _category = ValidateCategory(value);
+    }
 
     public string Title
     {
@@ -25,8 +33,12 @@ public sealed record Due(
         init => _title = ValidateTitle(value);
     }
 
-    public static Due Create(string title, Money amount, DateOnly dueDate, DateTimeOffset now, string? notes = null)
-        => new(Guid.NewGuid(), title, amount, dueDate, notes, IsPaid: false, CreatedAt: now, UpdatedAt: now, DeletedAt: null);
+    public static Due Create(string title, Money amount, DateOnly dueDate, DateTimeOffset now, string? notes = null,
+        DueCategory category = DueCategory.Other)
+        => new(Guid.NewGuid(), title, amount, dueDate, notes, IsPaid: false, CreatedAt: now, UpdatedAt: now, DeletedAt: null, Category: category);
+
+    private static DueCategory ValidateCategory(DueCategory category) => Enum.IsDefined(category)
+        ? category : throw new ArgumentOutOfRangeException(nameof(category), "Choose a supported category.");
 
     private static string ValidateTitle(string title)
     {

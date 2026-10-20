@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:DueDateChecker.App.ViewModels"
              x:Class="DueDateChecker.App.Pages.DueEditPage"
-             x:DataType="vm:DueEditViewModel" Title="{Binding PageTitle}">
+             x:DataType="vm:DueEditViewModel" Title="{Binding PageTitle}" Shell.TabBarIsVisible="False">
     <Shell.BackButtonBehavior>
         <BackButtonBehavior IsEnabled="{Binding IsIdle}" />
     </Shell.BackButtonBehavior>
@@ -31,6 +31,25 @@
                            SemanticProperties.Description="Due title, required" />
                 </Border>
                 <Label Text="{Binding TitleError}" IsVisible="{Binding HasTitleError}" Style="{StaticResource ErrorLabel}" />
+            </VerticalStackLayout>
+            <VerticalStackLayout Spacing="8">
+                <Label Text="Category" Style="{StaticResource FieldLabel}" />
+                <Border Style="{StaticResource FieldBorder}">
+                    <Border.Triggers>
+                        <DataTrigger TargetType="Border" Binding="{Binding Source={x:Reference CategoryPicker}, Path=IsFocused}" Value="True">
+                            <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource PrimaryLight}, Dark={StaticResource PrimaryDark}}" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="Border" Binding="{Binding HasCategoryError}" Value="True">
+                            <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource DestructiveLight}, Dark={StaticResource DestructiveDark}}" />
+                        </DataTrigger>
+                    </Border.Triggers>
+                    <Picker x:Name="CategoryPicker" Title="Choose category" ItemsSource="{Binding Categories}"
+                            SelectedItem="{Binding SelectedCategory}" IsEnabled="{Binding CanEdit}"
+                            Unfocused="OnCategoryUnfocused" AutomationId="DueCategory"
+                            SemanticProperties.Description="Due category, required" />
+                </Border>
+                <Label Text="{Binding CategoryError}" IsVisible="{Binding HasCategoryError}" Style="{StaticResource ErrorLabel}" />
+                <Label Text="All categories require an amount in PHP. Zero is allowed." Style="{StaticResource CaptionLabel}" />
             </VerticalStackLayout>
             <VerticalStackLayout Spacing="8">
                 <Label Text="Amount (PHP)" Style="{StaticResource FieldLabel}" />

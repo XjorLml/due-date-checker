@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:DueDateChecker.App.ViewModels"
+             xmlns:pages="clr-namespace:DueDateChecker.App.Pages"
+             x:Class="DueDateChecker.App.Pages.DashboardPage"
+             x:DataType="vm:DashboardViewModel" Title="Dashboard">
+    <Grid x:Name="PageContent">
+        <CollectionView x:Name="Results" ItemsSource="{Binding Items}" SelectionMode="Single"
+                        SelectionChanged="OnDueSelected"
+                        SemanticProperties.Description="Saved dues matching your search and status filter; select one for details">
+            <CollectionView.Header>
+                <VerticalStackLayout Spacing="24" Padding="0,8,0,24">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="Your dues at a glance" Style="{StaticResource Heading1}" />
+                        <Label Text="{Binding DateText}" Style="{StaticResource SupportingLabel}" />
+                        <Label Text="Saved on this device · Works offline" Style="{StaticResource CaptionLabel}" />
+                    </VerticalStackLayout>
+                    <Button Text="Add due" Clicked="OnAddClicked" IsEnabled="{Binding CanAdd}"
+                            SemanticProperties.Hint="Create a due and return to Dashboard" />
+                    <VerticalStackLayout Spacing="8" IsVisible="{Binding IsBusy}">
+                        <ActivityIndicator IsRunning="{Binding IsBusy}" SemanticProperties.Description="Loading saved dashboard dues" />
+                        <Label Text="Loading your dashboard…" Style="{StaticResource SupportingLabel}" />
+                    </VerticalStackLayout>
+                    <Border Style="{StaticResource SurfaceCard}" IsVisible="{Binding HasError}">
+                        <Label Text="{Binding ErrorMessage}" Style="{StaticResource ErrorLabel}" />
+                    </Border>
+                    <Border Style="{StaticResource SurfaceCard}" IsVisible="{Binding HasLoaded}">
+                        <VerticalStackLayout Spacing="16">
+                            <Label Text="Payment progress" Style="{StaticResource Heading3}" />
+                            <Grid WidthRequest="120" HeightRequest="120" HorizontalOptions="Center">
+                                <pages:DueProgressView Progress="{Binding Completion}"
+                                    TrackColor="{AppThemeBinding Light={StaticResource SurfaceMutedLight}, Dark={StaticResource SurfaceMutedDark}}"
+                                    ProgressColor="{AppThemeBinding Light={StaticResource PrimaryLight}, Dark={StaticResource PrimaryDark}}"
+                                    AutomationProperties.IsInAccessibleTree="False" />
+                                <Label Text="{Binding PercentageText}" FontFamily="JakartaBold" FontSize="20"
+                                       HorizontalTextAlignment="Center" VerticalTextAlignment="Center"
+                                       SemanticProperties.Description="{Binding ProgressDescription}" />
+                            </Grid>
+                            <Label Text="{Binding ProgressText}" FontFamily="JakartaSemibold" HorizontalTextAlignment="Center" />
+                            <Label Text="{Binding OpenCount, StringFormat='{0} unpaid dues'}" Style="{StaticResource SupportingLabel}" />
+                            <Label Text="{Binding TodayCount, StringFormat='Due today: {0}'}" />
+                            <Label Text="{Binding OverdueCount, StringFormat='Overdue: {0}'}" />
+                            <Label Text="{Binding UpcomingCount, StringFormat='Upcoming: {0}'}" />
+                            <Label Text="Summary includes all saved dues, regardless of search or filter. Date statuses apply to unpaid dues."
+                                   Style="{StaticResource CaptionLabel}" />
+                        </VerticalStackLayout>
+                    </Border>
+                    <VerticalStackLayout Spacing="12">
+                        <Label Text="Find a due" Style="{StaticResource Heading2}" />
+                        <Label Text="Search titles" Style="{StaticResource FieldLabel}" />
+                        <Border Style="{StaticResource FieldBorder}">
+                            <Entry x:Name="SearchEntry" Text="{Binding Query}" Placeholder="Search by title"
+                                   ReturnType="Search" ClearButtonVisibility="WhileEditing" AutomationId="DashboardSearch"
+                                   SemanticProperties.Description="Search saved due titles" />
+                        </Border>
+                        <Label Text="Category" Style="{StaticResource FieldLabel}" />
+                        <Border Style="{StaticResource FieldBorder}">
+                            <Picker Title="Category" ItemsSource="{Binding CategoryFilters}" SelectedItem="{Binding CategoryFilter}"
+                                    AutomationId="DashboardCategory" SemanticProperties.Description="Filter saved dues by category" />
+                        </Border>
+                        <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,*" RowSpacing="8" ColumnSpacing="8">
+                            <Button x:Name="AllFilter" Text="All" CommandParameter="All" Clicked="OnFilterClicked" />
+                            <Button x:Name="PaidFilter" Grid.Column="1" Text="Paid" CommandParameter="Paid" Clicked="OnFilterClicked" Style="{StaticResource SecondaryButton}" />
+                            <Button x:Name="OverdueFilter" Grid.Row="1" Text="Overdue" CommandParameter="Overdue" Clicked="OnFilterClicked" Style="{StaticResource SecondaryButton}" />
+                            <Button x:Name="TodayFilter" Grid.Row="1" Grid.Column="1" Text="Due today" CommandParameter="Due today" Clicked="OnFilterClicked" Style="{StaticResource SecondaryButton}" />
+                            <Button x:Name="UpcomingFilter" Grid.Row="2" Grid.ColumnSpan="2" Text="Upcoming" CommandParameter="Upcoming" Clicked="OnFilterClicked" Style="{StaticResource SecondaryButton}" />
+                        </Grid>
+                        <Button Text="Clear filters" Command="{Binding ClearFiltersCommand}" IsEnabled="{Binding HasFilters}"
+                                Style="{StaticResource SecondaryButton}" />
+                        <Button Text="Refresh / Retry" Command="{Binding LoadCommand}" Style="{StaticResource SecondaryButton}" />
+                    </VerticalStackLayout>
+                    <Label Text="{Binding ResultsHeading}" IsVisible="{Binding HasLoaded}" Style="{StaticResource Heading3}"
+                           AutomationId="DashboardResults" />
+                    <!-- Keep these in the persistent header. Android swaps the adapter
+                         for CollectionView.EmptyView, which destroys focused search. -->
+                    <Border Style="{StaticResource SurfaceCard}" IsVisible="{Binding IsEmpty}">
+                        <VerticalStackLayout Spacing="12">
+                            <Label Text="No dues yet" Style="{StaticResource Heading2}" />
+                            <Label Text="Add your first due using Add due above. Your saved information stays available offline." />
+                        </VerticalStackLayout>
+                    </Border>
+                    <Border Style="{StaticResource SurfaceCard}" IsVisible="{Binding IsNoMatches}">
+                        <VerticalStackLayout Spacing="12">
+                            <Label Text="No matching dues" Style="{StaticResource Heading2}" />
+                            <Label Text="Try another title or clear the search and status filter." />
+                            <Button Text="Show all dues" Command="{Binding ClearFiltersCommand}" />
+                        </VerticalStackLayout>
+                    </Border>
+                </VerticalStackLayout>
+            </CollectionView.Header>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="vm:DashboardItem">
+                    <Border Style="{StaticResource DueCard}" SemanticProperties.Description="{Binding AccessibilityText}">
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="{Binding Title}" Style="{StaticResource Heading3}" />
+                            <Label Text="{Binding CategoryText}" Style="{StaticResource CaptionLabel}" />
+                            <Label Text="{Binding AmountText}" Style="{StaticResource Heading2}" LineBreakMode="CharacterWrap" />
+                            <Label Text="{Binding DateText, StringFormat='Due {0}'}" Style="{StaticResource SupportingLabel}" />
+                            <Label Text="{Binding StatusText}" FontFamily="JakartaSemibold"
+                                   TextColor="{AppThemeBinding Light={StaticResource InfoLight}, Dark={StaticResource InfoDark}}">
+                                <Label.Triggers>
+                                    <DataTrigger TargetType="Label" Binding="{Binding StatusText}" Value="Overdue">
+                                        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource DestructiveLight}, Dark={StaticResource DestructiveDark}}" />
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Label" Binding="{Binding StatusText}" Value="Due today">
+                                        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource DueSoonLight}, Dark={StaticResource DueSoonDark}}" />
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Label" Binding="{Binding StatusText}" Value="Paid">
+                                        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource CompletedLight}, Dark={StaticResource CompletedDark}}" />
+                                    </DataTrigger>
+                                </Label.Triggers>
+                            </Label>
+                        </VerticalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

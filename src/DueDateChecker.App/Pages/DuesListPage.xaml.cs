@@ -23,19 +23,25 @@ public partial class DuesListPage : ContentPage
         return _refreshTask = _viewModel.LoadCommand.ExecuteAsync(null);
     }
 
+    private async void OnRemindersClicked(object? sender, EventArgs e)
+        => await OpenPageAsync(nameof(ReminderSettingsPage));
+
+    private async void OnSettingsClicked(object? sender, EventArgs e)
+        => await OpenPageAsync(nameof(SettingsPage), requiresDues: false);
+
     private async void OnAddClicked(object? sender, EventArgs e)
-        => await OpenEditorAsync(nameof(DueEditPage));
+        => await OpenPageAsync(nameof(DueEditPage));
 
     private async void OnDueSelected(object? sender, SelectionChangedEventArgs e)
     {
         var item = e.CurrentSelection.OfType<DueListItem>().FirstOrDefault();
         DuesCollection.SelectedItem = null;
-        if (item is not null) await OpenEditorAsync($"{nameof(DueEditPage)}?id={item.Id:D}");
+        if (item is not null) await OpenPageAsync($"{nameof(DueDetailPage)}?id={item.Id:D}");
     }
 
-    private async Task OpenEditorAsync(string route)
+    private async Task OpenPageAsync(string route, bool requiresDues = true)
     {
-        if (_navigating || !_viewModel.CanAdd) return;
+        if (_navigating || requiresDues && !_viewModel.CanAdd) return;
         _navigating = true;
         try
         {

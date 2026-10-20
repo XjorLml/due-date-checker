@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:DueDateChecker.App.ViewModels"
+             x:Class="DueDateChecker.App.Pages.CalendarPage"
+             x:DataType="vm:CalendarViewModel" Title="Calendar">
+    <Grid x:Name="PageContent">
+        <CollectionView x:Name="Results" ItemsSource="{Binding Agenda}" SelectionMode="Single"
+                        SelectionChanged="OnDueSelected"
+                        SemanticProperties.Description="Saved dues for the selected day; select one for details">
+            <CollectionView.Header>
+                <VerticalStackLayout Spacing="24" Padding="0,8,0,24">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="Your due dates" Style="{StaticResource Heading1}" />
+                        <Label Text="Saved on this device · Works offline" Style="{StaticResource CaptionLabel}" />
+                        <Label Text="Calendar dates use Asia/Manila." Style="{StaticResource SupportingLabel}" />
+                    </VerticalStackLayout>
+                    <Button Text="Add due" Clicked="OnAddClicked" IsEnabled="{Binding CanNavigate}"
+                            SemanticProperties.Hint="Create a due, initially dated today, and return to Calendar" />
+                    <VerticalStackLayout Spacing="8" IsVisible="{Binding IsBusy}">
+                        <ActivityIndicator IsRunning="{Binding IsBusy}" SemanticProperties.Description="Loading saved calendar dues" />
+                        <Label Text="Loading your calendar…" Style="{StaticResource SupportingLabel}" />
+                    </VerticalStackLayout>
+                    <Border Style="{StaticResource SurfaceCard}" IsVisible="{Binding HasError}">
+                        <Label Text="{Binding ErrorMessage}" Style="{StaticResource ErrorLabel}" />
+                    </Border>
+                    <Button Text="Refresh / Retry" Command="{Binding LoadCommand}" Style="{StaticResource SecondaryButton}" />
+                    <VerticalStackLayout Spacing="12">
+                        <Label Text="{Binding MonthText}" Style="{StaticResource Heading2}" AutomationId="CalendarMonth" />
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                            <Button Text="Previous" Style="{StaticResource SecondaryButton}" Clicked="OnPreviousClicked"
+                                    IsEnabled="{Binding CanGoPrevious}" SemanticProperties.Description="Previous month" />
+                            <Button Grid.Column="1" Text="Next" Style="{StaticResource SecondaryButton}" Clicked="OnNextClicked"
+                                    IsEnabled="{Binding CanGoNext}" SemanticProperties.Description="Next month" />
+                        </Grid>
+                        <Button Text="Today" Style="{StaticResource SecondaryButton}" Clicked="OnTodayClicked"
+                                SemanticProperties.Description="{Binding TodayDescription}" />
+                        <Label Text="{Binding WeekStartDescription}" Style="{StaticResource CaptionLabel}" AutomationId="CalendarWeekStart" />
+                        <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Default">
+                            <Grid x:Name="MonthGrid" MinimumWidthRequest="336" ColumnDefinitions="*,*,*,*,*,*,*" RowSpacing="8" />
+                        </ScrollView>
+                    </VerticalStackLayout>
+                    <Border Style="{StaticResource SurfaceCard}">
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="{Binding SelectedDateText}" Style="{StaticResource Heading2}" AutomationId="CalendarSelectedDate" />
+                            <Label Text="{Binding AgendaSummary}" IsVisible="{Binding HasLoaded}" Style="{StaticResource SupportingLabel}" AutomationId="CalendarAgendaSummary" />
+                        </VerticalStackLayout>
+                    </Border>
+                    <Border Style="{StaticResource SurfaceCard}" IsVisible="{Binding IsEmpty}">
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="No dues yet" Style="{StaticResource Heading2}" />
+                            <Label Text="Add your first due using Add due above. Your saved information stays available offline." />
+                        </VerticalStackLayout>
+                    </Border>
+                    <Border Style="{StaticResource SurfaceCard}" IsVisible="{Binding IsDayEmpty}">
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="Nothing due on this day" Style="{StaticResource Heading2}" />
+                            <Label Text="Choose another date or add a due." />
+                        </VerticalStackLayout>
+                    </Border>
+                </VerticalStackLayout>
+            </CollectionView.Header>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="vm:DashboardItem">
+                    <Border Style="{StaticResource DueCard}" SemanticProperties.Description="{Binding AccessibilityText}">
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="{Binding Title}" Style="{StaticResource Heading3}" />
+                            <Label Text="{Binding CategoryText}" Style="{StaticResource CaptionLabel}" />
+                            <Label Text="{Binding AmountText}" Style="{StaticResource Heading2}" LineBreakMode="CharacterWrap" />
+                            <Label Text="{Binding DateText, StringFormat='Due {0}'}" Style="{StaticResource SupportingLabel}" />
+                            <Label Text="{Binding StatusText}" FontFamily="JakartaSemibold"
+                                   TextColor="{AppThemeBinding Light={StaticResource InfoLight}, Dark={StaticResource InfoDark}}">
+                                <Label.Triggers>
+                                    <DataTrigger TargetType="Label" Binding="{Binding StatusText}" Value="Overdue">
+                                        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource DestructiveLight}, Dark={StaticResource DestructiveDark}}" />
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Label" Binding="{Binding StatusText}" Value="Due today">
+                                        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource DueSoonLight}, Dark={StaticResource DueSoonDark}}" />
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Label" Binding="{Binding StatusText}" Value="Paid">
+                                        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource CompletedLight}, Dark={StaticResource CompletedDark}}" />
+                                    </DataTrigger>
+                                </Label.Triggers>
+                            </Label>
+                        </VerticalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

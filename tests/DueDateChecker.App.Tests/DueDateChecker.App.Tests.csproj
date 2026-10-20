@@ -15,6 +15,11 @@
     <ProjectReference Include="../../src/DueDateChecker.Core/DueDateChecker.Core.csproj" />
     <!-- Exercise the actual platform-independent App code without booting MAUI. -->
     <Compile Include="../../src/DueDateChecker.App/Services/DatabaseDispatcher.cs" Link="App/DatabaseDispatcher.cs" />
+    <Compile Include="../../src/DueDateChecker.App/Services/AppPreferencesService.cs" Link="App/AppPreferencesService.cs" />
+    <Compile Include="../../src/DueDateChecker.App/Services/IReminderPlatform.cs" Link="App/IReminderPlatform.cs" />
+    <Compile Include="../../src/DueDateChecker.App/Services/ReminderCoordinator.cs" Link="App/ReminderCoordinator.cs" />
+    <Compile Include="../../src/DueDateChecker.App/Services/ReminderJobDispatch.cs" Link="App/ReminderJobDispatch.cs" />
+    <Compile Include="../../src/DueDateChecker.App/Services/ReminderAwareDueRepository.cs" Link="App/ReminderAwareDueRepository.cs" />
     <Compile Include="../../src/DueDateChecker.App/ViewModels/*.cs" Link="App/%(Filename)%(Extension)" />
   </ItemGroup>
 </Project>

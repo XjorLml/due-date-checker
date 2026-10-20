@@ -3,12 +3,20 @@
     x:Class="DueDateChecker.App.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:pages="clr-namespace:DueDateChecker.App.Pages"
     FlyoutBehavior="Disabled"
     Title="Duewise">
 
-    <ShellContent
-        x:Name="DuesContent"
-        Title="Your dues"
-        Route="dues" />
+    <TabBar x:Name="MainTabs" Route="main">
+        <Tab x:Name="DuesTab" Title="Dues" Icon="nav_dues.png" Route="dues">
+            <ShellContent x:Name="DuesContent" Title="Your dues" Route="list" />
+        </Tab>
+        <Tab Title="Dashboard" Icon="nav_dashboard.png" Route="dashboard">
+            <ShellContent x:Name="DashboardContent" Title="Dashboard" Route="dashboard-home" />
+        </Tab>
+        <Tab Title="Calendar" Icon="nav_calendar.png" Route="calendar">
+            <ShellContent x:Name="CalendarContent" Title="Calendar" Route="calendar-home" />
+        </Tab>
+    </TabBar>
 
 </Shell>

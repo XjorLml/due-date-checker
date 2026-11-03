@@ -38,7 +38,8 @@ public sealed class ReminderCoordinator(DatabaseDispatcher database, IDueReposit
                 var today = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(now, Zone).DateTime);
                 var plans = ReminderPlanner.Plan(dues.Where(due => due.DueDate >= today), settings, Zone).ToArray();
                 var allowed = settings.Enabled && platform.GetAccess().Allowed;
-                platform.CleanNotifications(allowed ? plans.Select(item => item.Key).ToHashSet() : new HashSet<string>());
+                platform.CleanNotifications(allowed ? plans.Select(item => item.Key).ToHashSet() : new HashSet<string>(),
+                    keepTestNotification: allowed);
                 if (!allowed)
                 {
                     await store.ReplacePendingAsync([]);

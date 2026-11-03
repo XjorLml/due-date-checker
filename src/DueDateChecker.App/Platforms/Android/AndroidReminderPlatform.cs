@@ -81,11 +81,12 @@ public sealed class AndroidReminderPlatform : IReminderPlatform
         var job = builder.Build();
         return Jobs.Schedule(job!) == JobScheduler.ResultSuccess;
     });
-    public void CleanNotifications(IReadOnlySet<string> validKeys)
+    public void CleanNotifications(IReadOnlySet<string> validKeys, bool keepTestNotification)
     {
-        if (validKeys.Count == 0) { Manager.CancelAll(); return; }
+        if (validKeys.Count == 0 && !keepTestNotification) { Manager.CancelAll(); return; }
         foreach (var notification in Manager.GetActiveNotifications() ?? [])
-            if (notification.Tag != "duewise-test" && !validKeys.Contains(notification.Tag ?? "")) Manager.Cancel(notification.Tag, notification.Id);
+            if (!(keepTestNotification && notification.Tag == "duewise-test") && !validKeys.Contains(notification.Tag ?? ""))
+                Manager.Cancel(notification.Tag, notification.Id);
     }
     public void CancelDue(Guid id)
     {

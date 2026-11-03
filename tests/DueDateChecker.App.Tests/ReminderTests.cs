@@ -257,6 +257,43 @@ public sealed class ReminderTests : IDisposable
         Assert.Equal(expected, string.Join(",", attempts));
     }
 
+    [Fact]
+    public async Task Test_notification_survives_empty_reconcile_and_settings_page_reload()
+    {
+        Assert.True(await _coordinator.SaveSettingsAsync(Enabled));
+        var vm = new ReminderSettingsViewModel(_coordinator, _platform);
+        await vm.LoadCommand.ExecuteAsync(null);
+        vm.TestCommand.Execute(null);
+        Assert.True(_platform.TestVisible);
+
+        Assert.True(await _coordinator.ReconcileAsync());
+        Assert.True(_platform.TestVisible);
+        await vm.LoadCommand.ExecuteAsync(null);
+        Assert.True(_platform.TestVisible);
+        Assert.Empty(await _repository.ListActiveAsync());
+        Assert.Empty(_platform.Visible);
+        Assert.Null(_platform.Next);
+        Assert.Equal(1, _platform.Tests);
+    }
+
+    [Theory]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    public async Task Disabled_or_blocked_reminders_clear_the_test_notification(bool enabled, bool allowed)
+    {
+        Assert.True(await _coordinator.SaveSettingsAsync(Enabled));
+        var vm = new ReminderSettingsViewModel(_coordinator, _platform);
+        await vm.LoadCommand.ExecuteAsync(null);
+        vm.TestCommand.Execute(null);
+        Assert.True(_platform.TestVisible);
+
+        _platform.Allowed = allowed;
+        Assert.True(await _coordinator.SaveSettingsAsync(Enabled with { Enabled = enabled }));
+        Assert.False(_platform.TestVisible);
+        Assert.Equal(enabled, (await _store.ReadSettingsAsync()).Enabled);
+        Assert.Empty(await _repository.ListActiveAsync());
+    }
+
     private sealed class Clock : TimeProvider
     {
         public DateTimeOffset Now { get; set; } = new(2026, 10, 18, 0, 0, 0, TimeSpan.Zero);
@@ -277,6 +314,7 @@ public sealed class ReminderTests : IDisposable
         public BackgroundDeliveryStatus Background = new(false, false, true);
         public Action? AfterPost;
         public int PermissionRequests, Requests, Tests;
+        public bool TestVisible;
         public DateTimeOffset? Next;
         public List<ReminderOccurrence> Posted { get; } = [];
         public HashSet<string> Visible { get; } = [];
@@ -287,10 +325,14 @@ public sealed class ReminderTests : IDisposable
         public void OpenAppSettings() { if (FailAppSettings) throw new IOException("Controlled settings failure"); AppSettingsOpened++; }
         public void Schedule(DateTimeOffset? at) { if (FailSchedule) throw new IOException("Controlled schedule failure"); Next = at; }
         public void RequestReconciliation() { Requests++; if (FailEnqueue) throw new IOException("Controlled enqueue failure"); }
-        public void CleanNotifications(IReadOnlySet<string> validKeys) => Visible.RemoveWhere(key => !validKeys.Contains(key));
+        public void CleanNotifications(IReadOnlySet<string> validKeys, bool keepTestNotification)
+        {
+            Visible.RemoveWhere(key => !validKeys.Contains(key));
+            if (!keepTestNotification) TestVisible = false;
+        }
         public void CancelDue(Guid id) => Visible.RemoveWhere(key => key.StartsWith(id.ToString("N") + "/", StringComparison.Ordinal));
         public void Post(ReminderOccurrence item) { if (FailPost) throw new IOException("Controlled post failure"); Posted.Add(item); Visible.Add(item.Key); AfterPost?.Invoke(); }
-        public void PostTest() => Tests++;
+        public void PostTest() { Tests++; TestVisible = true; }
     }
     public void Dispose() { SqliteConnection.ClearAllPools(); File.Delete(_path); }
 }

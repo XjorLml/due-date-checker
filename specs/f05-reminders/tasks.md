@@ -6,8 +6,8 @@
 - [x] Preserve explicit test notifications during allowed/enabled empty-queue reconciliation; keep disabled/blocked cleanup.
 - [x] Add three regression cases; Core 61 and App 158 pass (219 total). The focused regression failed before the fix.
 - [x] Complete Android Release build (0 warnings/errors) and data-preserving install; the fixed test notification survives empty-queue reload and is exposed in the Android notification drawer. [Retest evidence](../../docs/delivery/evidence/F05-RETEST-2026-11-04.md).
-- [ ] Retest natural scheduled delivery using only a temporary due and restore the original schedule/device state.
-- [ ] Record artifact-specific evidence, update status/contracts and validate preservation/links/diff.
+- [x] Retest natural scheduled delivery using only a temporary due: requested 07:30, first observed at 07:33:39 in Android's inexact window; actual drawer card verified. Delete the fixture, verify the original private summary, retain opt-in/day-before and save the user's requested final 09:00/22:00-08:00 schedule. Unrelated phone settings were checked; current accessibility choices were left intact.
+- [x] Record [artifact-specific evidence](../../docs/delivery/evidence/F05-RETEST-2026-11-04.md), update status/contracts and validate source hashes/links/diff while preserving concurrent unrelated work.
 
 ## Initial implementation milestone
 

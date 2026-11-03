@@ -1,5 +1,9 @@
 # F05 implementation plan
 
+## Notification regression retest, 2026-11-04
+
+The user reported both scheduled and explicit Test notifications missing and deferred the remaining F04 accessibility checks. Reproduce on the installed phone artifact; record permission/channel/background state and saved settings without logging personal dues. The reproduced RM06 defect is the empty-queue `CancelAll` path deleting an explicit test notification on Reminders reload. Preserve the test tag during allowed/enabled reconciliation, retain cancellation for disabled/blocked access, and verify these transitions with App tests and the actual Android adapter. Run Core/App suites and a Release build, then install with data retained and repeat the original native scenario. Separately test natural scheduled delivery with a uniquely named temporary due, capture/restore the current schedule and phone state, and report inexact/OEM limits. Preserve prior evidence and keep intended-key release/CI held.
+
 1. Preserve the working tree, resolve date-only default/preset/quiet/privacy/late-delivery rules in PRD and record ADR 007 against its historical proposed identity.
 2. Add pure settings/planner/occurrence contracts and schema 003 settings/journal tables without changing dues. Implement parameterized SQLite storage with atomic pending replacement, preserving delivered receipts.
 3. Add a serialized coordinator using the existing DatabaseDispatcher, injected clock/platform/store/repository. Re-read current records at delivery, replace one alarm and clean obsolete notifications. Decorate successful repository writes to reconcile without reclassifying a committed CRUD write as failure.

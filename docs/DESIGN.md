@@ -22,6 +22,8 @@ The [branding showcase image](Duely%20App%20Branding%20Showcase%20-%20chatgpt.pn
 
 Prototype review, 2026-10-18: the user-supplied Duewise overview is compared with code in the [prototype comparison](delivery/PROTOTYPE-REVIEW-2026-10-18.md). It introduces an explicit Statistics/Insights planning gap (F12), but its detailed screen/metric design is still to be specified. The attachment's Inter/SF Pro, bright blue palette, Sunday-first calendar and Home/Calendar/Add/Stats/Settings composition do not replace the adopted fonts/tokens, Monday-first samples or three current native tabs. Resolve these differences per approved slice. Shared empty/error illustrations may be adapted later; an offline screen must not block working local CRUD. No account/profile feature is implied by its greeting/avatar. The [roadmap](../specs/future-pages/plan.md#priority-order-after-prototype-review) owns priority rather than the image's numbered order.
 
+The [mobile HTML design study, 2026-11-04](../prototypes/mobile-review/index.html) offers page-by-page layout alternatives and [recommendations](../prototypes/mobile-review/REVIEW.md), including separately labeled future onboarding. It is a non-normative, sample-data review artifact: choosing a direction does not change these standards, production scope or native acceptance. See its [spec and verification boundary](../specs/mobile-ui-prototype/spec.md).
+
 ## Table of Contents
 
 1. [Overview](#1-overview)

@@ -24,7 +24,7 @@ public interface IReminderPlatform
     void OpenAppSettings();
     void Schedule(DateTimeOffset? next);
     void RequestReconciliation();
-    void CleanNotifications(IReadOnlySet<string> validKeys);
+    void CleanNotifications(IReadOnlySet<string> validKeys, bool keepTestNotification);
     void CancelDue(Guid id);
     void Post(ReminderOccurrence occurrence);
     void PostTest();

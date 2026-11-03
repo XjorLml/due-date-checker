@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#4338ca">
+  <meta name="description" content="An interactive, page-by-page mobile design review for Duewise. Compare layouts and save your design choices.">
+  <title>Duewise · Mobile design review</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="model.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#preview">Skip to prototype</a>
+  <header class="studio-header">
+    <a class="wordmark" href="#dues" aria-label="Duewise design review"><span class="brand-mark" aria-hidden="true">✓</span>Duewise<span class="studio-label">DESIGN STUDIO</span></a>
+    <div class="header-meta"><span class="live-dot"></span> Mobile UI exploration <span class="edition">01 / NOV 2026</span></div>
+  </header>
+  <main class="studio">
+    <aside class="page-rail" aria-label="Prototype screens">
+      <p class="eyebrow">A little more clarity</p>
+      <h1>Less friction.<br> More focus.</h1>
+      <p class="intro">A calmer way to keep track of what’s due. Explore each screen, then choose the layout that feels right.</p>
+      <div class="rail-label"><span>SCREEN EXPLORER</span><span id="screen-count">01 / 09</span></div>
+      <nav id="screen-nav" class="screen-nav" aria-label="Review a screen"></nav>
+      <div class="rail-note"><span class="tiny-symbol">◈</span><p>Built from <a href="../../docs/DESIGN.md">DESIGN.md</a><br>Sample data · no account needed</p></div>
+      <a class="text-link review-document" href="REVIEW.md">Read the full page review ↗</a>
+    </aside>
+
+    <section class="preview-area" aria-label="Interactive mobile prototype">
+      <div class="preview-toolbar">
+        <div class="segmented studio-segment" aria-label="Preview appearance">
+          <button type="button" data-theme="light" aria-pressed="true">Light</button>
+          <button type="button" data-theme="dark" aria-pressed="false">Dark</button>
+        </div>
+        <label class="width-control">Width <select id="preview-width" aria-label="Preview width"><option value="390">390 px</option><option value="360">360 px</option><option value="430">430 px</option></select></label>
+      </div>
+      <div id="phone" class="phone" data-theme="light">
+        <div class="sample-strip"><span class="live-dot"></span> Interactive sample <span>04 NOV 2026</span></div>
+        <div id="app-header" class="app-header"></div>
+        <div id="preview" class="app-content" tabindex="-1"></div>
+        <div id="app-actions" class="app-actions" role="group" aria-label="Page actions" hidden></div>
+        <nav id="app-tabs" class="app-tabs" aria-label="Main app navigation"></nav>
+        <div id="toast" class="toast" role="status" aria-live="polite"></div>
+      </div>
+      <p class="preview-caption"><span id="preview-caption">01 · Your dues</span><span>Tap around. It works.</span></p>
+      <div class="state-controls"><label>Explore a state <select id="preview-state"><option value="normal">Sample data</option><option value="empty">Empty</option><option value="loading">Loading</option><option value="error">Read error</option><option value="stale">Stale data</option></select></label><button id="reset-demo" class="quiet-button" type="button">Reset demo</button></div>
+    </section>
+
+    <aside class="review-panel" aria-labelledby="review-title">
+      <div class="review-heading"><span class="eyebrow">PAGE-BY-PAGE REVIEW</span><span id="scope-badge" class="scope-badge">Current feature</span></div>
+      <h2 id="review-title"></h2>
+      <p id="review-summary" class="review-summary"></p>
+      <div class="review-section"><p class="eyebrow">WHY REVISE IT</p><p id="review-finding"></p></div>
+      <fieldset id="layout-choices" class="choice-fieldset"><legend>Choose a direction</legend><div id="choice-options"></div></fieldset>
+      <div class="recommendation"><span class="recommend-icon" aria-hidden="true">↗</span><div><h3>My recommendation</h3><p id="recommendation-copy"></p></div></div>
+      <div class="review-section"><p class="eyebrow">KEEP THESE GUARDRAILS</p><ul id="guardrails"></ul></div>
+      <label class="decision-note-label" for="decision-note">Your notes <span>Optional</span></label>
+      <textarea id="decision-note" rows="3" placeholder="What would you change on this page?"></textarea>
+      <p class="save-caption" id="save-caption" role="status">Your design choices are saved in this browser.</p>
+      <button id="next-page" class="studio-primary" type="button">Next screen <span aria-hidden="true">→</span></button>
+      <button id="export-choices" class="studio-secondary" type="button">Export my choices ↓</button>
+      <p class="review-footer">Selecting a direction records a preference for review. It does not change the Android app.</p>
+    </aside>
+  </main>
+  <footer class="studio-footer"><span>Duewise / Mobile interface study</span><span>Indigo. Intentional. Easy to read.</span></footer>
+  <dialog id="action-dialog" aria-labelledby="dialog-title"><form method="dialog"><h2 id="dialog-title"></h2><p id="dialog-copy"></p><div class="dialog-actions"><button value="cancel" class="secondary">Cancel</button><button id="dialog-confirm" value="confirm" class="primary">Confirm</button></div></form></dialog>
+  <noscript><p class="noscript">Enable JavaScript to navigate the prototype and compare design choices.</p></noscript>
+</body>
+</html>

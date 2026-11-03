@@ -27,6 +27,10 @@ This index owns documentation navigation and authority. Read the documents relev
 
 The PRD owns approved behavior; source inspection establishes implemented behavior. Tests establish only the behavior exercised by their recorded execution. None silently overrides another: record discrepancies and resolve scope or contract changes explicitly. DESIGN owns the UI system but cannot expand approved product scope. Feature specs refine requirements through linked scenarios rather than becoming a second product definition.
 
+## Mobile HTML design review
+
+The [interactive prototype](../prototypes/mobile-review/index.html) and [page-by-page review](../prototypes/mobile-review/REVIEW.md) provide selectable mobile layout directions, reviewer notes and a choice export. This 2026-11-04 sample-data study covers current screens and separately labeled future onboarding; it does not change production UI or release acceptance. Scope and observed verification are in the [prototype spec](../specs/mobile-ui-prototype/spec.md) and [tasks](../specs/mobile-ui-prototype/tasks.md).
+
 ## Task routes
 
 - Product change: PRD → relevant feature spec → SDD or DESIGN as needed → test plan.

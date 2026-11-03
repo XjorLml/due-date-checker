@@ -1,5 +1,14 @@
 # F05 execution tracking
 
+## Notification regression retest, 2026-11-04
+
+- [x] Reproduce the user-reported Test-notification issue on the phone: post succeeds, but Reminders reload removes it with no future queue.
+- [x] Preserve explicit test notifications during allowed/enabled empty-queue reconciliation; keep disabled/blocked cleanup.
+- [x] Add three regression cases; Core 61 and App 158 pass (219 total). The focused regression failed before the fix.
+- [x] Complete Android Release build (0 warnings/errors) and data-preserving install; the fixed test notification survives empty-queue reload and is exposed in the Android notification drawer. [Retest evidence](../../docs/delivery/evidence/F05-RETEST-2026-11-04.md).
+- [ ] Retest natural scheduled delivery using only a temporary due and restore the original schedule/device state.
+- [ ] Record artifact-specific evidence, update status/contracts and validate preservation/links/diff.
+
 ## Initial implementation milestone
 
 - [x] Inspect authorities/current source and preserve a pre-F05 checkpoint.

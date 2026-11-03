@@ -11,6 +11,7 @@
 
 - [ ] Full TalkBack/keyboard/switch, other widths/devices/landscape and visual acceptance.
 - [ ] Controlled native migration/read/write/navigation failures and intended-key acceptance.
-- [ ] F07 recurrence, timed dues and optional-amount extensions remain separate unimplemented slices.
+- [x] Optional amounts split into the separate [F07 optional amount slice](../f07-optional-amounts/spec.md) under the 2026-11-03 product decision.
+- [ ] F07 recurrence and timed dues remain separate unimplemented slices.
 
 Release/signing and optional CI activation remain held.

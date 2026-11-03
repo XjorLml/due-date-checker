@@ -5,10 +5,10 @@ See [spec scenarios](spec.md#acceptance-scenarios) and the [plan](plan.md).
 ## Tasks
 
 - [x] Record decisions (user, 2026-10-17): Core + App tests, Linux runner, manual phone checks.
-- [x] Add `.github/workflows/ci.yml` per the plan (2026-10-17; committed locally, not yet pushed).
+- [x] Add `.github/workflows/ci.yml` per the plan (2026-10-17; committed and present on `origin/develop` and `origin/test_branch`, not `origin/main`, as inspected 2026-11-03).
 - [x] Run the workflow's two `dotnet test` commands locally: 28 Core + 42 App passed on 2026-10-17 (agent-observed; Windows, .NET SDK 10.0.401). This shows the commands work, not that CI passed on Linux.
 - [x] Update STATUS, TEST-PLAN, SDD, and PRD traceability to link this spec.
-- [ ] Push and observe a passing GitHub run (CI01, CI04). Requires the user's go-ahead to push.
+- [ ] Observe and record a passing GitHub run (CI01, CI04). The workflow is already pushed on `develop`; landing it on `main` requires the user's go-ahead.
 - [ ] Optional: demonstrate CI02 on a throwaway branch.
 
 ## Completion criteria

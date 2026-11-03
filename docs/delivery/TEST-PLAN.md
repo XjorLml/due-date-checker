@@ -128,6 +128,14 @@ Run Core [CategoryTests](../../tests/DueDateChecker.Core.Tests/CategoryTests.cs)
 
 On the phone, preserve app data and compare pre/post-upgrade active summary membership in memory. Legacy rows should read Other without changed counts; automated SQLite tests establish exact old-field/tombstone preservation, not a private phone DB inspection. Use only uniquely tagged zero-amount task dues. Verify the new Bill default, category selection/Save, Details and row labels, edit Cancel/Back, saved category/payment changes, Dashboard combined filters/empty transitions/clear, retained session state, Calendar refresh and offline restart. Delete only task records and verify absence after restart. Exercise category dialogs and return/filter controls in Light/Dark at 100%/200%, restoring all original settings. Keep private titles/amounts/count values out of logs/screenshots. Controlled native migration/write/read errors, full TalkBack/keyboard/other-device and intended-key gates remain separate; release stays held.
 
+## F07 optional amount verification
+
+Use [OA01-OA06](../../specs/f07-optional-amounts/spec.md#acceptance-scenarios), [PRD rules](../PRD.md#f07-optional-amount-rules) and [SDD contract](../SDD.md#f07-optional-amount-contract). Run Core/App suites sequentially and an Android Release build; automated SQLite tests establish schema/data preservation, not a private phone database inspection.
+
+Automated checks must cover schema-3-to-4 active/paid/deleted preservation with the active index recreated, NULL-versus-zero round trips, Bill/Subscription rejection of null (including copied/`with` records at the repository boundary), Task/Other acceptance, editor blank/required/category-switch/clear/failure paths, and Dues/Details/Dashboard/Calendar "No amount" projections and semantics. Confirm amount-free dues do not alter status, counts, sort, filters or reminder planning.
+
+On the phone, preserve data and use only uniquely tagged temporary records. Verify Bill blank blocks Save; Task/Other blank saves and survives restart; zero displays `₱0.00`; clear an existing Task/Other amount and verify "No amount" on Dues/Details/Dashboard/Calendar; reopen after restart. Check both themes at normal and 200% text, retain unrelated settings and delete only the temporary records. Keep private titles/amounts out of logs/screenshots. Full TalkBack/keyboard/switch, other devices/widths, controlled native migration/write/read failures and intended-key acceptance remain separate; release stays held.
+
 ## F04 preference verification
 
 Use [PF01-PF07](../../specs/f04-preferences/spec.md#acceptance-scenarios), [PRD preferences](../PRD.md#f04-preference-rules) and [SDD contract](../SDD.md#f04-preference-contract). Run Core/App suites and Android Release build; do not treat a fake preference store as an Android persistence/theme pass.

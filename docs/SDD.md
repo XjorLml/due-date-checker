@@ -65,7 +65,7 @@ SQLite calls currently expose Task methods but execute synchronously underneath.
 
 Money is a readonly record struct containing `long Centavos`. FromCentavos rejects negatives. FromDecimal rejects negatives, multiplies by 100, rounds with MidpointRounding.AwayFromZero, and converts to long. Overflow must become a user validation error, including overflow during multiplication. ToString uses a fixed peso symbol and invariant `N2` formatting; for example, 245000 centavos displays as `₱2,450.00`.
 
-Due is an immutable record containing Id, Title, Amount, DueDate, Notes, IsPaid, CreatedAt, UpdatedAt, DeletedAt and validated DueCategory. Title validation also applies to a `with` edit. The App uses these mutation rules:
+Due is an immutable record containing Id, Title, nullable Amount, DueDate, Notes, IsPaid, CreatedAt, UpdatedAt, DeletedAt and validated DueCategory. Title and category validation also apply to a `with` edit. `Due.Create` and `Due.Validate()` enforce the category-dependent amount requirement; the repository calls `Validate()` before writing so an invalid `with` copy cannot be persisted. The App uses these mutation rules:
 
 | Operation | State transition |
 |---|---|
@@ -79,13 +79,13 @@ DueDate remains DateOnly and must never be converted to UTC for persistence. The
 
 ### 5.2 SQLite schema
 
-Schema 1 is defined by immutable [001_create_dues.sql](../src/DueDateChecker.Core/Data/Migrations/001_create_dues.sql); [002_add_category.sql](../src/DueDateChecker.Core/Data/Migrations/002_add_category.sql) advances user_version to 2. [003_add_reminders.sql](../src/DueDateChecker.Core/Data/Migrations/003_add_reminders.sql) adds reminder settings/journal tables and advances current user_version to 3 without changing dues.
+Schema 1 is defined by immutable [001_create_dues.sql](../src/DueDateChecker.Core/Data/Migrations/001_create_dues.sql); [002_add_category.sql](../src/DueDateChecker.Core/Data/Migrations/002_add_category.sql) advances user_version to 2. [003_add_reminders.sql](../src/DueDateChecker.Core/Data/Migrations/003_add_reminders.sql) adds reminder settings/journal tables and advances user_version to 3 without changing dues. [004_optional_amounts.sql](../src/DueDateChecker.Core/Data/Migrations/004_optional_amounts.sql) rebuilds dues with a nullable amount and advances current user_version to 4.
 
 | Column | SQLite type | Meaning |
 |---|---|---|
 | id | TEXT PRIMARY KEY | Guid formatted as standard text; assigned before insert. |
 | title | TEXT NOT NULL | Trimmed, required domain title. |
-| amount_centavos | INTEGER NOT NULL | Nonnegative signed 64-bit centavo value. |
+| amount_centavos | INTEGER nullable | Nonnegative signed 64-bit centavo value; NULL means no amount. Zero is a distinct explicit amount. |
 | currency | TEXT NOT NULL DEFAULT 'PHP' | Fixed v1 currency; reserved for future evolution. |
 | due_date | TEXT NOT NULL | Invariant `yyyy-MM-dd`; lexicographic order matches calendar order. |
 | notes | TEXT nullable | Optional user text. |
@@ -96,7 +96,7 @@ Schema 1 is defined by immutable [001_create_dues.sql](../src/DueDateChecker.Cor
 | deleted_at | TEXT nullable | Null means active; a value is a tombstone. |
 | category | INTEGER NOT NULL DEFAULT 0, CHECK IN (0,1,2,3) | Stable DueCategory code; legacy rows become Other. |
 
-The category column is constrained; the original columns have no CHECK constraints for nonnegative amounts, paid flags, or fixed currency/timezone. These rules are enforced by App/domain paths, not the database. Due validates title but does not validate identifier or timestamp relationships. Any future database constraints require a new migration.
+The category column is constrained; the other columns have no CHECK constraints for nonnegative amounts, paid flags, or fixed currency/timezone. These rules are enforced by App/domain paths, not the database. The category-dependent amount requirement is also application-enforced: Bill/Subscription must have an amount, while Task/Other may store NULL. Due validates title/category and the amount requirement but does not validate identifier or timestamp relationships. Any future database constraints require a new migration.
 
 Currency and timezone are not properties on the current Due record and are not mapped by SqliteDueRepository. Inserts obtain their SQL defaults; updates leave them untouched. They prepare storage for future work but do not implement multi-currency support or sync.
 
@@ -120,17 +120,25 @@ Before saving an existing due, load it again and reject null or DeletedAt!=null.
 
 App owns `Path.Combine(FileSystem.AppDataDirectory, "dues.db")` and supplies exactly the same path to DatabaseInitializer and SqliteDueRepository. Core never discovers platform directories.
 
-Initialize once per process before any repository access. DatabaseInitializer opens/creates the file, reads PRAGMA user_version, loads embedded numbered SQL scripts, and applies each newer script in numeric order. Each script and its version bump share one transaction. Re-running initialization at the current version 3 is a no-op.
+Initialize once per process before any repository access. DatabaseInitializer opens/creates the file, reads PRAGMA user_version, loads embedded numbered SQL scripts, and applies each newer script in numeric order. Each script and its version bump share one transaction. Re-running initialization at the current version 4 is a no-op.
 
-Category migration 002 and reminder migration 003 are now present. Add future changes as `004_*.sql` and later; do not edit an already shipped migration. Migration failure blocks normal UI access and offers retry without deleting the database. The initializer now rejects negative/newer-than-supported user_version values without resetting the file; the newer-schema behavior is covered by a preservation test.
+Category migration 002, reminder migration 003 and optional-amount migration 004 are now present. Add future changes as `005_*.sql` and later; do not edit an already shipped migration. Migration 004 uses SQLite's table-rebuild pattern because the existing column is `NOT NULL`: it creates a replacement table, copies every stored column, drops the old table, renames the replacement and recreates `ix_dues_active_due_date`. Migration failure blocks normal UI access and offers retry without deleting the database. The initializer rejects negative/newer-than-supported user_version values without resetting the file; the newer-schema behavior is covered by a preservation test.
 
 ### F07 category contract
 
-[DueCategory](../src/DueDateChecker.Core/Domain/DueCategory.cs) persists stable codes Other=0, Bill=1, Task=2, Subscription=3. Due validates enum values on construction/create/with; the optional constructor/factory argument defaults to Other for backward-compatible callers. App's new editor explicitly defaults to Bill. [Migration 002](../src/DueDateChecker.Core/Data/Migrations/002_add_category.sql) adds the NOT NULL constrained column with default 0, including tombstones, without rebuilding rows or changing old timestamps/values. Never edit 001 or 002; F05 later advances current schema to 3. Failed migration/version bump remains transactional and retryable without resetting data.
+[DueCategory](../src/DueDateChecker.Core/Domain/DueCategory.cs) persists stable codes Other=0, Bill=1, Task=2, Subscription=3. Due validates enum values on construction/create/with; the optional constructor/factory argument defaults to Other for backward-compatible callers. App's new editor explicitly defaults to Bill. [Migration 002](../src/DueDateChecker.Core/Data/Migrations/002_add_category.sql) adds the NOT NULL constrained column with default 0, including tombstones, without rebuilding rows or changing old timestamps/values. Never edit 001 or 002; F05 later advances the schema to 3 and the F07 optional-amount slice advances it to 4. Failed migration/version bump remains transactional and retryable without resetting data.
 
 SqliteDueRepository includes category in SELECT/parameterized INSERT/UPDATE and maps its integer through domain validation. Null/unknown database values fail reads; no silent fallback. Active-row update and soft-delete preservation guards remain unchanged. Category does not affect sort/status/count queries; no category index or repository query API is needed.
 
 DueEditViewModel exposes a fixed read-only category list, nullable draft selection, shared blur/Save validation, loaded saved value and captured category in guarded Save. Delete still ignores draft edits. Native Picker/field-error focus follows existing outlined controls and CanEdit. DueListItem/DashboardItem project literal category text/semantics for all saved-data pages. Dashboard category choice ANDs with title/status inside the existing stable observable collection; it does not replace ItemsSource or its persistent header. Clear resets all three constraints; summaries remain unfiltered. No extra service, preference store or navigation route is introduced. [PRD](PRD.md#f07-category-rules) owns user behavior.
+
+### F07 optional amount contract
+
+[PRD optional amount rules](PRD.md#f07-optional-amount-rules) and [OA01-OA06](../specs/f07-optional-amounts/spec.md#acceptance-scenarios) govern this slice. `Due.Amount` is `Money?`; `Money` still rejects negative values and owns centavo rounding/formatting. `Due.Create` and public `Due.Validate()` reject a null amount for Bill/Subscription and accept null for Task/Other. `SqliteDueRepository` maps SQL NULL to null and writes `DBNull.Value`; `AddAsync`/`UpdateAsync` call `Validate()` before SQL so an invalid copied record cannot be persisted. The repository otherwise keeps its parameterized insert/update, active-row guard, sorting and tombstone behavior.
+
+[Migration 004](../src/DueDateChecker.Core/Data/Migrations/004_optional_amounts.sql) rebuilds `dues` to make `amount_centavos` nullable. The replacement preserves all existing columns/defaults/category CHECK, copies rows including tombstones, drops the old table, renames the replacement and recreates the partial active-date index. Existing values, timestamps and identities are not rewritten. SQLite does not enforce the category-dependent requirement; this is consistent with the existing application-enforced amount/timestamp limitations.
+
+DueEditViewModel exposes category-aware amount hint/placeholder/semantics, validates blank as absent only for Task/Other, and previews "No amount" for an optional blank. Save passes `Money?`; loading a null amount produces blank text. DueListItem/DashboardItem return literal "No amount" for null and include it in accessibility text; Details and Calendar reuse those projections. F05 planning ignores amount and notification payloads remain generic. No totals, statistics or inferred amounts are introduced. [DESIGN](DESIGN.md#f07-optional-amount-adaptation) owns presentation.
 
 ## 6. UI and navigation
 
@@ -275,9 +283,9 @@ Requirement definitions and product acceptance outcomes remain in the [PRD](PRD.
 | IDs | Components / contracts | Verification boundary |
 |---|---|---|
 | R01 | App project, conditional local signing import, Android manifest, App/CreateWindow and Shell | Release/signing/launcher checks; historical build is not current signing evidence. |
-| R02 | DueEditPage, DueEditViewModel, Due.Create, Money, AddAsync, dispatcher | Domain/Core/App tests plus native create/restart. |
+| R02 | DueEditPage, DueEditViewModel, Due.Create, Money, nullable amount, AddAsync, dispatcher | Domain/Core/App tests plus native create/restart, including Task/Other without an amount. |
 | R03 | DuesListPage/ViewModel, DueListItem, ListActiveAsync and partial index | Repository/list tests plus native order/empty/refresh checks. |
-| R04, R05 | ID-only navigation, editor load/save, immutable copy, guarded UpdateAsync | Edit/reopen/race tests plus native edit/paid/restart. |
+| R04, R05 | ID-only navigation, editor load/save, immutable copy, guarded UpdateAsync, nullable amount | Edit/reopen/race tests plus native edit/paid/restart and clearing an optional amount. |
 | R06 | Page confirmation, DeleteCommand, SoftDeleteAsync, active filtering | [Soft-delete plan](../specs/v1.3-soft-delete/plan.md), delete tests, native confirmation/tombstone checks. |
 | R07 | App-private SQLite and local operations; no account/server dependency | Offline phone procedures for all CRUD paths. |
 | R08 | `.github/workflows/ci.yml` runs the Core and App test projects on a Linux runner on every push ([V1.4 plan](../specs/v1.4-ci/plan.md)) | Observed passing GitHub run, recorded in STATUS. |

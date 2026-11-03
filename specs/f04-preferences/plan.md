@@ -7,3 +7,7 @@
 5. Inject saved week start into Calendar; derive matching weekday headings/offset/caption, refreshing on appearance without resetting its selected date/month or agenda.
 6. Run meaningful service/view-model/calendar boundary tests plus the existing Core/App suites and Android Release build. Perform available data-preserving native preference/theme/navigation/offline/restart/large-text checks; restore original preferences and device state.
 7. Update canonical status/roadmap/evidence, distinguish automated/native/unperformed acceptance and validate source manifest, local links, requirement identities and unrelated-work preservation. Release stays held.
+
+## Closeout follow-up
+
+The 2026-11-03 "finish f04" request resumes steps 6-7. Reconcile the existing native cleanup checkpoint before repeating any state-changing procedure; compare the source manifest and local/installed artifact identities. Preserve the original checkpoint and current device choices, particularly after time has passed. Record the independent restoration audit separately from the recovered historical cleanup result in [closeout evidence](../../docs/delivery/evidence/F04-CLOSEOUT-2026-11-03.md). A new build/test cycle is required only if implementation changes or a new verification concern requires it.

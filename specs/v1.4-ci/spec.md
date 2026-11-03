@@ -1,6 +1,6 @@
 # V1.4 — Continuous integration (optional)
 
-Status: Workflow implemented and its commands verified locally on 2026-10-17; the first GitHub run is pending a push. Task tracking is in [tasks](tasks.md).  
+Status: Workflow implemented and its commands verified locally on 2026-10-17. The workflow is present on `origin/develop` and `origin/test_branch` (not `origin/main`); no passing GitHub run is recorded, so R08 remains open. Task tracking is in [tasks](tasks.md). \
 Governing requirement: [PRD R08](../../docs/PRD.md#approved-requirements), an optional delivery requirement that does not block mandatory v1 acceptance.  
 Verification gate: [optional CI gate](../../docs/delivery/TEST-PLAN.md#acceptance-gates). Implementation approach: [plan](plan.md).
 

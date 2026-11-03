@@ -488,3 +488,6 @@ $RECYCLE.BIN/
 *.jks
 *.keystore
 local.signing.props
+
+# Keep machine-local VS Code settings out of history (overrides the global VS Code exceptions above).
+.vscode/settings.json

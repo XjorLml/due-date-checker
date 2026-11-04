@@ -24,6 +24,16 @@ Prototype review, 2026-10-18: the user-supplied Duewise overview is compared wit
 
 The [mobile HTML design study, 2026-11-04](../prototypes/mobile-review/index.html) offers page-by-page layout alternatives and [recommendations](../prototypes/mobile-review/REVIEW.md), including separately labeled future onboarding. It is a non-normative, sample-data review artifact: choosing a direction does not change these standards, production scope or native acceptance. See its [spec and verification boundary](../specs/mobile-ui-prototype/spec.md).
 
+The separate [four-concept exploration](../prototypes/design-exploration/index.html), authorized by the 2026-11-04 redesign brief, compares proposed palettes, information hierarchy, four-tab navigation and sample-only extended interactions. Its [audit](../prototypes/design-exploration/AUDIT.md#scope-conflicts-resolved-for-this-artifact) and [system guide](../prototypes/design-exploration/SYSTEM.md) record differences from this document. No concept is preferred by default; browsing or selecting one does not replace these production standards.
+
+The subsequent user-selected Focus/Philippine-catalog brief is limited to HTML by explicit clarification. Its [feature spec](../specs/ph-catalog-prototype/spec.md) governs the browser-local taxonomy, optional providers, custom management, schedule controls and selected navigation. It does not replace native F07's category model or F05 reminder contracts.
+
+The later [Focus interaction lab](../prototypes/design-exploration/index.html#interaction-lab) is an authorized HTML comparison of action placement and navbar **behavior**, retaining the selected visual style. Its [spec](../specs/interaction-lab/spec.md) isolates dirty-draft confirmation, busy-state simulation and native-dialog layers from ordinary prototype/native rules. The [audit](../prototypes/design-exploration/INTERACTION-AUDIT.md) recommends sticky actions with context-aware navigation; no alternative is approved or permanently adopted by previewing or recording a preference.
+
+The subsequent explicit request selects **Sticky bottom actions + Context-aware navigation** for the default Focus HTML mockup. [IN10](../specs/interaction-lab/spec.md#acceptance-scenarios) and [follow-up evidence](../specs/interaction-lab/tasks.md#selected-html-adoption--2026-11-04) cover the adjacent Cancel/Save footer, Edit header Delete and persistent-root/hidden-task navbar presentation. This HTML-only selection does not change native PRD/SDD contracts or production design acceptance.
+
+The later explicit approval of **Alternative A, Essential-first Add/Edit**, authorizes [IN11–IN15](../specs/interaction-lab/spec.md#acceptance-scenarios) in that HTML mockup: earlier core fields, native disclosure summaries, accurate reminder simulation state, accessible conditional requirements/errors, normal-editor dirty-exit protection and safe PHP paste normalization. It retains Focus and sticky actions. Native amount rules, Cancel behavior, recurrence and notification contracts remain governed by PRD/SDD. Approximately 30 seconds is an unmeasured timed-user target; [browser evidence](../specs/interaction-lab/tasks.md#essential-first-alternative-a--2026-11-04) is separate.
+
 ## Table of Contents
 
 1. [Overview](#1-overview)

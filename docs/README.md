@@ -31,6 +31,16 @@ The PRD owns approved behavior; source inspection establishes implemented behavi
 
 The [interactive prototype](../prototypes/mobile-review/index.html) and [page-by-page review](../prototypes/mobile-review/REVIEW.md) provide selectable mobile layout directions, reviewer notes and a choice export. This 2026-11-04 sample-data study covers current screens and separately labeled future onboarding; it does not change production UI or release acceptance. Scope and observed verification are in the [prototype spec](../specs/mobile-ui-prototype/spec.md) and [tasks](../specs/mobile-ui-prototype/tasks.md).
 
+The separate [four-concept design exploration](../prototypes/design-exploration/index.html) preserves the original prototype and offers Minimal Fintech, Premium Dark, Friendly and Intuitive, and Data-Driven alternatives with comparison, personal selection and refinement export. Read its [audit](../prototypes/design-exploration/AUDIT.md) and [system/handoff guide](../prototypes/design-exploration/SYSTEM.md); [HP10–HP16](../specs/mobile-ui-prototype/spec.md#four-concept-exploration-extension--2026-11-04) define the sample-only scope.
+
+The current [selected Focus HTML](../prototypes/design-exploration/index.html#a/dashboard) also includes the user-authorized Philippine category/provider catalog. Its [scope](../specs/ph-catalog-prototype/spec.md) and [verification](../specs/ph-catalog-prototype/tasks.md) distinguish persistent browser catalog records from temporary sample dues and native app behavior.
+
+The subsequent [interaction comparison](../prototypes/design-exploration/index.html#interaction-lab) retains Focus's appearance while independently previewing three Cancel/Save layouts and three navbar behaviors. Read the [audit and recommendations](../prototypes/design-exploration/INTERACTION-AUDIT.md), [scope](../specs/interaction-lab/spec.md) and [verification](../specs/interaction-lab/tasks.md). Preview defaults and stored preferences do not approve permanent design adoption.
+
+The user's explicit follow-up selects **Sticky bottom actions + Context-aware navigation** for the default Focus HTML mockup. [IN10](../specs/interaction-lab/spec.md#acceptance-scenarios) and [adoption evidence](../specs/interaction-lab/tasks.md#selected-html-adoption--2026-11-04) distinguish this selected layout from comparison-only alternatives and native implementation.
+
+The approved **Essential-first Add/Edit** follow-up puts title/amount/date before optional metadata, collapses advanced controls, protects dirty normal-editor exits and preserves the selected navigation/actions. [IN11–IN15](../specs/interaction-lab/spec.md#acceptance-scenarios) and [verification](../specs/interaction-lab/tasks.md#essential-first-alternative-a--2026-11-04) track this HTML-only revision; a 30-second creation target still needs timed-user review.
+
 ## Task routes
 
 - Product change: PRD → relevant feature spec → SDD or DESIGN as needed → test plan.

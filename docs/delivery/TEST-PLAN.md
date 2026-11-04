@@ -112,6 +112,14 @@ Repeat search/filter/selection/Add Cancel and scrolling in both themes at 100%/2
 
 ## Documentation checks
 
+The HTML-only [Philippine catalog prototype](../../specs/ph-catalog-prototype/spec.md) has separate PH01–PH09 scenarios and [observed browser/helper evidence](../../specs/ph-catalog-prototype/tasks.md). Run its documented Node and local Edge checks for catalog/picker/schedule changes. These results do not count as MAUI builds, Android persistence, TalkBack or reminder-delivery acceptance.
+
+The subsequent [Focus interaction lab](../../specs/interaction-lab/spec.md) defines IN01–IN09 for the independent 3×3 action/navbar comparison. The same dependency-free browser harness runs both the PH flows and `interaction-browser-flows.cjs`, covering roots, long forms, dirty exits, modal focus, duplicate Save, preferences and simulated keyboard reservation. [Observed results and limits](../../specs/interaction-lab/tasks.md) remain separate from final user choice and actual mobile keyboard/Back/accessibility acceptance.
+
+IN10 now covers the explicitly selected Sticky bottom actions/Context-aware navigation in the normal HTML mockup. The PH flow checks default footer targets/anchoring and Add/Edit Save/Cancel across widths/themes; the comparison flow verifies return to the selected mockup after previewing another combination. Native acceptance remains separate.
+
+IN11–IN15 cover approved Essential-first Add/Edit. The same browser harness now includes `essential-browser-flows.cjs`; `--essential` runs that focused suite alone. Existing PH fixtures explicitly discard edited drafts under the new normal confirmation, and browser helpers reveal real native disclosures before field interaction. Pure `essential-model.test.cjs` covers safe UI-only PHP normalization and global reminder summaries. Check core-field fold, clean/dirty exits, hidden-error reveal/focus, state retention, amount policies and root return. Automated elapsed time is not evidence of the approximately 30-second user target.
+
 For documentation changes, check required files, local Markdown paths and heading anchors, stable requirement IDs, technical-contract coverage, history preservation, feature scope, and the final diff against the initial working tree. Existing platform references in historical records are not evidence of current external policy; revalidate them when that work begins.
 
 ## F03 Calendar verification

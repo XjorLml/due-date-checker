@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="DueDateChecker.App.Pages.SegmentedControl">
+    <!-- Focus preference segments (specs/focus-pages FP05): equal-width buttons inside a muted track;
+         the selected segment is raised on the surface colour. Buttons are built from Options in code. -->
+    <Border Style="{StaticResource SegmentHost}">
+        <Grid x:Name="Host" ColumnSpacing="3" />
+    </Border>
+</ContentView>

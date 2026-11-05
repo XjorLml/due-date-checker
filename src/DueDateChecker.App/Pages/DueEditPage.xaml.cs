@@ -5,6 +5,7 @@ namespace DueDateChecker.App.Pages;
 public partial class DueEditPage : ContentPage, IQueryAttributable
 {
     private readonly DueEditViewModel _viewModel;
+    private readonly ToolbarItem _deleteItem;
     private bool _handlingAction;
     private bool _editTargetApplied;
 
@@ -12,8 +13,25 @@ public partial class DueEditPage : ContentPage, IQueryAttributable
     {
         InitializeComponent();
         BindingContext = _viewModel = viewModel;
-        PageLayout.Connect(this, PageContent);
+        PageLayout.Connect(this, PageContent, ActionBar);
+        // Delete sits in the header (Focus selection); the toolbar item exists only while the
+        // loaded due can be deleted, so a new due or an unavailable target never shows it.
+        _deleteItem = new ToolbarItem { Text = "Delete", Order = ToolbarItemOrder.Primary, Priority = 0, AutomationId = "EditorDelete" };
+        _deleteItem.Clicked += OnDeleteClicked;
+        _viewModel.PropertyChanged += (_, args) =>
+        {
+            if (args.PropertyName is nameof(DueEditViewModel.ShowDelete) or nameof(DueEditViewModel.CanDelete)) UpdateDeleteItem();
+        };
+        UpdateDeleteItem();
         Appearing += async (_, _) => await _viewModel.LoadCommand.ExecuteAsync(null);
+    }
+
+    private void UpdateDeleteItem()
+    {
+        var present = ToolbarItems.Contains(_deleteItem);
+        if (_viewModel.ShowDelete && !present) ToolbarItems.Add(_deleteItem);
+        else if (!_viewModel.ShowDelete && present) ToolbarItems.Remove(_deleteItem);
+        _deleteItem.IsEnabled = _viewModel.CanDelete;
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)

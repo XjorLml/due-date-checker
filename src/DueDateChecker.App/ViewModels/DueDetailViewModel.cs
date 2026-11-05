@@ -7,8 +7,9 @@ using DueDateChecker.Core.Domain;
 namespace DueDateChecker.App.ViewModels;
 
 /// <summary>Loads committed fields for one existing due; never writes or restores a row.</summary>
-public partial class DueDetailViewModel(DatabaseDispatcher database, IDueRepository repository) : ObservableObject
+public partial class DueDetailViewModel(DatabaseDispatcher database, IDueRepository repository, TimeProvider? clock = null) : ObservableObject
 {
+    private readonly TimeProvider _clock = clock ?? TimeProvider.System;
     private Guid? _targetId;
 
     [ObservableProperty]
@@ -70,7 +71,7 @@ public partial class DueDetailViewModel(DatabaseDispatcher database, IDueReposit
                 ErrorMessage = "This due is no longer available. Return to your dues.";
                 return;
             }
-            Item = new DueListItem(due);
+            Item = DueListItem.Create(due, ManilaCalendar.Today(_clock));
         }
         catch (Exception)
         {

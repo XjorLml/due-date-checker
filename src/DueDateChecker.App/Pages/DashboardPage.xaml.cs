@@ -14,7 +14,7 @@ public partial class DashboardPage : ContentPage
     {
         InitializeComponent();
         BindingContext = _viewModel = viewModel;
-        PageLayout.Connect(this, PageContent);
+        PageLayout.Connect(this, PageContent, extraBottom: 24);
         _dateTimer = Dispatcher.CreateTimer();
         _dateTimer.Interval = TimeSpan.FromMinutes(1);
         _dateTimer.Tick += (_, _) => _viewModel.RefreshDate();
@@ -38,17 +38,26 @@ public partial class DashboardPage : ContentPage
         if (sender is Button { CommandParameter: string filter }) _viewModel.SelectFilter(filter);
     }
 
+    // The three summary counters are the mockup's status links: they select the same filter as the chips.
+    private void OnCounterTapped(object? sender, TappedEventArgs e)
+    {
+        if (e.Parameter is string filter) _viewModel.SelectFilter(filter);
+    }
+
+    private async void OnNextClicked(object? sender, EventArgs e)
+    {
+        if (_viewModel.NextDue is { } next) await NavigateAsync($"{nameof(DueDetailPage)}?id={next.Id:D}");
+    }
+
     private void UpdateFilterStyles()
     {
         foreach (var button in new[] { AllFilter, PaidFilter, OverdueFilter, TodayFilter, UpcomingFilter })
         {
             var selected = Equals(button.CommandParameter, _viewModel.Filter);
-            button.Style = (Style)Application.Current!.Resources[selected ? "BaseButton" : "SecondaryButton"];
+            button.Style = (Style)Application.Current!.Resources[selected ? "FilterChipSelected" : "FilterChip"];
             SemanticProperties.SetDescription(button, $"{button.Text} saved dues, {(selected ? "selected" : "not selected")} filter");
         }
     }
-
-    private async void OnAddClicked(object? sender, EventArgs e) => await NavigateAsync(nameof(DueEditPage));
 
     private async void OnDueSelected(object? sender, SelectionChangedEventArgs e)
     {

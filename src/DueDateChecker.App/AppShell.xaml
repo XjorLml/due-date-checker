@@ -7,15 +7,24 @@
     FlyoutBehavior="Disabled"
     Title="Duewise">
 
+    <!-- Focus navigation: Dashboard / Calendar / Add / Dues / Settings. The middle slot is an
+         action, not a destination: the Android renderer disables it and floats the Add disc
+         over it. Dues stays the start tab (code-behind selects it before first display). -->
     <TabBar x:Name="MainTabs" Route="main">
-        <Tab x:Name="DuesTab" Title="Dues" Icon="nav_dues.png" Route="dues">
-            <ShellContent x:Name="DuesContent" Title="Your dues" Route="list" />
-        </Tab>
         <Tab Title="Dashboard" Icon="nav_dashboard.png" Route="dashboard">
             <ShellContent x:Name="DashboardContent" Title="Dashboard" Route="dashboard-home" />
         </Tab>
         <Tab Title="Calendar" Icon="nav_calendar.png" Route="calendar">
             <ShellContent x:Name="CalendarContent" Title="Calendar" Route="calendar-home" />
+        </Tab>
+        <Tab x:Name="AddTab" Title="Add" Route="add">
+            <ShellContent x:Name="AddContent" Title="Add" Route="add-action" />
+        </Tab>
+        <Tab x:Name="DuesTab" Title="Dues" Icon="nav_dues.png" Route="dues">
+            <ShellContent x:Name="DuesContent" Title="Your dues" Route="list" />
+        </Tab>
+        <Tab Title="Settings" Icon="nav_settings.png" Route="settings">
+            <ShellContent x:Name="SettingsContent" Title="Settings" Route="settings-home" />
         </Tab>
     </TabBar>
 

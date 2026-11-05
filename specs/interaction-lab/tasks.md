@@ -52,3 +52,5 @@ Authorization: explicit approval of Alternative A and the supplied implementatio
 New-editor checks exposed a real inherited scroll-position issue: returning to a new Add/Edit could restore the previous form's scroll position. Each new editor now starts at its essentials, while Keep editing retains the active draft. Early focused assertions also needed correction for native closed-disclosure visibility, page-relative geometry after screenshot scrolling, summary-toggle interaction and startup readiness. The final runs above passed; intermediate failed attempts are not passing evidence.
 
 Approximately 30-second creation remains an unmeasured user-test target. No real phone keyboard/screen-reader or native acceptance is inferred.
+
+The artifact above is committed as 53d00e8 (2026-11-05). The [DESIGN register](../../docs/DESIGN.md#design-explorations-non-normative) lists these selections as HTML-only proposals.

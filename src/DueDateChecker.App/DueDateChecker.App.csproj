@@ -25,8 +25,8 @@
 	<Import Project="local.signing.props" Condition="Exists('local.signing.props')" />
 
 	<ItemGroup>
-		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#4338CA" />
-		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#4338CA" BaseSize="128,128" />
+		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#253C20" />
+		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#253C20" BaseSize="128,128" />
 		<MauiImage Include="Resources\Images\*" />
 		<MauiFont Include="Resources\Fonts\PlusJakartaSans-*.ttf" />
 		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />

@@ -4,7 +4,6 @@
              x:DataType="vm:ReminderSettingsViewModel" Title="Reminders" Shell.TabBarIsVisible="False">
     <ScrollView>
         <VerticalStackLayout x:Name="PageContent" Spacing="24">
-            <Label Text="Reminders" Style="{StaticResource Heading1}" />
             <Label Text="Local reminders for unpaid dues. All times below use Asia/Manila." Style="{StaticResource SupportingLabel}" />
             <Border Style="{StaticResource SurfaceCard}">
                 <VerticalStackLayout Spacing="12">

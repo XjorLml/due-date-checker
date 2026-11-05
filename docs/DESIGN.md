@@ -1,18 +1,26 @@
 # Duewise — Product Design System
 
-**Version:** 1.0.0 · **Status:** Normative · **Platforms:** iOS / Android · **Baseline:** 2026-10-16
+**Version:** 2.0.0 · **Status:** Normative · **Platforms:** Android (v1) · **Baseline:** 2026-11-05 (Focus adoption; supersedes 1.0.0 indigo baseline of 2026-10-16)
 
-All dimensions are logical **dp** (Android) / **pt** (iOS) unless marked `px` (asset pixels), `sp` (scalable type), or `ms`. At 1× density, 1 dp/pt corresponds to one reference pixel. Never hardcode physical pixels for layouts. Token paths in prose use `colors.light.text`; generated implementation constants may use camelCase.
+All dimensions are logical **dp** (Android) unless marked `px` (asset pixels), `sp` (scalable type), or `ms`. At 1× density, 1 dp corresponds to one reference pixel. Never hardcode physical pixels for layouts. Token paths in prose use `colors.light.text`; generated implementation constants may use camelCase.
+
+## Changelog
+
+| Version | Date | Change |
+|---|---|---|
+| 2.1.0 | 2026-11-05 | Page content from the Focus mockup built on existing data ([focus-pages](../specs/focus-pages/spec.md)): ledger row, summary counters, filter chips, segmented control, icon/link buttons added to §7; as-built Dashboard, Calendar, Settings and Item detail sections in §8; Dashboard progress ring replaced by the Paid counter; Refresh/Retry only after an error. One product rule added: the PRD F02 upcoming total. |
+| 2.0.0 | 2026-11-05 | Focus baseline adopted for look and navigation: palette, type scale, radius, spacing, five-slot bottom bar with centred Add action, sticky editor actions, Essential-first field order, Delete in the editor header; Settings becomes a root tab. No product-feature change. |
+| 1.0.0 | 2026-10-16 | Original indigo/slate baseline. Superseded; retained in git history. |
 
 ## Scope and authority
 
 This document owns UI/UX standards, brand, tokens, components, interaction, accessibility, and theme behavior. The [PRD](PRD.md) owns approved product scope and business behavior; the [SDD](SDD.md) owns the .NET MAUI implementation. Design specifications are not evidence that the current app implements or passes them. See [STATUS](delivery/STATUS.md) for delivery evidence.
 
-The original design baseline below intentionally retains broader future concepts. For approved v1, apply visual/accessibility standards to the local dues list and editor. Onboarding, categories, calendar/dashboard, timed/recurring items, reminders, notifications, widgets, export, sync, iOS, and settings concepts are outside approved v1 scope. Their appearance here does not authorize implementation.
+The baseline below is the **Focus** system, the Minimal Fintech refinement from the HTML exploration, adopted on 2026-11-05 as the production visual and navigation system for the native Android app. The adoption changes look and navigation only; it adds no product features and replaces the 1.0.0 indigo baseline. The document still retains broader future concepts, and the previously listed ones remain outside approved scope: onboarding, categories, calendar/dashboard, timed/recurring items, reminders, notifications, widgets, export, sync, iOS, and settings concepts are authorized only where a scoped adaptation below (F01–F05, F07) says so. Their appearance here does not authorize implementation.
 
 The subsequent 2026-10-17 request authorizes [dashboard/calendar mock previews](../specs/future-pages/spec.md#mock-acceptance-scenarios) only. They adapt §8 summary/filter and calendar/agenda layouts to native MAUI using read-only sample cards, a fixed sample date and Monday week start. Explicit preview labels and working navigation distinguish them from saved dues. Omit settings/FAB/mutation controls until those real actions ship; the mock does not approve future product rules or establish full accessibility acceptance.
 
-The later [bottom-navigation request](../specs/future-pages/spec.md#bottom-navigation-acceptance) adopts a native Shell bar for the three implemented destinations: Dues, Dashboard and Calendar. Use 24-unit vector icons, visible native labels/selection semantics and semantic surface/primary/secondary colors. The bar has a 64-unit minimum, grows with system text to separate icons/captions, and retains Android's safe-area insets and native caption metrics. Three equal slots replace the future four-destination proposal below. Retain the sample headers, remove duplicate page switches/exits, and hide the bar in the editor. Verify light/dark, 200% text and Back/retained state at the device boundary; do not infer full accessibility acceptance from the native control.
+The later [bottom-navigation request](../specs/future-pages/spec.md#bottom-navigation-acceptance) adopts a native Shell bar for the three implemented destinations: Dues, Dashboard and Calendar. Use 24-unit vector icons, visible native labels/selection semantics and semantic surface/primary/secondary colors. The bar has a 64-unit minimum, grows with system text to separate icons/captions, and retains Android's safe-area insets and native caption metrics. Three equal slots replace the future four-destination proposal below. Retain the sample headers, remove duplicate page switches/exits, and hide the bar in the editor. Verify light/dark, 200% text and Back/retained state at the device boundary; do not infer full accessibility acceptance from the native control. The 2026-11-05 Focus adoption supersedes that three-slot composition with the [five-slot bar with Add action](#bottom-bar-with-add-action) and makes Settings a root tab; the verification expectations still apply.
 
 Product-facing exceptions for v1 are governed by the [PRD rules](PRD.md#business-rules-and-validation) and [workflows](PRD.md#user-workflows): required PHP amounts, no approved title-length cap, Asia/Manila calendar dates, date-sorted active dues including paid rows, payment changes on Save, Back/Cancel without a write, and confirmed soft deletion without Undo/restore. The future optional-amount, 120-character title, completed-last, automatic-timezone/localization, immediate-toggle, unsaved-confirmation, and Undo descriptions below do not override those requirements.
 
@@ -20,21 +28,26 @@ Design adoption for the existing MAUI list/editor was authorized on 2026-10-17 a
 
 The [branding showcase image](Duely%20App%20Branding%20Showcase%20-%20chatgpt.png) is early AI-generated inspiration, not a specification. Its "Duely" name and other name candidates, accent palette, typography, and screens do not override this document: where they differ, the brand and tokens here apply. Its onboarding and reminder screens are outside v1 like the concepts above. Duewise is the chosen name (user decision, 2026-10-17).
 
-Prototype review, 2026-10-18: the user-supplied Duewise overview is compared with code in the [prototype comparison](delivery/PROTOTYPE-REVIEW-2026-10-18.md). It introduces an explicit Statistics/Insights planning gap (F12), but its detailed screen/metric design is still to be specified. The attachment's Inter/SF Pro, bright blue palette, Sunday-first calendar and Home/Calendar/Add/Stats/Settings composition do not replace the adopted fonts/tokens, Monday-first samples or three current native tabs. Resolve these differences per approved slice. Shared empty/error illustrations may be adapted later; an offline screen must not block working local CRUD. No account/profile feature is implied by its greeting/avatar. The [roadmap](../specs/future-pages/plan.md#priority-order-after-prototype-review) owns priority rather than the image's numbered order.
+Prototype review, 2026-10-18: the user-supplied Duewise overview is compared with code in the [prototype comparison](delivery/PROTOTYPE-REVIEW-2026-10-18.md). It introduces an explicit Statistics/Insights planning gap (F12), but its detailed screen/metric design is still to be specified. The attachment's Inter/SF Pro, bright blue palette, Sunday-first calendar and Home/Calendar/Add/Stats/Settings composition do not replace the adopted fonts/tokens, Monday-first samples or the native tabs current at that review (three then; the five-slot Focus bar since 2026-11-05). Resolve these differences per approved slice. Shared empty/error illustrations may be adapted later; an offline screen must not block working local CRUD. No account/profile feature is implied by its greeting/avatar. The [roadmap](../specs/future-pages/plan.md#priority-order-after-prototype-review) owns priority rather than the image's numbered order.
 
-The [mobile HTML design study, 2026-11-04](../prototypes/mobile-review/index.html) offers page-by-page layout alternatives and [recommendations](../prototypes/mobile-review/REVIEW.md), including separately labeled future onboarding. It is a non-normative, sample-data review artifact: choosing a direction does not change these standards, production scope or native acceptance. See its [spec and verification boundary](../specs/mobile-ui-prototype/spec.md).
+### Design explorations (non-normative)
 
-The separate [four-concept exploration](../prototypes/design-exploration/index.html), authorized by the 2026-11-04 redesign brief, compares proposed palettes, information hierarchy, four-tab navigation and sample-only extended interactions. Its [audit](../prototypes/design-exploration/AUDIT.md#scope-conflicts-resolved-for-this-artifact) and [system guide](../prototypes/design-exploration/SYSTEM.md) record differences from this document. No concept is preferred by default; browsing or selecting one does not replace these production standards.
+HTML explorations under `prototypes/` are sample-data review artifacts. Browsing, selecting or exporting a direction in them does not change this document, approved product scope or native acceptance. Each exploration's spec owns its scope; its tasks file owns agent-observed browser evidence. The production system is the Focus baseline below, adopted natively on 2026-11-05; the rows record each exploration's state and what of it was adopted. "Focus" names both the selected refinement of Minimal Fintech and, after that selection, the whole selected HTML mockup.
 
-The subsequent user-selected Focus/Philippine-catalog brief is limited to HTML by explicit clarification. Its [feature spec](../specs/ph-catalog-prototype/spec.md) governs the browser-local taxonomy, optional providers, custom management, schedule controls and selected navigation. It does not replace native F07's category model or F05 reminder contracts.
+| Date | Artifact | Adds | Status | Scope and evidence |
+|---|---|---|---|---|
+| 2026-11-04 | [Mobile HTML design study](../prototypes/mobile-review/index.html), [review](../prototypes/mobile-review/REVIEW.md) | Page-by-page layout alternatives, compact actions, separately labeled future onboarding | Proposal | [HP01–HP09](../specs/mobile-ui-prototype/spec.md#observable-acceptance-scenarios), [tasks](../specs/mobile-ui-prototype/tasks.md) |
+| 2026-11-04 | [Four-concept exploration](../prototypes/design-exploration/index.html), [audit](../prototypes/design-exploration/AUDIT.md), [system guide](../prototypes/design-exploration/SYSTEM.md) | Minimal Fintech, Premium Dark, Friendly and Intuitive and Data-Driven directions; four-tab Dashboard-first navigation; sample totals, weekly Calendar, repeat and quick-paid proposals | Adopted 2026-11-05 as the production baseline for look and navigation (see [focus adoption spec](../specs/focus-adoption/spec.md)); catalog, repeats, weekly Calendar, totals and multi-offset reminders remain proposals | [HP10–HP18](../specs/mobile-ui-prototype/spec.md#four-concept-exploration-extension--2026-11-04), [tasks](../specs/mobile-ui-prototype/tasks.md#four-concept-exploration--2026-11-04) |
+| 2026-11-04 | [Focus with Philippine catalog](../prototypes/design-exploration/index.html#a/dashboard) | Browser-local category/provider taxonomy with custom categories, optional providers and schedule controls | HTML only by explicit clarification; native F07 category and F05 reminder contracts unchanged | [PH01–PH09](../specs/ph-catalog-prototype/spec.md#observable-acceptance), [tasks](../specs/ph-catalog-prototype/tasks.md) |
+| 2026-11-04 | [Interaction lab](../prototypes/design-exploration/index.html#interaction-lab), [audit](../prototypes/design-exploration/INTERACTION-AUDIT.md) | Three Cancel/Save placements and three navbar behaviors with dirty-draft, busy-state and native-dialog simulation | Comparison. The user selected **Sticky bottom actions + Context-aware navigation** for the HTML mockup; previewing or storing a preference adopts nothing; sticky actions and context-aware navigation adopted natively 2026-11-05 | [IN01–IN10](../specs/interaction-lab/spec.md#acceptance-scenarios), [selection evidence](../specs/interaction-lab/tasks.md#selected-html-adoption--2026-11-04) |
+| 2026-11-04 | Essential-first Add/Edit, in the same mockup | Title, amount and date first; collapsed Repeat/Reminders; dirty-exit confirmation; PHP paste normalization | Approved Alternative A; field order adopted natively 2026-11-05; dirty-exit confirmation and PHP paste normalization remain HTML-only. The approximately 30-second entry target is unmeasured | [IN11–IN15](../specs/interaction-lab/spec.md#acceptance-scenarios), [evidence](../specs/interaction-lab/tasks.md#essential-first-alternative-a--2026-11-04) |
 
-The later [Focus interaction lab](../prototypes/design-exploration/index.html#interaction-lab) is an authorized HTML comparison of action placement and navbar **behavior**, retaining the selected visual style. Its [spec](../specs/interaction-lab/spec.md) isolates dirty-draft confirmation, busy-state simulation and native-dialog layers from ordinary prototype/native rules. The [audit](../prototypes/design-exploration/INTERACTION-AUDIT.md) recommends sticky actions with context-aware navigation; no alternative is approved or permanently adopted by previewing or recording a preference.
-
-The subsequent explicit request selects **Sticky bottom actions + Context-aware navigation** for the default Focus HTML mockup. [IN10](../specs/interaction-lab/spec.md#acceptance-scenarios) and [follow-up evidence](../specs/interaction-lab/tasks.md#selected-html-adoption--2026-11-04) cover the adjacent Cancel/Save footer, Edit header Delete and persistent-root/hidden-task navbar presentation. This HTML-only selection does not change native PRD/SDD contracts or production design acceptance.
-
-The later explicit approval of **Alternative A, Essential-first Add/Edit**, authorizes [IN11–IN15](../specs/interaction-lab/spec.md#acceptance-scenarios) in that HTML mockup: earlier core fields, native disclosure summaries, accurate reminder simulation state, accessible conditional requirements/errors, normal-editor dirty-exit protection and safe PHP paste normalization. It retains Focus and sticky actions. Native amount rules, Cancel behavior, recurrence and notification contracts remain governed by PRD/SDD. Approximately 30 seconds is an unmeasured timed-user target; [browser evidence](../specs/interaction-lab/tasks.md#essential-first-alternative-a--2026-11-04) is separate.
+**Deviations from this baseline.** The exploration's [scope definitions](../prototypes/design-exploration/SYSTEM.md#calculation-and-scope-definitions) and [audit](../prototypes/design-exploration/AUDIT.md#scope-conflicts-resolved-for-this-artifact) list what differed from the 1.0.0 baseline and the PRD. After the 2026-11-05 adoption the following are still **not** adopted and remain proposals: Dashboard-first entry (Dues remains the start tab), the lowercase lockup and accent serif, amount totals and charts, the weekly Calendar, repeat controls, multiple reminder offsets, quick-paid confirmation and the Philippine catalog. Adopting any of them needs its own spec, PRD review for behavior changes and SDD review for navigation or data changes; the exploration itself does not pick or implement them.
 
 ## Table of Contents
+
+- [Changelog](#changelog)
+- [Scope and authority](#scope-and-authority)
 
 1. [Overview](#1-overview)
 2. [Brand Identity](#2-brand-identity)
@@ -59,7 +72,7 @@ F01 adaptation, authorized 2026-10-18: [saved due details](../specs/f01-item-det
 
 The existing list/editor map semantic colors to `Resources/Styles/Colors.xaml`, and type/component roles to `Styles.xaml`. Four unmodified, licensed static Plus Jakarta Sans weights are bundled and registered locally. Duewise display/icon/splash branding retains the existing Android package/data identity.
 
-V1 keeps native Android controls/dialogs and a single-column form/card layout at every text scale. Margins follow §5; wide views center bounded content rather than adding the future two-pane navigation. List headings/actions scroll with the CollectionView to remain reachable at large text sizes. Amounts have a dedicated wrapping line. Paid/Unpaid retain literal text with a textual status symbol; future lifecycle statuses and category icons are not introduced. Native pressed feedback uses a brief opacity state, with disabled opacity and focus/error outlines; no custom motion dependency is added. Platform input metrics provide vertical field padding; the minimum outlined field height is 56 logical units. Validation on blur shares Save's rules and does not write or normalize input.
+V1 keeps native Android controls/dialogs and a single-column form/card layout at every text scale. Margins follow §5; wide views center bounded content rather than adding the future two-pane navigation. List headings/actions scroll with the CollectionView to remain reachable at large text sizes. Amounts have a dedicated wrapping line. Paid/Unpaid retain literal text with a textual status symbol; future lifecycle statuses and category icons are not introduced. Native pressed feedback uses a brief opacity state, with disabled opacity and focus/error outlines; no custom motion dependency is added. Platform input metrics provide vertical field padding; the minimum outlined field height is 48 logical units. Validation on blur shares Save's rules and does not write or normalize input.
 
 These are scoped native adaptations, not a claim of full compliance. Test theme changes, 200% text, TalkBack/keyboard focus, wrapping and native picker/action behavior using [DA01–DA10](../specs/design-adoption/spec.md#acceptance-scenarios). Remaining gaps and observed devices belong in delivery evidence. Future screens and the authorized mock milestone are mapped in the [roadmap](../specs/future-pages/plan.md).
 
@@ -85,7 +98,7 @@ Duewise tracks bills, tasks, subscriptions, and deadlines with explicit due date
 
 ## 2. Brand Identity
 
-**Wordmark:** `Duewise` in Plus Jakarta Sans Bold 700, title case; use `colors.light.text` on light and `colors.dark.text` on dark. Icon is a single rounded calendar silhouette with a centered checkmark and one small coral date marker; maximum three principal shapes. No words or numbers inside the app icon.
+**Wordmark:** `Duewise` in Plus Jakarta Sans Bold 700, title case; use `colors.light.text` on light and `colors.dark.text` on dark. Icon is a `colors.brand.ink` rounded square carrying a white calendar-check glyph and one small `colors.accent.coral` dot (`Resources/Images/brand_mark.svg`); maximum three principal shapes. No words or numbers inside the app icon.
 
 | Rule | Specification |
 |---|---|
@@ -95,166 +108,150 @@ Duewise tracks bills, tasks, subscriptions, and deadlines with explicit due date
 | Minimum app icon | 40×40 px raster; below 40 px use flat silhouette without fine highlights |
 | Wordmark minimum | 96 px wide in digital layouts |
 | Corner treatment | Full-bleed square master; OS applies launcher masking |
-| Forbidden | Stretching, rotating, adding drop-shadow outside canvas, outlining, changing gradient direction, placing text, relying on coral alone for status |
+| Forbidden | Stretching, rotating, adding drop-shadow outside canvas, outlining, recoloring the ink or lime, placing text, relying on coral alone for status |
 
 **Why:** One recognizable silhouette stays identifiable in launcher masks, notification contexts, and small widgets.
 
 ## 3. Color System
 
-The semantic foreground tokens are deliberately darker in light mode and lighter in dark mode than decorative accents. Use theme tokens, never raw accent colors for text.
+The semantic foreground tokens are deliberately darker in light mode and lighter in dark mode than decorative accents. Use theme tokens, never raw accent colors for text. Light and dark are two tunings of one green-on-paper palette: in light mode `primary` is the deep ink and the lime `accent` is reserved for the Add disc; in dark mode the lime becomes `primary` and the ink becomes its `onPrimary`.
 
 | Token | Light hex | Dark hex | Usage |
 |---|---|---|---|
-| `colors.{mode}.background` | #F8FAFC | #0B1220 | App canvas |
-| `colors.{mode}.surface` | #FFFFFF | #111C30 | Cards and forms |
-| `colors.{mode}.surfaceRaised` | #FFFFFF | #1E293B | Modal and floating surfaces |
-| `colors.{mode}.surfaceMuted` | #F1F5F9 | #25334A | Subtle sections |
-| `colors.{mode}.text` | #0F172A | #F8FAFC | Primary copy |
-| `colors.{mode}.textSecondary` | #475569 | #CBD5E1 | Supporting copy |
-| `colors.{mode}.border` | #CBD5E1 | #64748B | Dividers and field outlines |
-| `colors.{mode}.primary` | #4338CA | #A5B4FC | Primary actions and selected controls |
-| `colors.{mode}.onPrimary` | #FFFFFF | #0F172A | Text on solid primary fill |
-| `colors.{mode}.overdue` | #B42332 | #FDA4AF | Overdue text and symbols |
-| `colors.{mode}.dueSoon` | #92400E | #FCD34D | Due-soon text and symbols |
-| `colors.{mode}.completed` | #166534 | #86EFAC | Completed text and symbols |
-| `colors.{mode}.info` | #1D4ED8 | #93C5FD | Informational labels |
-| `colors.{mode}.focus` | #2563EB | #93C5FD | Keyboard focus ring |
-| `colors.{mode}.disabled` | #64748B | #94A3B8 | Disabled content (not informational text) |
+| `colors.{mode}.background` | #F8F9F5 | #111710 | App canvas |
+| `colors.{mode}.surface` | #FFFFFF | #1C251A | Cards, forms, bottom bar and editor footer |
+| `colors.{mode}.surfaceRaised` | #FFFFFF | #273122 | Modal and floating surfaces |
+| `colors.{mode}.surfaceMuted` | #EEF1E8 | #2A3524 | Subtle sections, selected card fill, unselected chips |
+| `colors.{mode}.text` | #18201E | #F4F5F3 | Primary copy |
+| `colors.{mode}.textSecondary` | #53605B | #B8C3BE | Supporting copy; live field outlines |
+| `colors.{mode}.border` | #C9D0CC | #64716B | Decorative dividers and card edges only; field outlines use `textSecondary` |
+| `colors.{mode}.primary` | #253C20 | #D9F27E | Primary actions, selected controls, active bar item |
+| `colors.{mode}.onPrimary` | #FFFFFF | #203019 | Text on solid primary fill |
+| `colors.{mode}.accent` | #D9F27E | #D9F27E | Add action disc fill |
+| `colors.{mode}.onAccent` | #203019 | #203019 | Plus glyph on the Add disc |
+| `colors.{mode}.hero` | #EAF1D8 | #26341E | Summary/hero panel fill |
+| `colors.{mode}.heroText` | #21331C | #E8F3D3 | Copy on `hero` |
+| `colors.{mode}.overdue` | #AE2638 | #FFB1BB | Overdue text and symbols; destructive actions; error outlines |
+| `colors.{mode}.dueSoon` | #87430B | #FFD29C | Due-soon text and symbols |
+| `colors.{mode}.completed` | #166534 | #A1E9B4 | Completed/paid text and symbols |
+| `colors.{mode}.info` | #253C20 | #D9F27E | Informational labels |
+| `colors.{mode}.focus` | #253C20 | #D9F27E | Keyboard focus ring; focused field outline |
+| `colors.{mode}.disabled` | #53605B | #B8C3BE | Disabled content (not informational text) |
+| `colors.{mode}.paidSurface` | #EDF8EF | #17352A | Tinted fill behind paid rows and badges |
 
 | Brand / accent token | Hex | Usage |
 |---|---|---|
-| `colors.brand.indigo` | #4338CA | Decorative gradient stop |
-| `colors.brand.blue` | #2563EB | Decorative gradient stop |
-| `colors.brand.gradientStart` | #4338CA | Decorative gradient stop |
-| `colors.brand.gradientMiddle` | #4F46E5 | Decorative gradient stop |
-| `colors.brand.gradientEnd` | #2563EB | Decorative gradient stop |
-| `colors.accent.coral` | #E85D5D | Illustration accent; semantic text uses theme variant |
-| `colors.accent.amber` | #B45309 | Illustration accent; semantic text uses theme variant |
-| `colors.accent.green` | #15803D | Illustration accent; semantic text uses theme variant |
-| `colors.accent.info` | #1D4ED8 | Illustration accent; semantic text uses theme variant |
+| `colors.brand.ink` | #253C20 | Brand mark body; equals light `primary` |
+| `colors.brand.lime` | #D9F27E | Brand highlight; equals `accent` and dark `primary` |
+| `colors.accent.coral` | #E85D5D | Brand mark dot only; never a status or text color |
 
-**Primary gradient:** 135° from `colors.brand.gradientStart` at 0%, `colors.brand.gradientMiddle` at 52%, to `colors.brand.gradientEnd` at 100%. Use only for brand hero, onboarding CTA and progress accents; functional solid primary buttons use `colors.{mode}.primary`.
+There is no brand gradient in 2.0.0. Neutrals are the semantic surface and border tokens above; no separate neutral ramp is defined.
 
-| Neutral token | Hex |
-|---|---|
-| `colors.slate.100` | #F8FAFC |
-| `colors.slate.200` | #F1F5F9 |
-| `colors.slate.300` | #E2E8F0 |
-| `colors.slate.400` | #CBD5E1 |
-| `colors.slate.500` | #94A3B8 |
-| `colors.slate.600` | #64748B |
-| `colors.slate.700` | #475569 |
-| `colors.slate.800` | #334155 |
-| `colors.slate.900` | #1E293B |
-| `colors.slate.950` | #0F172A |
+**Contrast audit (WCAG 2.x ratios calculated from the hex values above with the relative-luminance formula; normal text needs ≥4.5:1, large text and non-text boundaries ≥3:1):**
 
-**Contrast audit (WCAG ratio calculated from hex values; normal text needs ≥4.5:1, large text ≥3:1):**
+| Foreground / background | Ratio | Threshold | Result |
+|---|---:|---:|---|
+| `light.text` / `light.background` | 15.71:1 | 4.5 | Pass |
+| `light.textSecondary` / `light.background` | 6.22:1 | 4.5 | Pass |
+| `light.text` / `light.surface` | 16.61:1 | 4.5 | Pass |
+| `light.primary` / `light.surface` | 12.03:1 | 4.5 | Pass |
+| `light.onPrimary` / `light.primary` | 12.03:1 | 4.5 | Pass |
+| `light.onAccent` / `light.accent` | 11.31:1 | 4.5 | Pass |
+| `light.overdue` / `light.surface` | 6.70:1 | 4.5 | Pass |
+| `light.dueSoon` / `light.surface` | 7.40:1 | 4.5 | Pass |
+| `light.completed` / `light.surface` | 7.13:1 | 4.5 | Pass |
+| `light.info` / `light.surface` | 12.03:1 | 4.5 | Pass |
+| `light.heroText` / `light.hero` | 11.62:1 | 4.5 | Pass |
+| `light.completed` / `light.paidSurface` | 6.54:1 | 4.5 | Pass |
+| `light.textSecondary` / `light.surface` (field outline, non-text) | 6.58:1 | 3.0 | Pass |
+| `light.border` / `light.surface` (decorative only) | 1.57:1 | none | Not a control boundary |
+| `dark.text` / `dark.background` | 16.64:1 | 4.5 | Pass |
+| `dark.textSecondary` / `dark.background` | 10.04:1 | 4.5 | Pass |
+| `dark.text` / `dark.surface` | 14.45:1 | 4.5 | Pass |
+| `dark.primary` / `dark.surface` | 12.76:1 | 4.5 | Pass |
+| `dark.onPrimary` / `dark.primary` | 11.31:1 | 4.5 | Pass |
+| `dark.onAccent` / `dark.accent` | 11.31:1 | 4.5 | Pass |
+| `dark.overdue` / `dark.surface` | 9.22:1 | 4.5 | Pass |
+| `dark.dueSoon` / `dark.surface` | 11.25:1 | 4.5 | Pass |
+| `dark.completed` / `dark.surface` | 11.16:1 | 4.5 | Pass |
+| `dark.info` / `dark.surface` | 12.76:1 | 4.5 | Pass |
+| `dark.heroText` / `dark.hero` | 11.42:1 | 4.5 | Pass |
+| `dark.completed` / `dark.paidSurface` | 9.39:1 | 4.5 | Pass |
+| `dark.textSecondary` / `dark.surface` (field outline, non-text) | 8.72:1 | 3.0 | Pass |
+| `dark.border` / `dark.surface` (decorative only) | 3.10:1 | none | Not a control boundary |
 
-| Foreground / background | Ratio | Normal AA |
-|---|---:|---|
-| `light.text` / `light.background` | 17.06:1 | Pass |
-| `light.textSecondary` / `light.background` | 7.24:1 | Pass |
-| `light.text` / `light.surface` | 17.85:1 | Pass |
-| `light.primary` / `light.surface` | 7.90:1 | Pass |
-| `light.overdue` / `light.surface` | 6.51:1 | Pass |
-| `light.dueSoon` / `light.surface` | 7.09:1 | Pass |
-| `light.completed` / `light.surface` | 7.13:1 | Pass |
-| `light.info` / `light.surface` | 6.70:1 | Pass |
-| `light.onPrimary` / `light.primary` | 7.90:1 | Pass |
-| `dark.text` / `dark.background` | 17.89:1 | Pass |
-| `dark.textSecondary` / `dark.background` | 12.61:1 | Pass |
-| `dark.text` / `dark.surface` | 16.28:1 | Pass |
-| `dark.primary` / `dark.surface` | 8.55:1 | Pass |
-| `dark.overdue` / `dark.surface` | 9.01:1 | Pass |
-| `dark.dueSoon` / `dark.surface` | 11.82:1 | Pass |
-| `dark.completed` / `dark.surface` | 12.13:1 | Pass |
-| `dark.info` / `dark.surface` | 9.45:1 | Pass |
-| `dark.onPrimary` / `dark.primary` | 8.96:1 | Pass |
-
-If any combination is marked Fail, it is prohibited for normal-size text. Non-text controls and focus indicators require ≥3:1 against adjacent colors. Gradient text backgrounds require testing the *least* contrasting stop.
+If any combination is marked Fail, it is prohibited for that use. `border` is below 3:1 on light surfaces by design, so it never carries meaning on its own: field edges use `textSecondary`, and focus/error states use 3 dp `focus`/`overdue` outlines. Non-text controls and focus indicators require ≥3:1 against adjacent colors; the Add disc's `onAccent` glyph is tested against `accent`, and its surface-coloured ring separates the lime disc from the bar rather than relying on the disc's own edge.
 
 ## 4. Typography
 
-**Font:** Plus Jakarta Sans (bundled variable or static files, licensed with app). Fallback iOS: SF Pro Text → system sans; Android: Roboto → sans-serif. Do not synthesize missing font weights. Type metrics are identical across platforms; use scaled font units (`sp` Android, scaled `pt` iOS).
+**Font:** Plus Jakarta Sans is the only family. Four unmodified, licensed static weights (400/500/600/700) are bundled and registered as `JakartaRegular`, `JakartaMedium`, `JakartaSemibold` and `JakartaBold`; fallback is the Android system sans-serif. Do not synthesize missing weights. Sizes are scaled `sp`; the reference values below are at 100% system text.
 
-| Token | iOS size pt | Android size sp | Weight | Line height pt/dp | Tracking pt/dp |
-|---|---:|---:|---:|---:|---:|
-| `typography.display` | 36 | 36 | 700 | 42 | -0.7 |
-| `typography.h1` | 30 | 30 | 700 | 38 | -0.5 |
-| `typography.h2` | 24 | 24 | 700 | 32 | -0.35 |
-| `typography.h3` | 20 | 20 | 600 | 28 | -0.2 |
-| `typography.bodyL` | 18 | 18 | 400 | 28 | 0 |
-| `typography.bodyM` | 16 | 16 | 400 | 24 | 0 |
-| `typography.bodyS` | 14 | 14 | 400 | 20 | 0.1 |
-| `typography.caption` | 12 | 12 | 500 | 16 | 0.2 |
-| `typography.button` | 16 | 16 | 600 | 24 | 0 |
-| `typography.overline` | 11 | 11 | 700 | 16 | 1 |
+| Token | Size sp | Weight | Line height dp | Letter spacing | Use |
+|---|---:|---:|---:|---:|---|
+| `typography.display` | 40 | 700 | 48 (provisional) | -0.3 | Reserved for a future hero amount; not used in v1 |
+| `typography.h1` | 26 | 700 | 32 | -0.3 | Page heading |
+| `typography.h2` | 20 | 700 | 26 | -0.2 | Section heading |
+| `typography.h3` | 16 | 600 | 22 | 0 | Card title, field label |
+| `typography.bodyL` | 16 | 400 | 24 | 0 | Body; same metrics as bodyM, kept as a role name |
+| `typography.bodyM` | 16 | 400 | 24 | 0 | Body and field text |
+| `typography.bodyS` | 14 | 400 | 20 | 0 | Supporting copy, errors |
+| `typography.caption` | 12 | 500 | 16 | 0 | Captions, bar labels |
+| `typography.button` | 16 | 600 | 24 | 0 | Button labels |
 
-**Scaling:** honor system text scale up to 200% minimum; allow vertical reflow and multi-line labels. At 130% and above, replace two-column forms with one column, permit button text to wrap to two lines, and increase button height to fit content (minimum 56). Never truncate due date, amount, error, or primary action. Use baseline alignment rather than fixed text containers. On iOS use `UIFontMetrics`; on Android use `sp` and do not disable font scaling.
+**Scaling:** honor system text scale up to 200% minimum; allow vertical reflow and multi-line labels. At 130% and above, keep a single column, permit button text to wrap to two lines, and let button height grow to fit content (minimum 48). Never truncate due date, amount, error, or primary action. Use baseline alignment rather than fixed text containers. Use `sp` and do not disable font scaling; the bottom bar grows with its captions.
 
 ## 5. Layout and Spacing
 
-| Token | dp/pt |
+| Token | dp |
 |---|---:|
-| `space-1` | 8 |
-| `space-2` | 16 |
-| `space-3` | 24 |
-| `space-4` | 32 |
-| `space-5` | 40 |
-| `space-6` | 48 |
-| `space-7` | 56 |
-| `space-8` | 64 |
-| `space-9` | 72 |
-| `space-10` | 80 |
-| `space-11` | 88 |
-| `space-12` | 96 |
+| `space-1` | 4 |
+| `space-2` | 8 |
+| `space-3` | 12 |
+| `space-4` | 16 |
+| `space-5` | 20 |
+| `space-6` | 24 |
+| `space-7` | 32 |
 
-**Base grid:** 8 pt; exceptions: 4 pt optical alignment, 1–2 pt borders. Screen horizontal margins: phone 24, large phone 24, tablet 40. Content max width on tablet: 720; center within viewport. Respect system top safe inset and bottom gesture inset; never assume fixed status-bar height.
+**Base grid:** 4-unit rhythm; 1 dp borders are the only exception. Horizontal content inset is 20 at phone widths, 14 below 360, 32 from 600 and 40 from 840 (`Pages/PageLayout.cs`). Readable content is capped at 640 from 600 dp and 720 from 840 dp and centred in the viewport. Respect the system top safe inset and bottom gesture inset; never assume a fixed status-bar height. Lists keep bottom clearance so the last card is not covered by the Add disc.
 
-| Window width (dp/pt) | Layout |
+| Window width (dp) | Layout |
 |---|---|
-| 0–359 phone compact | Single column; 16 side margins |
-| 360–599 phone | Single column; 24 side margins |
-| 600–839 large phone / small tablet | Single column; 32 side margins, 640 max content |
-| ≥840 tablet | Two-pane home/calendar; 40 side margins, 720 max per content pane |
+| 0–359 phone compact | Single column; 14 side insets |
+| 360–599 phone | Single column; 20 side insets |
+| 600–839 large phone / small tablet | Single column; 32 side insets, 640 max content |
+| ≥840 tablet | Single column, centred; 40 side insets, 720 max content (two-pane home/calendar remains a future concept) |
 
-| Radius token | dp/pt |
-|---|---:|
-| `radius-xs` | 4 |
-| `radius-sm` | 8 |
-| `radius-md` | 12 |
-| `radius-lg` | 16 |
-| `radius-xl` | 20 |
-| `radius-2xl` | 24 |
-| `radius-pill` | 999 |
+| Radius token | dp | Use |
+|---|---:|---|
+| `radius-md` | 14 | Cards, fields, buttons, dialogs, sheets |
+| `radius-pill` | 999 | Chips and status badges |
+| `radius-disc` | 28 | Add action disc (56 dp circle) |
 
-**Shadows:** color `#0F172A` light / `#000000` dark; shadow tokens are `(x, y, blur, spread, opacity)` in dp/pt except opacity. Android approximate with elevation 1/3/6 for levels 1/2/3 plus surface tonal separation; never depend on shadow alone for hierarchy.
+**Touch targets:** 44 dp minimum for actions in the bottom bar; 48 dp minimum for buttons, fields and calendar dates.
 
-| Token | X | Y | Blur | Spread | Opacity |
-|---|---:|---:|---:|---:|---:|
-| `shadow-0` | 0 | 0 | 0 | 0 | 0.00 |
-| `shadow-1` | 0 | 2 | 8 | 0 | 0.08 |
-| `shadow-2` | 0 | 6 | 20 | -2 | 0.12 |
-| `shadow-3` | 0 | 12 | 32 | -4 | 0.16 |
+**Shadows:** one elevation level. `shadow-1` is Android elevation 6 dp (system-rendered, `#000000` base) and is used only by the Add disc; cards and the bar rely on surface color and 1 dp borders. `shadow-0` is flat. Never depend on shadow alone for hierarchy.
+
 ## 6. Iconography and Illustration
 
-Use **Lucide** icons with a pinned package version, 2 dp stroke, round caps/joins. Standard size 24, compact 20, large 32; glyph sits within a 44×44 minimum hit box. Optical adjustment ≤1 dp. Mirror directional arrows in RTL; never mirror calendar numerals or checkmarks.
+Bar and action glyphs are app-owned 24-unit outline SVGs under `Resources/Images` (`nav_dashboard`, `nav_calendar`, `nav_add`, `nav_dues`, `nav_settings`), Lucide-style with 2 dp stroke and round caps/joins (the plus glyph uses 2.2 for optical weight on the lime disc). They are tinted by the bar: `primary` active, `textSecondary` inactive, `onAccent` on the disc. Standard size 24, compact 20, large 32; a glyph sits within a 44×44 minimum hit box. Optical adjustment ≤1 dp. Mirror directional arrows in RTL; never mirror calendar numerals or checkmarks.
 
-**3D hero recipe:** 30° three-quarter view, 45° elevation; key light top-left at azimuth −45°, elevation 55°, softbox area 60% object width; fill light from front-right at 25% key intensity; ambient occlusion radius 18 px at 1024 px render; clay roughness 0.32, clearcoat 0.18, transmission 0.12 on glass details; bevel 12 px at 1024 px; contact shadow y=20 px blur=44 px opacity=0.16. Indigo/blue body, coral ≤8% image area, green only for completed states. Export WebP 2× and 3× with transparent background.
+**Brand mark:** a `colors.brand.ink` rounded square carrying a white calendar-check glyph and one `colors.accent.coral` dot (`Resources/Images/brand_mark.svg`). Launcher, splash and the monochrome notification icon derive from it.
+
+**3D hero recipe:** 30° three-quarter view, 45° elevation; key light top-left at azimuth −45°, elevation 55°, softbox area 60% object width; fill light from front-right at 25% key intensity; ambient occlusion radius 18 px at 1024 px render; clay roughness 0.32, clearcoat 0.18, transmission 0.12 on glass details; bevel 12 px at 1024 px; contact shadow y=20 px blur=44 px opacity=0.16. Ink/lime body, coral ≤8% image area, green only for completed states. Export WebP 2× and 3× with transparent background.
 
 3D is permitted on onboarding, first-run empty states, and achievement moments only; all navigation, list rows, calendar cells, controls, and dense dashboard surfaces use flat vectors. Provide static illustration fallback and avoid 3D render in low-power animation loops.
 
 ## 7. Components
 
-**Universal state contract:** every interactive component supports default, pressed, disabled, focused, error (when applicable), and loading (when asynchronous). Pressed: overlay `#0F172A` at 8% light / `#FFFFFF` at 10% dark for 80 ms; disabled: 40% foreground opacity with no action; focused: 2 dp `colors.{mode}.focus` outer ring with 2 dp gap; error: semantic overdue foreground plus descriptive message; loading: preserve width and label accessible name, show 20 dp spinner, block duplicate actions. Error/loading are inapplicable to purely decorative status indicators. Touch targets ≥44×44; controls in Android target ≥48×48 where possible.
+**Universal state contract:** every interactive component supports default, pressed, disabled, focused, error (when applicable), and loading (when asynchronous). Pressed: native pressed state with a brief opacity change over `motion.duration-standard`; disabled: 40% foreground opacity with no action; focused: 3 dp `colors.{mode}.focus` outline (fields thicken their own outline in place; buttons get an outer ring); error: 3 dp `overdue` outline plus semantic overdue foreground and a descriptive message; loading: preserve width and label accessible name, show 20 dp spinner, block duplicate actions. Error/loading are inapplicable to purely decorative status indicators. Touch targets ≥44×44 for bottom-bar actions; buttons and fields ≥48×48.
 
 ### Buttons
 
 | Property | Specification |
 |---|---|
 | Anatomy | Primary, secondary, ghost, destructive; leading icon optional, label required |
-| Dimensions | Height 56, min width 96, horizontal padding 20, icon 20, gap 8, radius-lg; full width in forms |
-| Colors | Primary: `primary/onPrimary`; secondary: `surface` with `border` and `text`; ghost: transparent with `primary`; destructive: `overdue` on `surface`, 1 dp overdue outline |
+| Dimensions | Height 48, min width 96, padding 16 horizontal / 10 vertical, icon 20, gap 8, radius-md; full width in forms, or equal columns in the sticky footer |
+| Colors | Primary: `primary/onPrimary`; secondary: `surface` with 1 dp `border` and `text`; ghost: transparent with `primary`; destructive: `overdue` on `surface`, 1 dp overdue outline. Focused: 3 dp `focus` outline |
 | States | Universal state contract applies; for non-input components error shows adjacent inline error, and loading only if action awaits completion. |
 | Behavior | On press release invoke once; destructive always confirms if data cannot be restored; spinner replaces leading icon and retains text |
 
@@ -263,8 +260,8 @@ Use **Lucide** icons with a pinned package version, 2 dp stroke, round caps/join
 | Property | Specification |
 |---|---|
 | Anatomy | Persistent label, field, optional prefix/suffix, helper/error line |
-| Dimensions | Min height 56, padding 16 horizontal/12 vertical, radius-md, border 1 (focus 2); label above 8 gap; error below 4 gap |
-| Colors | Surface fill, border; focus ring; error border `overdue`; placeholder `textSecondary` |
+| Dimensions | Min height 48, padding 14 horizontal with platform vertical metrics, radius-md; outline 1 dp `textSecondary`, focused 3 dp `focus`, error 3 dp `overdue`; label above 8 gap; error below 4 gap |
+| Colors | `surface` fill; outline `textSecondary` (not `border`, which fails 3:1); focused `focus`; error `overdue`; placeholder `textSecondary` |
 | States | Universal state contract applies; for non-input components error shows adjacent inline error, and loading only if action awaits completion. |
 | Behavior | Trim leading/trailing spaces on save except notes; validate on blur and submit; do not clear entered text on error |
 
@@ -273,7 +270,7 @@ Use **Lucide** icons with a pinned package version, 2 dp stroke, round caps/join
 | Property | Specification |
 |---|---|
 | Anatomy | Label, value, calendar/clock trigger, native picker or accessible custom dialog |
-| Dimensions | Trigger 56 high, icon 20, 16 padding; calendar day target 44 min |
+| Dimensions | Trigger 48 high in the shared field outline, icon 20, 14 padding; calendar day target 48 min |
 | Colors | Selected date `primary` background and `onPrimary` text; invalid date `overdue` text |
 | States | Universal state contract applies; for non-input components error shows adjacent inline error, and loading only if action awaits completion. |
 | Behavior | Store absolute instant plus IANA timezone for timed dues; date-only uses local calendar date; confirm selection explicitly |
@@ -283,8 +280,8 @@ Use **Lucide** icons with a pinned package version, 2 dp stroke, round caps/join
 | Property | Specification |
 |---|---|
 | Anatomy | Category icon, title, due date, status badge, optional amount, overflow action |
-| Dimensions | Min height 104, padding 16, radius-lg, gap 8, card margin-bottom 8 |
-| Colors | Surface with border; overdue left border 4 `overdue`; completed title strikethrough |
+| Dimensions | Min height 96, padding 16, radius-md, gap 8, card margin-bottom 8 |
+| Colors | `surface` with 1 dp `border`; selected `surfaceMuted` fill with 2 dp `focus` stroke; paid rows may use `paidSurface`; overdue left border 4 `overdue`; completed title strikethrough |
 | States | Universal state contract applies; for non-input components error shows adjacent inline error, and loading only if action awaits completion. |
 | Behavior | Tap opens detail; overflow exposes edit, complete, delete; amount never inferred |
 
@@ -304,9 +301,52 @@ Use **Lucide** icons with a pinned package version, 2 dp stroke, round caps/join
 |---|---|
 | Anatomy | Status icon 14, short label |
 | Dimensions | Min height 28, padding 8 horizontal/4 vertical, radius-pill |
-| Colors | Text semantic status; tinted surface at 10% semantic color with tested contrast |
+| Anatomy | One pill per due: glyph plus the status word (`StatusBadge` control); used on the shared ledger row (Dues, Dashboard, Calendar) and on Details |
+| Dimensions | Padding 10 × 4, radius-pill, glyph gap 6, medium weight word |
+| Colors | Paid `completed` on `paidSurface` with ✓; Overdue `overdue` on `overdueSurface` (#FFF0F0 / #3B202B) with !; Due today `dueSoon` on `dueSoonSurface` (#FFF6E9 / #362B21) with ●; Upcoming `text` on `surfaceMuted` with ○ |
 | States | Universal state contract applies; for non-input components error shows adjacent inline error, and loading only if action awaits completion. |
-| Behavior | Never use hue alone; label includes status word |
+| Behavior | Never use hue alone; the word is always present and the pill's accessible description is "Status: word"; the glyph is hidden from assistive technology |
+
+### Ledger row (as built, 2026-11-05)
+
+| Property | Specification |
+|---|---|
+| Anatomy | `DueRow` control: title and "dd MMM · Category" on the left; amount and status badge on the right; 1 dp `border` hairline below. No card box. |
+| Dimensions | Min height 70, vertical padding 14, column gap 12, right column max width 168; title 14 semibold, meta caption 12, amount 14 semibold wrapping per character |
+| Colors | Text on the page canvas; selected row fills `surfaceMuted` |
+| States | Universal state contract applies. |
+| Behavior | Whole row opens Details; the row's accessible description is the projection's `AccessibilityText`. Shared by Dues, Dashboard and Calendar through `IDueRow`; supersedes the due-item card above for those lists. |
+
+### Summary counters (as built, 2026-11-05)
+
+| Property | Specification |
+|---|---|
+| Anatomy | Three `CounterCard` surfaces in one row: coloured count (bold 16) stacked above the caption word so neither clips at 200% text; Overdue `overdue`, Today `dueSoon`, Paid `completed` as "paid/total" |
+| Dimensions | Min height 44, radius 11, padding 5 × 8, gap 7 |
+| Behavior | Tapping a counter selects that Dashboard status filter; the accessible description states the count and the filter it shows. The Paid counter carries the "x of y saved dues paid" progress description, replacing the ring on Dashboard. |
+
+### Filter chips (as built, 2026-11-05)
+
+| Property | Specification |
+|---|---|
+| Anatomy | `FilterChip` button: 13 medium text; selected `FilterChipSelected` is `primary`/`onPrimary` |
+| Dimensions | Min height 44, padding 11 × 8, radius 9, gap 6; laid out in a three-column grid |
+| Behavior | Single select; accessible description states "selected" or "not selected". |
+
+### Segmented control (as built, 2026-11-05)
+
+| Property | Specification |
+|---|---|
+| Anatomy | `SegmentedControl`: equal-width `SegmentButton`s inside a `surfaceMuted` track with 1 dp `border`; the selected segment is raised on `surface` in `primary` semibold |
+| Dimensions | Track radius 10, padding 3, gap 3; segment radius 7, min height 44, padding 8, text 13 |
+| Behavior | Single choice bound two-way to an index; each segment is a Button with a "selected" / "not selected" description. Used for Appearance and Start of week. |
+
+### Icon and link buttons (as built, 2026-11-05)
+
+| Property | Specification |
+|---|---|
+| Anatomy | `IconButton`: 44 × 44 transparent, glyph 22 in `textSecondary`, radius 12. `LinkButton`: transparent `primary` text 14 semibold, min height 44, no horizontal padding |
+| Behavior | Icon buttons carry an explicit accessible description (Previous month, Next month). Link buttons name their target (next due title, Clear filters). |
 
 ### Swipeable list item
 
@@ -318,22 +358,22 @@ Use **Lucide** icons with a pinned package version, 2 dp stroke, round caps/join
 | States | Universal state contract applies; for non-input components error shows adjacent inline error, and loading only if action awaits completion. |
 | Behavior | Reveal actions at 96 drag; do not immediately delete; undo snackbar 5,000 ms |
 
-### Bottom tab bar
+### Bottom bar with Add action
 
 | Property | Specification |
 |---|---|
-| Anatomy | Home, Calendar, Inbox, Settings; icon and label |
-| Dimensions | Height 64 plus safe bottom inset, icon 24, label caption, 4 equal slots |
-| Colors | Surface, top border; active `primary`, inactive `textSecondary` |
+| Anatomy | Dashboard, Calendar, Add, Dues, Settings; icon and caption per slot. The third slot is a disabled placeholder captioned "Add" that reserves space beneath the Add action disc |
+| Dimensions | Height 64 plus safe bottom inset, grows with font scale to keep icons and captions apart; icon 24, caption `typography.caption`; five equal slots; slot actions ≥44 |
+| Colors | `surface` with 1 dp `border` top edge; active `primary`, inactive `textSecondary`; the placeholder slot is tinted `disabled` and never reads as selected |
 | States | Universal state contract applies; for non-input components error shows adjacent inline error, and loading only if action awaits completion. |
-| Behavior | Preserve navigation state per tab; badge counts actionable overdue items only |
+| Behavior | Preserve navigation state per root; Dues is the start tab; the bar shows on the four roots and is hidden on pushed Details, editor and Reminders pages; the placeholder slot never navigates; badge counts remain a future concept |
 
 ### App bar
 
 | Property | Specification |
 |---|---|
-| Anatomy | Back or title, optional trailing actions |
-| Dimensions | Height 56 plus safe top inset; horizontal padding 24; actions 44 hitbox |
+| Anatomy | Pushed pages only (editor, Details, Reminders): Back, title, optional trailing action such as Delete. Root pages (Dues, Dashboard, Calendar, Settings) show no app bar; the content heading is the page title and Dues carries the brand lockup at the top of its content |
+| Dimensions | Height 56 plus safe top inset; horizontal padding 20; actions 44 hitbox |
 | Colors | Background `background`, title `text` |
 | States | Universal state contract applies; for non-input components error shows adjacent inline error, and loading only if action awaits completion. |
 | Behavior | Back respects navigation stack; never hide unsaved edits without confirmation |
@@ -353,8 +393,8 @@ Use **Lucide** icons with a pinned package version, 2 dp stroke, round caps/join
 | Property | Specification |
 |---|---|
 | Anatomy | Handle, heading, body, primary/secondary actions |
-| Dimensions | Top radius-2xl, handle 36×4, padding 24, max height 90% viewport |
-| Colors | SurfaceRaised, shadow-3 |
+| Dimensions | Top radius-md, handle 36×4, padding 20, max height 90% viewport |
+| Colors | `surfaceRaised` with 1 dp `border`; no shadow |
 | States | Universal state contract applies; for non-input components error shows adjacent inline error, and loading only if action awaits completion. |
 | Behavior | Drag dismiss only for non-destructive sheets; keyboard avoids focused input |
 
@@ -363,8 +403,8 @@ Use **Lucide** icons with a pinned package version, 2 dp stroke, round caps/join
 | Property | Specification |
 |---|---|
 | Anatomy | Title, message, actions |
-| Dimensions | Width min(available−48, 400), padding 24, radius-xl, action height 48 |
-| Colors | SurfaceRaised, scrim #000000 at 48% |
+| Dimensions | Width min(available−48, 400), padding 20, radius-md, action height 48 |
+| Colors | `surfaceRaised`, scrim #000000 at 48% |
 | States | Universal state contract applies; for non-input components error shows adjacent inline error, and loading only if action awaits completion. |
 | Behavior | Focus trapped; destructive button last; dismiss by Escape/back unless critical |
 
@@ -373,7 +413,7 @@ Use **Lucide** icons with a pinned package version, 2 dp stroke, round caps/join
 | Property | Specification |
 |---|---|
 | Anatomy | Message, optional Undo button |
-| Dimensions | Min height 48, padding 16, radius-md, bottom offset 16 above tab bar |
+| Dimensions | Min height 48, padding 16, radius-md, bottom offset 16 above the bottom bar |
 | Colors | Dark surface with light text in light mode; inverted in dark mode |
 | States | Universal state contract applies; for non-input components error shows adjacent inline error, and loading only if action awaits completion. |
 | Behavior | Toast 3,000 ms informational; undo snackbar 5,000 ms; screen reader live region polite |
@@ -383,7 +423,7 @@ Use **Lucide** icons with a pinned package version, 2 dp stroke, round caps/join
 | Property | Specification |
 |---|---|
 | Anatomy | Flat or static 3D illustration, headline, body, CTA |
-| Dimensions | Illustration 192×192 max, vertical gaps 16, CTA 56 |
+| Dimensions | Illustration 192×192 max, vertical gaps 16, CTA 48 |
 | Colors | Background and text; no excessive decoration |
 | States | Universal state contract applies; for non-input components error shows adjacent inline error, and loading only if action awaits completion. |
 | Behavior | Action opens create flow; explain missing content not user blame |
@@ -393,8 +433,8 @@ Use **Lucide** icons with a pinned package version, 2 dp stroke, round caps/join
 | Property | Specification |
 |---|---|
 | Anatomy | Shimmer placeholder for title, date, badge |
-| Dimensions | Card 104 high; title 60% width×16, date 40%×12, badge 72×24 |
-| Colors | SurfaceMuted base; shimmer overlay 8% white/dark |
+| Dimensions | Card 96 high; title 60% width×16, date 40%×12, badge 72×24 |
+| Colors | `surfaceMuted` base; shimmer overlay 8% white/dark |
 | States | Universal state contract applies; for non-input components error shows adjacent inline error, and loading only if action awaits completion. |
 | Behavior | Show after 150 ms delay; no shimmer with reduced motion; announce Loading once |
 
@@ -408,15 +448,25 @@ Use **Lucide** icons with a pinned package version, 2 dp stroke, round caps/join
 | States | Universal state contract applies; for non-input components error shows adjacent inline error, and loading only if action awaits completion. |
 | Behavior | Clamp 0–100%; accessible label e.g. 6 of 8 completed |
 
-### Floating action button
+### Add action disc
 
 | Property | Specification |
 |---|---|
-| Anatomy | Plus icon, optional short label on extended variant |
-| Dimensions | 56×56 circular, icon 24; extended height 56 padding 20 |
-| Colors | Primary background, onPrimary glyph, shadow-2 |
+| Anatomy | 56 dp circle, 24 dp plus glyph, 4 dp ring in the bar's surface color; no extended or labeled variant |
+| Dimensions | 56×56 (`radius-disc`), centred over the third bar slot, raised 16 dp above the bar's top edge; `shadow-1` |
+| Colors | `accent` fill, `onAccent` glyph, ring = bar `surface` |
 | States | Universal state contract applies; for non-input components error shows adjacent inline error, and loading only if action awaits completion. |
-| Behavior | Opens Add item; position right 24 above tab bar 16; hide when keyboard shown |
+| Behavior | Accessible name "Add due"; opens the Add editor on the current root's navigation stack so Save or Cancel return to that root; hidden whenever the bar is hidden; ignores repeated taps while the editor is opening |
+
+### Sticky form actions
+
+| Property | Specification |
+|---|---|
+| Anatomy | Cancel (secondary) and Save (primary) side by side; Delete is a header toolbar action, not a footer button |
+| Dimensions | 48 dp buttons in two equal columns, 12 gap, content inset per §5, 1 dp top divider; footer fixed below the scrolling fields |
+| Colors | `surface` footer, `border` divider; buttons per Buttons |
+| States | Universal state contract applies. Save is disabled until the form is submittable; both are disabled while busy |
+| Behavior | Save commits; Cancel returns to the originating root without a write; Delete appears only for a loaded existing due and confirms before soft-deleting |
 
 ### Toggles and checkboxes
 
@@ -435,7 +485,7 @@ These include future screen concepts. Apply the scope notice above before using 
 ### Onboarding 1 — Welcome
 
 ```text
-Skip top-right → 3D calendar hero (280×280) → “Never miss a due date again.” (H1) → “Keep bills, tasks, and deadlines together.” (bodyM) → 4 progress dots (8 diameter, 8 gap) → Next 56 high.
+Skip top-right → 3D calendar hero (280×280) → “Never miss a due date again.” (H1) → “Keep bills, tasks, and deadlines together.” (bodyM) → 4 progress dots (8 diameter, 8 gap) → Next 48 high.
 ```
 
 **Behavior:** Skip opens Home; Next advances to screen 2.
@@ -467,23 +517,63 @@ Skip → 3D bell/clock → “Get nudged at the right time.” → “Choose rem
 ### Home / dashboard
 
 ```text
-App bar Duewise + settings → summary ring + counts → segmented All / Upcoming / Overdue / Completed → chronological due cards → FAB.
+App bar Duewise → summary ring + counts → segmented All / Upcoming / Overdue / Completed → chronological due cards → Add disc over the bottom bar.
 ```
 
 **Behavior:** Sort overdue oldest first, then due today, then next due; completed last when All selected; empty state uses Add item CTA.
 
+### Dues list (as built)
+
+```text
+Brand lockup → "Your dues." heading + caption → Reminders chip → error card with Refresh/Retry (only after a failed load) → hairline → date-sorted ledger rows → Add disc over the bottom bar.
+```
+
+**Behavior:** no app bar; the heading is the page title. Rows open Details. Status is the computed F02 state for the current Manila date; paid rows stay in date order. Since the [Focus page content](../specs/focus-pages/spec.md) slice (2026-11-05) the list uses the ledger row and Refresh/Retry appears only with an error.
+
+### Home / dashboard (as built, 2026-11-05)
+
+```text
+"A clear plan for today." + date → "Upcoming · Month" caption → month total (HeroAmount) → "n unpaid · today to dd MMM" → hairline → "Next date · dd MMM" + next-due link → three summary counters → Find a due (search, category, status chips, Clear filters) → "Filter · n" heading → ledger rows → Add disc.
+```
+
+**Behavior:** the total and next due follow the [PRD F02 upcoming-total rule](PRD.md#f02-dashboard-rules); counters and chips select the same filter; the next-due link opens Details. There is no progress ring; the Paid counter carries the progress description. Refresh/Retry shows only inside the error card. Priority grouping from the mockup is not adopted (the single ordered F02 result list stands).
+
+### Calendar (as built, 2026-11-05)
+
+```text
+"A date for everything." + caption → month name with ‹ › icon buttons and a Today chip on one line → week-start caption → weekday row → 7-column grid of 44 × 48 day cells (number over count; selected `primary` fill, today 2 dp `primary` outline) → selected date heading with "n saved dues" caption → ledger rows → Add disc.
+```
+
+**Behavior:** F03 rules unchanged; weekly view, swipe and overflow counts remain future.
+
+### Settings (as built, 2026-11-05)
+
+```text
+"Make it feel like you." + caption → Appearance card with System/Light/Dark segmented control → Start of week card with Monday/Sunday segmented control → Reminders row (title, saved state "On · HH:mm Manila · day before" or "Off", chevron) → local-data notice → Save caption → Save preferences → message → Refresh/Retry (only after a load error) → bottom bar.
+```
+
+**Behavior:** F04 rules unchanged; the Reminders row is navigation and its subtitle is read-only.
+
+### Item detail (as built, 2026-11-05)
+
+```text
+Shell title "Due details" + Back → caption → category eyebrow → title → amount (HeroAmount) → status badge → hairline → Due date row → Type row → Notes block → hairline → Created / Last updated captions → Retry (error only) → Edit due → Back to list.
+```
+
+**Behavior:** F01 rules unchanged; timestamps remain UTC (open finding); provider, repeat and quick actions remain future.
+
 ### Add / edit due item
 
 ```text
-App bar title + close → title input → category chips → due date → optional due time → recurrence → reminder selector → optional amount for bill/subscription → notes → sticky Save.
+App bar title + Delete (loaded existing due only) → What is due? (title) → Amount (PHP) → Due date → Type (category picker) → Notes → Payment status (edit only) → sticky Cancel / Save footer.
 ```
 
-**Behavior:** Required: title 1–120 chars, category, date; date-only allowed; prevent duplicate save; unsaved changes confirmation.
+**Behavior:** Essential-first order: title, amount and date come first; Type, Notes and Payment status follow. Required fields follow the [PRD rules](PRD.md#business-rules-and-validation) and the F07 adaptations below; prevent duplicate save; Cancel and Back return to the originating root without a write; Save commits and returns to that root; Delete confirms, then soft-deletes. The HTML mockup's dirty-exit confirmation and PHP paste normalization are not adopted natively.
 
 ### Calendar
 
 ```text
-App bar month/year + month arrows → weekday row → 7-column month grid → selected-day agenda list → FAB.
+App bar month/year + month arrows → weekday row → 7-column month grid → selected-day agenda list → Add disc over the bottom bar.
 ```
 
 **Behavior:** Tapping day updates agenda; week begins per locale; show overflow count +N if >3 items on a day.
@@ -510,11 +600,11 @@ App bar → reminders master switch → preset reminder chips → quiet hours st
 App bar → appearance System/Light/Dark → start of week System → timezone Automatic → notifications → export data → about/privacy.
 ```
 
-**Behavior:** Appearance updates instantly; export uses system share sheet; deletion requires confirmation.
+**Behavior:** Appearance updates instantly; export uses system share sheet; deletion requires confirmation. Since 2026-11-05 Settings is a root tab reached from the bottom bar and shows the bar; Reminders pushed from it hides the bar. The F04 adaptation below governs the shipped content.
 
 ### F04 settings adaptation
 
-The later "implement f04" request authorizes [preferences](../specs/f04-preferences/spec.md), governed by [PRD](PRD.md#f04-preference-rules). Use a pushed scrollable Settings page from Dues, hidden bottom tabs, shared typography/surface cards and labeled native pickers for System/Light/Dark and Monday/Sunday. The defaults are System/Monday. Explicit **Save preferences** commits both choices and immediately applies appearance; this scoped adaptation replaces the future instant-selection rule. Back discards unsaved choices; returning from Reminders/resume retains the active draft. Literal save/error messages and Refresh/Retry remain reachable at 200% text. Opening existing Reminders is a working secondary action; retain the existing Dues shortcut. Calendar headings/date alignment/caption follow the saved week start together. The fixed Manila timezone is explanatory text, not a dead selector. Export, About/privacy, accounts, currency/timezone selectors, data deletion and future bottom-tab composition remain outside this slice. Record actual theme/text/focus/picker/navigation acceptance separately from implementation.
+The later "implement f04" request authorizes [preferences](../specs/f04-preferences/spec.md), governed by [PRD](PRD.md#f04-preference-rules). Use a scrollable Settings page with shared typography/surface cards (originally pushed from Dues with hidden tabs; since 2026-11-05 it is a root tab in the five-slot bar and shows the bar) and labeled native pickers for System/Light/Dark and Monday/Sunday. The defaults are System/Monday. Explicit **Save preferences** commits both choices and immediately applies appearance; this scoped adaptation replaces the future instant-selection rule. Back discards unsaved choices; returning from Reminders/resume retains the active draft. Literal save/error messages and Refresh/Retry remain reachable at 200% text. Opening existing Reminders is a working secondary action that hides the bar; Dues retains its own Reminders shortcut. Calendar headings/date alignment/caption follow the saved week start together. The fixed Manila timezone is explanatory text, not a dead selector. Export, About/privacy, accounts, currency/timezone selectors and data deletion remain outside this slice; bottom-bar composition is governed by §7. Record actual theme/text/focus/picker/navigation acceptance separately from implementation.
 
 ### Empty and error
 
@@ -528,28 +618,17 @@ Centered icon/illustration → short heading → one explanatory sentence → pr
 
 | Token | Value | Use |
 |---|---|---|
-| `motion.duration-instant` | `80` | Duration |
-| `motion.duration-fast` | `120` | Duration |
-| `motion.duration-standard` | `200` | Duration |
-| `motion.duration-enter` | `280` | Duration |
-| `motion.duration-exit` | `180` | Duration |
-| `motion.duration-emphasis` | `360` | Duration |
+| `motion.duration-standard` | `160` | Control state feedback, ms |
 | `motion.easing-standard` | `cubic-bezier(0.2, 0, 0, 1)` | Curve |
-| `motion.easing-enter` | `cubic-bezier(0, 0, 0, 1)` | Curve |
-| `motion.easing-exit` | `cubic-bezier(0.3, 0, 1, 1)` | Curve |
-| `motion.easing-spring` | `cubic-bezier(0.2, 1.2, 0.3, 1)` | Curve |
 
 | Interaction | Motion | Haptic | Reduced motion |
 |---|---|---|---|
-| Push screen | Translate X 16→0 and fade 0→1, 280 ms enter | None | Instant cut or 80 ms fade |
-| Pop screen | Translate X 0→16 and fade 1→0, 180 ms exit | None | Instant cut |
-| Check complete | Check scale 0.8→1.08→1, 360 ms spring | Light success | Replace icon without scale |
-| Swipe reveal | Track finger; settle 200 ms standard | Selection at threshold | Snap without tween |
-| Overdue pulse | One border-opacity cycle 0.6→1 over 360 ms on screen entry; never loop | None | Static overdue border |
-| Sheet enter | Y 24→0 and fade 0→1, 280 ms enter | None | 80 ms fade |
-| Press | 80 ms overlay | Light on primary CTA only | Same static pressed overlay |
+| Push / pop screen | Native Shell transition; no custom tween | None | Native reduced-motion behavior |
+| Press | Native pressed state; brief opacity change, 160 ms standard | None | Same static pressed state |
+| Focus / error outline | Outline thickens in place, 160 ms standard | None | Instant |
+| Add disc, bottom bar | Static; no entrance, pulse or ripple beyond the native control | None | Static |
 
-Use platform haptics only when supported and user-enabled; no vibration for passive reminders inside the app. Never animate background indefinitely.
+V1 adds no custom motion library or dependency. When the system reduced-motion setting is on, transitions are removed or cut; nothing loops. Use platform haptics only when supported and user-enabled; no vibration for passive reminders inside the app. Never animate background indefinitely. The 1.0.0 push/pop/spring motion table is withdrawn.
 
 ## 10. Notifications and Status Logic
 
@@ -565,6 +644,8 @@ The original broader design proposal below is not the current scheduler/status c
 | Overdue | `colors.{mode}.overdue` | Overdue | Alert icon + 4 dp leading rule |
 | Completed | `colors.{mode}.completed` | Completed | Check icon + strikethrough title |
 
+Implemented v1 states are Paid, Overdue, Due today and Upcoming, computed under the [PRD F02 rules](PRD.md#f02-dashboard-rules) and rendered by the §7 status badge on every surface since 2026-11-05. Due soon and Completed remain future labels.
+
 **Default reminder schedule:** date-only items at 09:00 local 1 day before and 09:00 on due date; timed items 24 h and 1 h before exact instant. Do not schedule reminders in the past. If item created within a reminder window, schedule the next future reminder only. Recurring occurrences use original timezone and recurrence rule; schedule a rolling 30-day horizon, refresh daily and after device reboot where platform permits. Completed occurrences cancel remaining reminders for that occurrence, not future ones. Quiet hours 22:00–08:00: shift non-critical reminders to 08:00 next permitted day, never to after a completed occurrence. Respect OS permission and delivery limitations; never claim guaranteed delivery.
 
 | Event | Title | Body |
@@ -579,7 +660,7 @@ Template variables are runtime data, not design placeholders. Localize plural ru
 
 ## 11. Accessibility
 
-Meet WCAG 2.2 AA: text contrast ≥4.5:1 (large ≥3:1); non-text state and focus cues ≥3:1; focus visible, logical, and never clipped. Interactive target minimum 44×44 pt iOS and 48×48 dp Android; spacing between adjacent smaller visual controls ≥8. Support VoiceOver and TalkBack, keyboard, switch access, and 200% text.
+Meet WCAG 2.2 AA: text contrast ≥4.5:1 (large ≥3:1); non-text state and focus cues ≥3:1, so field outlines use `textSecondary` and the focus ring is 3 dp in `focus`; focus visible, logical, and never clipped. Interactive target minimum 48×48 dp for buttons and fields and 44×44 dp for bottom-bar actions; spacing between adjacent smaller visual controls ≥8. The Add disc has the accessible name "Add due"; the disabled placeholder slot beneath it is not focusable content and is never announced as a destination. Support VoiceOver and TalkBack, keyboard, switch access, and 200% text.
 
 | Element | Screen reader label pattern |
 |---|---|
@@ -589,11 +670,11 @@ Meet WCAG 2.2 AA: text contrast ≥4.5:1 (large ≥3:1); non-text state and focu
 | Reminder toggle | `Reminders, on/off, switch` |
 | Complete action | `Mark {title} complete, button` |
 | Progress ring | `{done} of {total} completed, {percentage} percent` |
-| Bottom tab | `{tabName}, tab {index} of 4, {selected if selected}` |
+| Bottom bar item | `{tabName}, tab, {selected if selected}` (the native bar supplies position; the Add placeholder slot is excluded) |
 | Snackbar | `Announcement: {message}. Undo available.` |
-| FAB | `Add due item, button` |
+| Add disc | `Add due, button` |
 
-**Focus order:** app bar → screen heading → primary content top-to-bottom → inline actions → floating action → tab bar; when modal opens, move focus to its heading, trap within, return to trigger on dismiss. Pair status color with icon and literal label. Do not rely on animation, haptic, or sound alone. RTL mirrors layout and directional navigation but not numerals, dates, clocks, checkmarks, or progress meaning; locale controls date format, first weekday, number grouping, currency and pluralization. Use IANA timezone IDs; never store date-only items as UTC midnight.
+**Focus order:** app bar → screen heading → primary content top-to-bottom → inline actions → sticky footer actions (editor) → Add disc → bottom bar; when modal opens, move focus to its heading, trap within, return to trigger on dismiss. Pair status color with icon and literal label. Do not rely on animation, haptic, or sound alone. RTL mirrors layout and directional navigation but not numerals, dates, clocks, checkmarks, or progress meaning; locale controls date format, first weekday, number grouping, currency and pluralization. Use IANA timezone IDs; never store date-only items as UTC midnight.
 
 ## 12. Design Tokens
 
@@ -603,230 +684,131 @@ This JSON is canonical. Keys are case-sensitive; consumers should generate platf
 {
   "colors": {
     "brand": {
-      "indigo": "#4338CA",
-      "blue": "#2563EB",
-      "gradientStart": "#4338CA",
-      "gradientMiddle": "#4F46E5",
-      "gradientEnd": "#2563EB"
+      "ink": "#253C20",
+      "lime": "#D9F27E"
     },
     "accent": {
-      "coral": "#E85D5D",
-      "amber": "#B45309",
-      "green": "#15803D",
-      "info": "#1D4ED8"
-    },
-    "slate": {
-      "100": "#F8FAFC",
-      "200": "#F1F5F9",
-      "300": "#E2E8F0",
-      "400": "#CBD5E1",
-      "500": "#94A3B8",
-      "600": "#64748B",
-      "700": "#475569",
-      "800": "#334155",
-      "900": "#1E293B",
-      "950": "#0F172A"
+      "coral": "#E85D5D"
     },
     "light": {
-      "background": "#F8FAFC",
+      "background": "#F8F9F5",
       "surface": "#FFFFFF",
       "surfaceRaised": "#FFFFFF",
-      "surfaceMuted": "#F1F5F9",
-      "text": "#0F172A",
-      "textSecondary": "#475569",
-      "border": "#CBD5E1",
-      "primary": "#4338CA",
+      "surfaceMuted": "#EEF1E8",
+      "text": "#18201E",
+      "textSecondary": "#53605B",
+      "border": "#C9D0CC",
+      "primary": "#253C20",
       "onPrimary": "#FFFFFF",
-      "overdue": "#B42332",
-      "dueSoon": "#92400E",
+      "accent": "#D9F27E",
+      "onAccent": "#203019",
+      "hero": "#EAF1D8",
+      "heroText": "#21331C",
+      "overdue": "#AE2638",
+      "dueSoon": "#87430B",
       "completed": "#166534",
-      "info": "#1D4ED8",
-      "focus": "#2563EB",
-      "disabled": "#64748B"
+      "info": "#253C20",
+      "focus": "#253C20",
+      "disabled": "#53605B",
+      "paidSurface": "#EDF8EF"
     },
     "dark": {
-      "background": "#0B1220",
-      "surface": "#111C30",
-      "surfaceRaised": "#1E293B",
-      "surfaceMuted": "#25334A",
-      "text": "#F8FAFC",
-      "textSecondary": "#CBD5E1",
-      "border": "#64748B",
-      "primary": "#A5B4FC",
-      "onPrimary": "#0F172A",
-      "overdue": "#FDA4AF",
-      "dueSoon": "#FCD34D",
-      "completed": "#86EFAC",
-      "info": "#93C5FD",
-      "focus": "#93C5FD",
-      "disabled": "#94A3B8"
+      "background": "#111710",
+      "surface": "#1C251A",
+      "surfaceRaised": "#273122",
+      "surfaceMuted": "#2A3524",
+      "text": "#F4F5F3",
+      "textSecondary": "#B8C3BE",
+      "border": "#64716B",
+      "primary": "#D9F27E",
+      "onPrimary": "#203019",
+      "accent": "#D9F27E",
+      "onAccent": "#203019",
+      "hero": "#26341E",
+      "heroText": "#E8F3D3",
+      "overdue": "#FFB1BB",
+      "dueSoon": "#FFD29C",
+      "completed": "#A1E9B4",
+      "info": "#D9F27E",
+      "focus": "#D9F27E",
+      "disabled": "#B8C3BE",
+      "paidSurface": "#17352A"
     }
   },
   "typography": {
-    "display": {
-      "size": 36,
-      "weight": 700,
-      "lineHeight": 42,
-      "letterSpacing": -0.7,
-      "unit": "dp/sp"
-    },
-    "h1": {
-      "size": 30,
-      "weight": 700,
-      "lineHeight": 38,
-      "letterSpacing": -0.5,
-      "unit": "dp/sp"
-    },
-    "h2": {
-      "size": 24,
-      "weight": 700,
-      "lineHeight": 32,
-      "letterSpacing": -0.35,
-      "unit": "dp/sp"
-    },
-    "h3": {
-      "size": 20,
-      "weight": 600,
-      "lineHeight": 28,
-      "letterSpacing": -0.2,
-      "unit": "dp/sp"
-    },
-    "bodyL": {
-      "size": 18,
-      "weight": 400,
-      "lineHeight": 28,
-      "letterSpacing": 0,
-      "unit": "dp/sp"
-    },
-    "bodyM": {
-      "size": 16,
-      "weight": 400,
-      "lineHeight": 24,
-      "letterSpacing": 0,
-      "unit": "dp/sp"
-    },
-    "bodyS": {
-      "size": 14,
-      "weight": 400,
-      "lineHeight": 20,
-      "letterSpacing": 0.1,
-      "unit": "dp/sp"
-    },
-    "caption": {
-      "size": 12,
-      "weight": 500,
-      "lineHeight": 16,
-      "letterSpacing": 0.2,
-      "unit": "dp/sp"
-    },
-    "button": {
-      "size": 16,
-      "weight": 600,
-      "lineHeight": 24,
-      "letterSpacing": 0,
-      "unit": "dp/sp"
-    },
-    "overline": {
-      "size": 11,
-      "weight": 700,
-      "lineHeight": 16,
-      "letterSpacing": 1,
-      "unit": "dp/sp"
-    }
+    "fontFamily": "Plus Jakarta Sans",
+    "display": { "size": 40, "weight": 700, "lineHeight": 48, "letterSpacing": -0.3, "unit": "sp/dp", "reserved": true },
+    "h1": { "size": 26, "weight": 700, "lineHeight": 32, "letterSpacing": -0.3, "unit": "sp/dp" },
+    "h2": { "size": 20, "weight": 700, "lineHeight": 26, "letterSpacing": -0.2, "unit": "sp/dp" },
+    "h3": { "size": 16, "weight": 600, "lineHeight": 22, "letterSpacing": 0, "unit": "sp/dp" },
+    "bodyL": { "size": 16, "weight": 400, "lineHeight": 24, "letterSpacing": 0, "unit": "sp/dp" },
+    "bodyM": { "size": 16, "weight": 400, "lineHeight": 24, "letterSpacing": 0, "unit": "sp/dp" },
+    "bodyS": { "size": 14, "weight": 400, "lineHeight": 20, "letterSpacing": 0, "unit": "sp/dp" },
+    "caption": { "size": 12, "weight": 500, "lineHeight": 16, "letterSpacing": 0, "unit": "sp/dp" },
+    "button": { "size": 16, "weight": 600, "lineHeight": 24, "letterSpacing": 0, "unit": "sp/dp" }
   },
   "spacing": {
-    "space-1": 8,
-    "space-2": 16,
-    "space-3": 24,
-    "space-4": 32,
-    "space-5": 40,
-    "space-6": 48,
-    "space-7": 56,
-    "space-8": 64,
-    "space-9": 72,
-    "space-10": 80,
-    "space-11": 88,
-    "space-12": 96
+    "space-1": 4,
+    "space-2": 8,
+    "space-3": 12,
+    "space-4": 16,
+    "space-5": 20,
+    "space-6": 24,
+    "space-7": 32
+  },
+  "layout": {
+    "contentInset": { "compact": 14, "phone": 20, "medium": 32, "expanded": 40 },
+    "breakpoints": { "compactMax": 359, "phoneMax": 599, "mediumMax": 839 },
+    "readableWidth": { "medium": 640, "expanded": 720 }
   },
   "radius": {
-    "radius-xs": 4,
-    "radius-sm": 8,
-    "radius-md": 12,
-    "radius-lg": 16,
-    "radius-xl": 20,
-    "radius-2xl": 24,
-    "radius-pill": 999
+    "radius-md": 14,
+    "radius-pill": 999,
+    "radius-disc": 28
   },
-  "shadows": {
-    "shadow-0": {
-      "x": 0,
-      "y": 0,
-      "blur": 0,
-      "spread": 0,
-      "opacity": 0
-    },
-    "shadow-1": {
-      "x": 0,
-      "y": 2,
-      "blur": 8,
-      "spread": 0,
-      "opacity": 0.08
-    },
-    "shadow-2": {
-      "x": 0,
-      "y": 6,
-      "blur": 20,
-      "spread": -2,
-      "opacity": 0.12
-    },
-    "shadow-3": {
-      "x": 0,
-      "y": 12,
-      "blur": 32,
-      "spread": -4,
-      "opacity": 0.16
-    }
+  "elevation": {
+    "shadow-0": 0,
+    "shadow-1": 6,
+    "unit": "dp"
   },
   "motion": {
-    "duration-instant": 80,
-    "duration-fast": 120,
-    "duration-standard": 200,
-    "duration-enter": 280,
-    "duration-exit": 180,
-    "duration-emphasis": 360,
-    "easing-standard": "cubic-bezier(0.2, 0, 0, 1)",
-    "easing-enter": "cubic-bezier(0, 0, 0, 1)",
-    "easing-exit": "cubic-bezier(0.3, 0, 1, 1)",
-    "easing-spring": "cubic-bezier(0.2, 1.2, 0.3, 1)"
+    "duration-standard": 160,
+    "easing-standard": "cubic-bezier(0.2, 0, 0, 1)"
+  },
+  "touchTargets": {
+    "barAction": 44,
+    "control": 48,
+    "unit": "dp"
+  },
+  "components": {
+    "button": { "height": 48, "radius": 14, "paddingX": 16, "paddingY": 10 },
+    "field": { "height": 48, "radius": 14, "outline": 1, "focusOutline": 3, "errorOutline": 3 },
+    "dueCard": { "minHeight": 96, "radius": 14 },
+    "bottomBar": { "height": 64, "slots": 5, "addSlot": 2 },
+    "addDisc": { "size": 56, "ring": 4, "raise": 16, "elevation": 6 }
   }
 }
 ```
 
 ## 13. Implementation Notes
 
-The Dart/TypeScript structure and Flutter/React Native mappings below are illustrative design handoff material, not the repository architecture or a framework migration decision. Use the SDD for the actual .NET MAUI structure.
+The native .NET MAUI Android app is the only consumer of these tokens; the [SDD](SDD.md) owns the architecture. XAML resource keys kept the names used since the indigo baseline so page markup did not change; only their values moved to Focus. The 1.0.0 Flutter/React Native handoff material is withdrawn.
 
-**Naming:** design tokens `colors.light.primary`, `typography.bodyM`, `space-3`, `radius-lg`, `shadow-2`, `motion.duration-standard`; Dart constants convert hyphens to camelCase, while TypeScript can preserve hyphenated keys. Components PascalCase (`DueItemCard`), screens PascalCase (`CalendarScreen`), hooks/functions camelCase (`useDueStatus`, `computeDueStatus`), assets kebab-case (`hero-reminders.webp`).
+| Token or role | Resource / file |
+|---|---|
+| `colors.light.*` / `colors.dark.*` | `Resources/Styles/Colors.xaml`, keys `<Name>Light` / `<Name>Dark`: `background` → `BackgroundLight/Dark`, `surface` → `SurfaceLight/Dark`, `surfaceRaised` → `SurfaceRaisedLight/Dark`, `surfaceMuted` → `SurfaceMutedLight/Dark`, `text` → `TextLight/Dark`, `textSecondary` → `TextSecondaryLight/Dark`, `border` → `BorderLight/Dark`, `primary` → `PrimaryLight/Dark`, `onPrimary` → `OnPrimaryLight/Dark`, `accent` → `AccentLight/Dark`, `onAccent` → `OnAccentLight/Dark`, `hero` → `HeroLight/Dark`, `heroText` → `HeroTextLight/Dark`, `overdue` → `DestructiveLight/Dark`, `dueSoon` → `DueSoonLight/Dark`, `completed` → `CompletedLight/Dark`, `info` → `InfoLight/Dark`, `focus` → `FocusLight/Dark`, `disabled` → `DisabledLight/Dark`, `paidSurface` → `PaidSurfaceLight/Dark` |
+| Brand and platform colors | `Resources/Images/brand_mark.svg` (ink, white, coral). Android `Platforms/Android/Resources/values/colors.xml` and `values-night/colors.xml` mirror `primary` and `background` (plus accent/onAccent/surface for the bar renderer) so the system window and bar ring match the theme |
+| Type roles | `Resources/Styles/Styles.xaml`: `Heading1` (h1), `Heading2` (h2), `Heading3` (h3), `BodyLabel` (bodyM), `SupportingLabel` (bodyS), `CaptionLabel` (caption), `FieldLabel` (semibold field label), `ErrorLabel` (bodyS in `overdue`); fonts registered as `JakartaRegular`, `JakartaMedium`, `JakartaSemibold`, `JakartaBold` |
+| Components | `SurfaceCard` (card), `FieldBorder` (text-input outline, `textSecondary` stroke), `DueCard` (due-item card with Selected state), `BaseButton` (primary; implicit `Button` style), `SecondaryButton`, `DestructiveButton` |
+| Bottom bar and Add disc | `AppShell.xaml` `TabBar` with five `Tab`s (`AppShell.AddSlot = 2`) plus `Platforms/Android/DuewiseShellRenderer.cs`, which disables slot 2, keeps the 64 dp bar growing with text, and floats the 56 dp disc with its ring and 6 dp elevation; `AppShell.OpenAddAsync` pushes the editor on the current root |
+| Sticky form actions | `Pages/DueEditPage.xaml` outer `Grid` rows `*,Auto` (scrolling fields, footer) with footer rows `1,Auto` (divider, Cancel/Save); Delete `ToolbarItem` managed in `DueEditPage.xaml.cs` |
+| Insets and readable width | `Pages/PageLayout.cs` |
 
-```text
-src/
-  design-system/
-    tokens/design-tokens.json
-    theme/light.ts
-    theme/dark.ts
-    typography/index.ts
-    components/{Button,TextField,DueItemCard,StatusBadge,CalendarGrid}/
-    icons/index.ts
-    illustrations/
-  features/{home,items,calendar,reminders,settings,onboarding}/
-  domain/{due-status,recurrence,timezone,notifications}/
-  accessibility/labels.ts
-  localization/
-```
+**Naming:** design tokens `colors.light.primary`, `typography.bodyM`, `space-4`, `radius-md`, `shadow-1`, `motion.duration-standard`; XAML resource keys are PascalCase with a `Light`/`Dark` suffix for themed colors; pages PascalCase (`CalendarPage`), assets snake_case (`nav_add.svg`).
 
-**Flutter mapping:** `ThemeData`/`ColorScheme`, `TextTheme`, `ThemeExtension` for custom tokens, `MediaQuery.textScaler`, `SafeArea`, `Semantics`, `Material` + platform adaptive pickers. **React Native mapping:** typed token object, `useColorScheme`, `StyleSheet`, `useWindowDimensions`, `accessibilityRole`/`accessibilityLabel`, native date/time picker and OS notification APIs. Persist theme selection `system|light|dark`; `system` is default and follows OS changes without restart. Derive statuses from domain timestamps, not saved UI colors.
+Persist theme selection `system|light|dark`; `system` is default and follows OS changes without restart. Derive statuses from domain timestamps, not saved UI colors.
 
-**Developer do:** use semantic theme colors; run contrast checks; test 200% type; respect safe areas; preserve local dates; handle denied notifications; provide Undo for deletion; verify both themes and RTL. **Developer don’t:** hardcode raw colors in components; set fixed text heights; use animated 3D in lists; auto-request permissions on launch; represent status by hue only; silently discard edits; promise exact OS notification delivery.
+**Developer do:** use semantic theme colors; run contrast checks; test 200% type; respect safe areas; preserve local dates; handle denied notifications; confirm destructive actions; verify both themes and RTL. **Developer don't:** hardcode raw colors in components; set fixed text heights; use animated 3D in lists; auto-request permissions on launch; represent status by hue only; silently discard edits; promise exact OS notification delivery; outline fields with `border`.
 
 ## Quality Checklist
 
@@ -834,13 +816,15 @@ This checklist spans the full design vision. Deferred-feature rows are not manda
 
 - [ ] Uses only canonical token names and values; no arbitrary colors, radii, or spacing.
 - [ ] All normal text pairs pass ≥4.5:1; large text and control boundaries pass ≥3:1.
-- [ ] Every tap target is ≥44×44 pt iOS / ≥48×48 dp Android.
+- [ ] Every button and field is ≥48×48 dp; bottom-bar actions are ≥44×44 dp.
 - [ ] Works in light/dark/system mode without loss of hierarchy.
 - [ ] Supports 200% type, keyboard focus, VoiceOver/TalkBack, and RTL.
-- [ ] Respects safe areas, 8-pt spacing, and screen breakpoints.
+- [ ] Respects safe areas, the 4-unit spacing rhythm, 14 dp radius, and screen breakpoints.
+- [ ] Focus indicator is 3 dp in `focus`; field outlines use `textSecondary` and meet 3:1.
+- [ ] Bottom bar shows five equal slots with the 56 dp Add disc centred over the disabled placeholder; bar and disc hide together on pushed pages.
 - [ ] All controls implement applicable default/pressed/disabled/focused/error/loading states.
 - [ ] Status uses text + icon + semantic color; date-only and timezone rules are correct.
-- [ ] Save, edit, recurrence, complete, reopen, delete/undo, and offline flows work.
+- [ ] Save, edit, recurrence, complete, reopen, delete, and offline flows work.
 - [ ] Reminders obey permission, quiet hours, recurrence, and cancellation rules.
 - [ ] Reduced-motion mode removes movement and indefinite animation.
 - [ ] No decorative 3D is used in dense functional screens.

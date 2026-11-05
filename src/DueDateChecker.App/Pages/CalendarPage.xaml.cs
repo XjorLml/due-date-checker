@@ -14,7 +14,7 @@ public partial class CalendarPage : ContentPage
     {
         InitializeComponent();
         BindingContext = _viewModel = viewModel;
-        PageLayout.Connect(this, PageContent);
+        PageLayout.Connect(this, PageContent, extraBottom: 24);
         _dateTimer = Dispatcher.CreateTimer();
         _dateTimer.Interval = TimeSpan.FromMinutes(1);
         _dateTimer.Tick += (_, _) => _viewModel.RefreshDate();
@@ -47,12 +47,13 @@ public partial class CalendarPage : ContentPage
         {
             var day = days[index];
             if (day.Date is not { } date) continue;
+            // Focus day cell (DESIGN §7 calendar grid): 44×48 minimum, number over the count,
+            // selected is a primary fill, today a 2 dp primary outline.
             var button = new Button
             {
-                Text = $"{date.Day}\n{day.Indicator}", FontSize = 14,
-                Style = (Style)Application.Current!.Resources[day.IsSelected ? "BaseButton" : "SecondaryButton"],
-                Padding = new Thickness(0, 8), MinimumWidthRequest = 48, MinimumHeightRequest = 64,
-                CornerRadius = 12, AutomationId = $"CalendarDay-{date:yyyy-MM-dd}"
+                Text = $"{date.Day}\n{day.Indicator}",
+                Style = (Style)Application.Current!.Resources[day.IsSelected ? "DayButtonSelected" : "DayButton"],
+                AutomationId = $"CalendarDay-{date:yyyy-MM-dd}"
             };
             if (day.IsToday && !day.IsSelected)
             {
@@ -68,8 +69,6 @@ public partial class CalendarPage : ContentPage
     private void OnPreviousClicked(object? sender, EventArgs e) => _viewModel.MoveMonth(-1);
     private void OnNextClicked(object? sender, EventArgs e) => _viewModel.MoveMonth(1);
     private void OnTodayClicked(object? sender, EventArgs e) => _viewModel.ResetToday();
-
-    private async void OnAddClicked(object? sender, EventArgs e) => await NavigateAsync(nameof(DueEditPage));
 
     private async void OnDueSelected(object? sender, SelectionChangedEventArgs e)
     {

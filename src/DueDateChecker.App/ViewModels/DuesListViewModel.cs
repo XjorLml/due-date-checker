@@ -5,8 +5,10 @@ using DueDateChecker.Core.Domain;
 
 namespace DueDateChecker.App.ViewModels;
 
-public partial class DuesListViewModel(DatabaseDispatcher database, IDueRepository repository) : ObservableObject
+public partial class DuesListViewModel(DatabaseDispatcher database, IDueRepository repository, TimeProvider? clock = null) : ObservableObject
 {
+    private readonly TimeProvider _clock = clock ?? TimeProvider.System;
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsEmpty))]
     private IReadOnlyList<DueListItem> _dues = [];
@@ -42,7 +44,8 @@ public partial class DuesListViewModel(DatabaseDispatcher database, IDueReposito
             IsReady = true;
             var dues = await database.RunAsync(repository.ListActiveAsync);
             // Replace only after a successful read. A refresh failure retains the old list.
-            Dues = dues.Select(due => new DueListItem(due)).ToArray();
+            var today = ManilaCalendar.Today(_clock);
+            Dues = dues.Select(due => DueListItem.Create(due, today)).ToArray();
         }
         catch (Exception)
         {

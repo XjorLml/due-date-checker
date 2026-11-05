@@ -72,7 +72,7 @@ public sealed class DueDetailTests : IDisposable
         await vm.LoadCommand.ExecuteAsync(null);
         Assert.Equal("No notes.", vm.NotesText);
         Assert.Equal(notes, (await _repository.GetAsync(due.Id))!.Notes);
-        Assert.Equal("Unpaid", vm.Item!.StatusText);
+        Assert.Contains(vm.Item!.StatusText, new[] { "Overdue", "Due today", "Upcoming" });
     }
 
     [Theory]

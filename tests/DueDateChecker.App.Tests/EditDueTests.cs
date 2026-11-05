@@ -97,7 +97,7 @@ public sealed class EditDueTests : IDisposable
         Assert.Null(unpaid.Notes);
         Assert.Equal(due.CreatedAt, unpaid.CreatedAt);
         await list.LoadCommand.ExecuteAsync(null);
-        Assert.Equal("Unpaid", list.Dues[0].StatusText);
+        Assert.Contains(list.Dues[0].StatusText, new[] { "Overdue", "Due today", "Upcoming" });
         Assert.Equal(2, list.Dues.Count);
     }
 

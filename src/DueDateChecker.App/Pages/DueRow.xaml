@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:DueDateChecker.App.ViewModels"
+             xmlns:pages="clr-namespace:DueDateChecker.App.Pages"
+             x:Class="DueDateChecker.App.Pages.DueRow"
+             x:DataType="vm:IDueRow">
+    <!-- Focus ledger row (specs/focus-pages FP03): title and "dd MMM · Category" on the left, amount and
+         status badge on the right, a hairline below. The BindingContext is the projected due. -->
+    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="12" Padding="0,14,0,0"
+          MinimumHeightRequest="70" SemanticProperties.Description="{Binding AccessibilityText}">
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroupList>
+                <VisualStateGroup x:Name="CommonStates">
+                    <VisualState x:Name="Normal" />
+                    <VisualState x:Name="Selected">
+                        <VisualState.Setters>
+                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource SurfaceMutedLight}, Dark={StaticResource SurfaceMutedDark}}" />
+                        </VisualState.Setters>
+                    </VisualState>
+                </VisualStateGroup>
+            </VisualStateGroupList>
+        </VisualStateManager.VisualStateGroups>
+        <VerticalStackLayout Spacing="4" VerticalOptions="Start">
+            <Label Text="{Binding Title}" Style="{StaticResource RowTitle}" />
+            <Label Text="{Binding MetaText}" Style="{StaticResource CaptionLabel}" />
+        </VerticalStackLayout>
+        <VerticalStackLayout Grid.Column="1" Spacing="4" HorizontalOptions="End" VerticalOptions="Start" MaximumWidthRequest="168">
+            <Label Text="{Binding AmountText}" Style="{StaticResource RowAmount}" />
+            <pages:StatusBadge Status="{Binding StatusText}" HorizontalOptions="End" />
+        </VerticalStackLayout>
+        <BoxView Grid.Row="1" Grid.ColumnSpan="2" Style="{StaticResource Divider}" Margin="0,14,0,0" />
+    </Grid>
+</ContentView>

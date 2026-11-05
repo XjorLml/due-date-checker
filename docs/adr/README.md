@@ -10,6 +10,8 @@ Supported decision history remains in [PLAN decisions](../PLAN.md#decisions-made
 
 On 2026-10-18, [007: Local reminder reconciliation](007-local-reminder-reconciliation.md) records the F05 implementation choice and explicitly reconciles the historical proposed 007 identity. Other legacy proposals remain unwritten; this record does not establish their approval.
 
+On 2026-11-05, [008: Focus design baseline and native Add action](008-focus-design-baseline.md) records the DESIGN 2.0.0 baseline change, the five-slot Shell bar with a renderer-drawn Add disc, and the alternatives rejected. The number is new; no historical proposal reserved it.
+
 ## Recording a decision
 
 Create an ADR for a significant architecture choice or change, using `NNN-short-title.md`. Check the historical number references before assigning an ID; reconcile them explicitly rather than silently reusing them.

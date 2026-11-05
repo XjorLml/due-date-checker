@@ -4,7 +4,11 @@ using Microsoft.Extensions.DependencyInjection;
 
 public partial class AppShell : Shell
 {
+	/// <summary>Zero-based bottom-bar slot of the Add action; the Android renderer reads this.</summary>
+	public const int AddSlot = 2;
+
 	private readonly Pages.DuesListPage _duesPage;
+	private bool _openingAdd;
 
 	public AppShell(Pages.DuesListPage duesPage, IServiceProvider services)
 	{
@@ -13,10 +17,15 @@ public partial class AppShell : Shell
 		DuesContent.Content = duesPage;
 		DashboardContent.ContentTemplate = new DataTemplate(() => services.GetRequiredService<Pages.DashboardPage>());
 		CalendarContent.ContentTemplate = new DataTemplate(() => services.GetRequiredService<Pages.CalendarPage>());
+		SettingsContent.ContentTemplate = new DataTemplate(() => services.GetRequiredService<Pages.SettingsPage>());
+		// Never shown: the Add slot is intercepted below and disabled natively. A page is still
+		// required so Shell can build the fifth bottom-bar item that reserves the centre slot.
+		AddContent.ContentTemplate = new DataTemplate(() => new ContentPage { Title = "Add" });
+		MainTabs.CurrentItem = DuesTab;
 		Routing.RegisterRoute(nameof(Pages.ReminderSettingsPage), typeof(Pages.ReminderSettingsPage));
-		Routing.RegisterRoute(nameof(Pages.SettingsPage), typeof(Pages.SettingsPage));
 		Routing.RegisterRoute(nameof(Pages.DueEditPage), typeof(Pages.DueEditPage));
 		Routing.RegisterRoute(nameof(Pages.DueDetailPage), typeof(Pages.DueDetailPage));
+		Navigating += OnNavigating;
         var taps = services.GetRequiredService<Services.ReminderTapRouter>();
         void OnQueued() => MainThread.BeginInvokeOnMainThread(async () => await taps.TryOpenAsync(this));
         Loaded += async (_, _) => { taps.Queued -= OnQueued; taps.Queued += OnQueued; await taps.TryOpenAsync(this); };
@@ -35,6 +44,34 @@ public partial class AppShell : Shell
 		_ => Task.CompletedTask
 	};
 
+	/// <summary>Opens the editor on the current root's stack so Save/Cancel return to that root.</summary>
+	public async Task OpenAddAsync()
+	{
+		if (_openingAdd || CurrentPage is Pages.DueEditPage) return;
+		_openingAdd = true;
+		try
+		{
+			await GoToAsync(nameof(Pages.DueEditPage));
+		}
+		catch (Exception)
+		{
+			await DisplayAlertAsync("Couldn't open Add due", "Try again.", "OK");
+		}
+		finally
+		{
+			_openingAdd = false;
+		}
+	}
+
+	private void OnNavigating(object? sender, ShellNavigatingEventArgs e)
+	{
+		// Programmatic or stray selection of the Add slot becomes an Add action instead of a tab change.
+		var location = e.Target?.Location?.OriginalString;
+		if (location is null || !location.Contains("//main/add", StringComparison.Ordinal)) return;
+		if (e.CanCancel) e.Cancel();
+		_ = OpenAddAsync();
+	}
+
 	private static Task RefreshSettings(Pages.SettingsPage settings)
 	{
 		settings.Refresh();
@@ -43,8 +80,8 @@ public partial class AppShell : Shell
 
 	protected override bool OnBackButtonPressed()
 	{
-		// Root tabs are peers, not pushed pages. Calendar/Dashboard Back returns to saved dues.
-		if (CurrentPage is Pages.DashboardPage or Pages.CalendarPage)
+		// Root tabs are peers, not pushed pages. Dashboard/Calendar/Settings Back returns to saved dues.
+		if (CurrentPage is Pages.DashboardPage or Pages.CalendarPage or Pages.SettingsPage)
 		{
 			MainTabs.CurrentItem = DuesTab;
 			return true;

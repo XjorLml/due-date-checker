@@ -61,6 +61,38 @@ Next: finish release acceptance/signing. Learning checkpoint: explain why soft d
 - Resolved 2026-10-10: learner chose A. VS 2026 18.10.3 installed at D:\VisualStudio\2026 (installer had to run interactively; `--passive` auto-cancelled on the VS-processes pre-check, `--norestart` without `--passive` is exit 87). `dotnet workload list`: android 36.1.69, maui-windows, ios, maccatalyst. JDK 21.0.8 under C:\Program Files\Android\openjdk; SDK API 36 under C:\Program Files (x86)\Android\android-sdk. Stale ANDROID_SDK_ROOT left alone: build works regardless.
 - S-1 steps 3-5 done by Claude (approved 2026-10-06): App project (Android-only, minSdk 26, com.lem.duedatechecker, references Core, CommunityToolkit.Mvvm 8.4.2), allowBackup=false verified in the merged manifest, local.signing.props import + example file. Debug build green; 22 tests green. Keystore and on-phone launch still with the learner.
 
+## UI consistency slice (2026-11-05, later)
+Decision: the learner chose to reword the PRD about optional amounts and then fix the status-badge inconsistency and duplicate titles first, ahead of the other review findings.
+
+Introduced (explained by Claude):
+- A MAUI `ContentView` with a `BindableProperty` is the lightweight way to make a reusable piece of UI that pages can bind to; the XAML inside reacts to that one property through data triggers, so four pages share one definition instead of four copies.
+- `Shell.NavBarIsVisible` is per page: roots can drop the toolbar while pushed pages keep it for the Back arrow.
+- Fast Deployment keeps Debug assemblies in the app's private files folder; `pm clear` deletes them, and MSBuild's deploy stamp then believes they are still there, so only a reinstall pushes them again.
+
+OOP pillar links:
+- `DueListItem.Create` hides how a status is derived behind one factory and `DashboardItem` delegates to the same row → encapsulation of the rule and a single source of truth.
+- `StatusBadge` exposes only `Status`; the colours and glyphs are internal → abstraction. Pages depend on the property, not on the pill's internals.
+- The optional `TimeProvider` constructor parameter keeps the view models open to a test clock while closed to changes in callers → polymorphism through the injected abstraction rather than a subclass.
+
+## Focus design adoption (2026-11-05)
+Decision: the learner chose scope "look + navigation" (recommended) over "look only" and "full mockup", and "install emulator" over phone/build-only. Implemented by Claude; learner review of the diff is the next checkpoint.
+
+Introduced (explained by Claude, not yet demonstrated):
+- MAUI Shell on Android renders its TabBar as a Material BottomNavigationView. Shell owns the menu items and selection; a renderer subclass (DuewiseShellRenderer) can only observe and decorate. We disable one menu item natively and wrap the bar in our own FrameLayout to float the lime Add disc. Why not a plain fifth tab: BottomNavigationView applies one icon tint list to every item, so a lime icon would render in the primary colour.
+- Android View measure/layout: a parent ViewGroup decides its own size in OnMeasure and places children in OnLayout. The dock reports zero height when Shell sets the bar to Gone, which is how the disc disappears on hidden-bar pages without a second visibility flag.
+- Java trust stores: the JDK ships its own cacerts, separate from Windows. A TLS-inspecting proxy or antivirus root certificate is trusted by Windows but not by Java, hence sdkmanager's "PKIX path building failed". `-Djavax.net.ssl.trustStoreType=Windows-ROOT` tells Java to use the Windows store instead.
+- Android SDK discovery: the .NET Android workload prefers `%LOCALAPPDATA%\Android\Sdk` when it exists. A partial SDK there (emulator only) broke aapt2 discovery, so the emulator SDK lives at `Android\EmulatorSdk` instead.
+- jarsigner reads the keystore with the store password before it can sign; "keystore password was incorrect" is a credential problem, not a build problem, and `-p:AndroidKeyStore=false` separates the two.
+- Debug Android builds use Fast Deployment: the APK carries no managed assemblies, they are pushed to the app's files directory by the Install target. Installing the Debug APK with plain `adb install` therefore aborts at startup with "No assemblies found".
+- Android's view hierarchy dispatches touches to the child with the highest Z (elevation) first, not simply the last-added child. Material's bottom bar carries 8 dp elevation, so a 6 dp disc overlapping it never received taps until its elevation was raised above the bar's.
+- `debug.hwui.drawing_enabled=0` tells Android's hardware UI renderer to skip drawing; layout, accessibility and input keep working, which is why `uiautomator dump` showed a correct tree while every screenshot was black. It is a `debug.` property, so the shell may set it on userdebug images.
+- The app bar area under a transparent status bar is Material's `AppBarLayout`, whose background is `?attr/colorPrimary`; with no SystemUI there is no opaque status bar to cover it, so the emulator showed an ink/lime strip that a phone would not.
+
+OOP pillar links:
+- DuewiseShellRenderer overrides CreateBottomNavViewAppearanceTracker and SetAppearance → inheritance plus polymorphism: Shell calls the base type's method and our override runs.
+- AddDock hides its wrapping, measuring and colour logic behind two public members (Wrap, ApplyColors) → encapsulation; AppShell exposes OpenAddAsync so the native disc never touches Shell navigation internals → abstraction.
+- PageLayout.Connect gained optional parameters (footer, extraBottom) instead of a second helper → one abstraction, extended without breaking existing callers.
+
 ## Earlier pending decision (S-1, still open for the toolchain part)
 - Decision: S-1 implementation scope (toolchain, git + .gitignore, solution with the three chosen projects, Android-only MAUI target, allowBackup=false, keystore outside the repo, signed Release hello-world on the phone).
 - Stage: implementation approved 2026-10-06 ("Implement this step"), in progress. Done: git init (branch main), .gitignore (dotnet template + .vibe-wise/, *.jks, *.keystore, local.signing.props), DueDateChecker.slnx, src/DueDateChecker.Core (net10.0, nullable on), tests/DueDateChecker.Core.Tests (xunit 2.9.3, references Core), SmokeTests.cs; `dotnet test` = 1 passed (AC1 met); git status shows only the 5 source files (AC4 ignore part met). Not yet done, blocked on the learner: install Visual Studio Community with the .NET MAUI workload (step 1) and generate the keystore at D:\LEM\keys\duedatechecker-upload.jks (step 5). 2026-10-07: learner reported both done, but probes found no workload, no JDK, no new VS instance, no keystore; installer logs show only a `setup.exe export` of the VS 2019 config to D:\VisualStudio\vs2019.vsconfig. Learner re-confirmed option A (run the VS installer); still pending. 2026-10-07: learner asked to push to GitHub to continue at home; docs/PLAN.md added (plan + status + remaining S-1 steps), .vibe-wise/ un-ignored and committed, repo email set locally to the learner's personal address, first commit made before S-1 is complete (deviation from the single-commit plan, at the learner's request). GitHub remote still to be created (no gh CLI on this laptop). Remaining for Claude afterwards: App project (Android-only, minSdk 26, references Core), allowBackup=false, local.signing.props + csproj import, Release publish + adb install, fix stale ANDROID_SDK_ROOT, single commit "S-1: walking skeleton". Nothing committed yet.
@@ -97,3 +129,10 @@ Needs reinforcement: to be determined at the S-1 and S1 checkpoints.
 
 ## Scoping (2026-10-06)
 Learner requirements stated (product decisions, not engineering evidence): day-7 deliverable = S0–S3 local-only, sideloaded Release APK; 6–8 h/day; Supabase sync (S4–S5) outside the 7-day window; learn-mode defaults.
+
+## Focus page content (2026-11-05; explained by Claude, not yet demonstrated)
+- `IDueRow` interface: two records (`DueListItem`, `DashboardItem`) already had the same members; naming that shape as an interface lets one XAML `ContentView` (`DueRow`) use compiled bindings against the interface instead of a concrete type → abstraction. The pages keep constructing their own records; the row only depends on the contract → the same polymorphism idea as `IDueRepository`, applied to a view.
+- `SegmentedControl`: the selected position lives in one `BindableProperty` with `BindingMode.TwoWay`; the buttons never talk to the view model, they set `SelectedIndex` and the binding carries it → encapsulation of the control's state behind one property. The view model's existing `SelectedThemeIndex` did not change, so the F04 tests did not change.
+- Upcoming total: computed from the already loaded snapshot in centavos and formatted through `Money.FromCentavos(...).ToString()`, so the peso format stays inside the value object → encapsulation again (the rule that says "₱ and two decimals" has one home).
+- Counters as taps on a `Border` with `TapGestureRecognizer`: cheaper than a Button for two-colour text, but a Border is not a native button role; the chips below remain real Buttons for the same filters. Trade-off noted for the TalkBack review.
+- `Refresh / Retry` bound to `HasError`: the PRD already says appearance reloads, so an always-visible refresh was redundant UI; binding visibility to state is the MVVM way to remove it without touching the command.

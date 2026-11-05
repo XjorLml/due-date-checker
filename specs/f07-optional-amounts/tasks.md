@@ -1,5 +1,7 @@
 # F07 optional amounts execution tracking
 
+Status: the 2026-11-05 source inspection found no implementation (migrations 001–003 only, non-nullable `Due.Amount`, no OA tests). Every item below remains open; the [SDD contract](../../docs/SDD.md#f07-optional-amount-contract) is labeled planned until this work lands.
+
 - [ ] Inspect authorities/source/tests and preserve the pre-feature checkpoint.
 - [ ] Define OA01-OA06 and record the Bill/Subscription-required, Task/Other-optional, NULL-versus-zero and "No amount" decisions.
 - [ ] Implement nullable amount domain validation, schema 004, repository NULL mapping and active-index preservation.

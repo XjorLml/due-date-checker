@@ -12,7 +12,7 @@ public partial class DuesListPage : ContentPage
     {
         InitializeComponent();
         BindingContext = _viewModel = viewModel;
-        PageLayout.Connect(this, PageContent);
+        PageLayout.Connect(this, PageContent, extraBottom: 24);
         Appearing += async (_, _) => await RefreshAsync();
     }
 
@@ -26,12 +26,6 @@ public partial class DuesListPage : ContentPage
     private async void OnRemindersClicked(object? sender, EventArgs e)
         => await OpenPageAsync(nameof(ReminderSettingsPage));
 
-    private async void OnSettingsClicked(object? sender, EventArgs e)
-        => await OpenPageAsync(nameof(SettingsPage), requiresDues: false);
-
-    private async void OnAddClicked(object? sender, EventArgs e)
-        => await OpenPageAsync(nameof(DueEditPage));
-
     private async void OnDueSelected(object? sender, SelectionChangedEventArgs e)
     {
         var item = e.CurrentSelection.OfType<DueListItem>().FirstOrDefault();
@@ -39,9 +33,9 @@ public partial class DuesListPage : ContentPage
         if (item is not null) await OpenPageAsync($"{nameof(DueDetailPage)}?id={item.Id:D}");
     }
 
-    private async Task OpenPageAsync(string route, bool requiresDues = true)
+    private async Task OpenPageAsync(string route)
     {
-        if (_navigating || requiresDues && !_viewModel.CanAdd) return;
+        if (_navigating || !_viewModel.CanAdd) return;
         _navigating = true;
         try
         {

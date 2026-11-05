@@ -2,41 +2,56 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:DueDateChecker.App.ViewModels"
+             xmlns:pages="clr-namespace:DueDateChecker.App.Pages"
              x:Class="DueDateChecker.App.Pages.SettingsPage" x:DataType="vm:SettingsViewModel"
-             Title="Settings" Shell.TabBarIsVisible="False">
+             Title="Settings" Shell.NavBarIsVisible="False">
     <ScrollView>
-        <VerticalStackLayout x:Name="PageContent" Spacing="24">
-            <Label Text="Settings" Style="{StaticResource Heading1}" />
-            <Label Text="Make Duewise feel right for you. These preferences are saved on this device." Style="{StaticResource SupportingLabel}" />
+        <VerticalStackLayout x:Name="PageContent" Spacing="16">
+            <VerticalStackLayout Spacing="6">
+                <Label Text="Make it feel like you." Style="{StaticResource Heading1}" />
+                <Label Text="A few preferences. A clearer routine. Saved on this device." Style="{StaticResource CaptionLabel}" />
+            </VerticalStackLayout>
             <Border Style="{StaticResource SurfaceCard}">
-                <VerticalStackLayout Spacing="12">
+                <VerticalStackLayout Spacing="10">
                     <Label Text="Appearance" Style="{StaticResource Heading2}" />
-                    <Label Text="Choose a theme" Style="{StaticResource FieldLabel}" />
-                    <Border Style="{StaticResource FieldBorder}">
-                        <Picker Title="Choose a theme" ItemsSource="{Binding Themes}" SelectedIndex="{Binding SelectedThemeIndex}"
-                                SemanticProperties.Description="Appearance, System, Light or Dark" AutomationId="SettingsTheme" />
-                    </Border>
-                    <Label Text="System follows your device's light or dark appearance. Your saved choice applies when you save below." Style="{StaticResource SupportingLabel}" />
+                    <Label Text="System follows your device. Save to apply." Style="{StaticResource SupportingLabel}" />
+                    <pages:SegmentedControl Options="{Binding Themes}" SelectedIndex="{Binding SelectedThemeIndex}"
+                                            AutomationId="SettingsTheme" SemanticProperties.Description="Appearance: System, Light or Dark" />
                 </VerticalStackLayout>
             </Border>
             <Border Style="{StaticResource SurfaceCard}">
-                <VerticalStackLayout Spacing="12">
-                    <Label Text="Calendar" Style="{StaticResource Heading2}" />
-                    <Label Text="Start of week" Style="{StaticResource FieldLabel}" />
-                    <Border Style="{StaticResource FieldBorder}">
-                        <Picker Title="Start of week" ItemsSource="{Binding WeekStarts}" SelectedIndex="{Binding SelectedWeekStartIndex}"
-                                SemanticProperties.Description="Calendar week starts on Monday or Sunday" AutomationId="SettingsWeekStart" />
-                    </Border>
-                    <Label Text="This changes the calendar layout. Your due dates and reminders continue to use Asia/Manila." Style="{StaticResource SupportingLabel}" />
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Start of week" Style="{StaticResource Heading2}" />
+                    <Label Text="Changes the calendar layout. Your dates stay in Asia/Manila." Style="{StaticResource SupportingLabel}" />
+                    <pages:SegmentedControl Options="{Binding WeekStarts}" SelectedIndex="{Binding SelectedWeekStartIndex}"
+                                            AutomationId="SettingsWeekStart" SemanticProperties.Description="Calendar week starts on Monday or Sunday" />
                 </VerticalStackLayout>
             </Border>
-            <Label Text="Changes apply only when you save. Back discards unsaved choices." Style="{StaticResource SupportingLabel}" />
+            <!-- Focus settings row: navigation into Reminders with the saved state as its subtitle. -->
+            <Border Style="{StaticResource SettingsRow}" AutomationId="SettingsReminders"
+                    SemanticProperties.Description="{Binding ReminderSummary, StringFormat='Reminders, {0}. Opens due-date reminders'}">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnRemindersTapped" />
+                </Border.GestureRecognizers>
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                    <Label Text="◷" FontSize="22" VerticalOptions="Center" AutomationProperties.IsInAccessibleTree="False"
+                           TextColor="{AppThemeBinding Light={StaticResource PrimaryLight}, Dark={StaticResource PrimaryDark}}" />
+                    <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                        <Label Text="Reminders" Style="{StaticResource Heading3}" />
+                        <Label Text="{Binding ReminderSummary}" Style="{StaticResource CaptionLabel}" AutomationId="SettingsReminderSummary" />
+                    </VerticalStackLayout>
+                    <Label Grid.Column="2" Text="›" FontSize="22" VerticalOptions="Center" AutomationProperties.IsInAccessibleTree="False"
+                           TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" />
+                </Grid>
+            </Border>
+            <Border Style="{StaticResource NoticeCard}">
+                <Label Text="Saved on this device. No account, bank connection or currency switch." Style="{StaticResource CaptionLabel}" />
+            </Border>
+            <Label Text="Save applies both preferences. Back discards unsaved choices." Style="{StaticResource SupportingLabel}" />
             <Button Text="Save preferences" Command="{Binding SaveCommand}" AutomationId="SettingsSave" />
             <Label Text="{Binding Message}" AutomationId="SettingsMessage" />
-            <Button Text="Refresh / Retry" Command="{Binding LoadCommand}" Style="{StaticResource SecondaryButton}" />
-            <Label Text="Notifications" Style="{StaticResource Heading2}" />
-            <Button Text="Reminders" Clicked="OnRemindersClicked" Style="{StaticResource SecondaryButton}"
-                    SemanticProperties.Hint="Open optional due-date reminders without changing these preferences" AutomationId="SettingsReminders" />
+            <Button Text="Refresh / Retry" Command="{Binding LoadCommand}" Style="{StaticResource SecondaryButton}"
+                    IsVisible="{Binding HasLoadError}" HorizontalOptions="Start" />
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

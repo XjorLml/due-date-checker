@@ -3,39 +3,35 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:DueDateChecker.App.ViewModels"
              x:Class="DueDateChecker.App.Pages.DueDetailPage"
+             xmlns:pages="clr-namespace:DueDateChecker.App.Pages"
              x:DataType="vm:DueDetailViewModel" Title="Due details" Shell.TabBarIsVisible="False">
     <ScrollView>
-        <VerticalStackLayout x:Name="PageContent" Spacing="24">
-            <Label Text="Due details" Style="{StaticResource Heading1}" />
-            <Label Text="Saved information · Amounts in PHP · Calendar dates use Asia/Manila"
-                   Style="{StaticResource SupportingLabel}" />
-            <VerticalStackLayout Spacing="16" IsVisible="{Binding HasDetails}">
-                <Border Style="{StaticResource SurfaceCard}">
-                    <VerticalStackLayout Spacing="12">
-                        <Label Text="{Binding Item.Title}" Style="{StaticResource Heading2}" />
-                        <Label Text="{Binding Item.AmountText}" Style="{StaticResource Heading1}" LineBreakMode="CharacterWrap" />
-                        <Label Text="Category" Style="{StaticResource FieldLabel}" />
-                        <Label Text="{Binding Item.CategoryText}" AutomationId="DetailsCategory" />
-                        <Label Text="Payment status" Style="{StaticResource FieldLabel}" />
-                        <Label Text="{Binding Item.StatusText}" Style="{StaticResource Heading3}" />
-                        <Label Text="Due date" Style="{StaticResource FieldLabel}" />
-                        <Label Text="{Binding Item.DateText}" />
-                    </VerticalStackLayout>
-                </Border>
-                <Border Style="{StaticResource SurfaceCard}">
-                    <VerticalStackLayout Spacing="12">
-                        <Label Text="Notes" Style="{StaticResource FieldLabel}" />
-                        <Label Text="{Binding NotesText}" />
-                    </VerticalStackLayout>
-                </Border>
-                <Border Style="{StaticResource SurfaceCard}">
-                    <VerticalStackLayout Spacing="12">
-                        <Label Text="Created" Style="{StaticResource FieldLabel}" />
-                        <Label Text="{Binding CreatedText}" />
-                        <Label Text="Last updated" Style="{StaticResource FieldLabel}" />
-                        <Label Text="{Binding UpdatedText}" />
-                    </VerticalStackLayout>
-                </Border>
+        <VerticalStackLayout x:Name="PageContent" Spacing="20">
+            <Label Text="Saved information · Amounts in PHP · Dates use Asia/Manila" Style="{StaticResource CaptionLabel}" />
+            <!-- Focus item detail: title, large amount and badge, then divided fact rows. -->
+            <VerticalStackLayout Spacing="8" IsVisible="{Binding HasDetails}">
+                <Label Text="{Binding Item.CategoryText}" Style="{StaticResource CaptionLabel}" FontFamily="JakartaSemibold" AutomationId="DetailsCategory" />
+                <Label Text="{Binding Item.Title}" Style="{StaticResource Heading2}" />
+                <Label Text="{Binding Item.AmountText}" Style="{StaticResource HeroAmount}" />
+                <pages:StatusBadge Status="{Binding Item.StatusText}" AutomationId="DetailsStatus" />
+                <BoxView Style="{StaticResource Divider}" Margin="0,12,0,0" />
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16" Padding="0,12">
+                    <Label Text="Due date" Style="{StaticResource SupportingLabel}" VerticalOptions="Center" />
+                    <Label Grid.Column="1" Text="{Binding Item.DateText}" Style="{StaticResource FactValue}" VerticalOptions="Center" />
+                </Grid>
+                <BoxView Style="{StaticResource Divider}" />
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16" Padding="0,12">
+                    <Label Text="Type" Style="{StaticResource SupportingLabel}" VerticalOptions="Center" />
+                    <Label Grid.Column="1" Text="{Binding Item.CategoryText}" Style="{StaticResource FactValue}" VerticalOptions="Center" />
+                </Grid>
+                <BoxView Style="{StaticResource Divider}" />
+                <VerticalStackLayout Spacing="6" Padding="0,12">
+                    <Label Text="Notes" Style="{StaticResource SupportingLabel}" />
+                    <Label Text="{Binding NotesText}" />
+                </VerticalStackLayout>
+                <BoxView Style="{StaticResource Divider}" />
+                <Label Text="{Binding CreatedText, StringFormat='Created {0}'}" Style="{StaticResource CaptionLabel}" Margin="0,8,0,0" />
+                <Label Text="{Binding UpdatedText, StringFormat='Last updated {0}'}" Style="{StaticResource CaptionLabel}" />
             </VerticalStackLayout>
             <VerticalStackLayout Spacing="8" IsVisible="{Binding IsBusy}">
                 <ActivityIndicator IsRunning="{Binding IsBusy}" SemanticProperties.Description="Loading due details" />
@@ -44,7 +40,7 @@
             <Border Style="{StaticResource SurfaceCard}" IsVisible="{Binding HasError}">
                 <Label Text="{Binding ErrorMessage}" Style="{StaticResource ErrorLabel}" />
             </Border>
-            <VerticalStackLayout Spacing="16">
+            <VerticalStackLayout Spacing="12">
                 <Button Text="Retry loading" Command="{Binding LoadCommand}" IsVisible="{Binding ShowRetry}"
                         Style="{StaticResource SecondaryButton}" />
                 <Button Text="Edit due" Clicked="OnEditClicked" IsEnabled="{Binding CanEdit}"

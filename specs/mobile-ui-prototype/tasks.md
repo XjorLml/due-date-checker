@@ -92,7 +92,8 @@ The expanded rapid-navigation test left the URL stale while the in-memory concep
 
 ## Remaining acceptance
 
-- [ ] User selects preferred layouts and reviews recommendations.
+- [x] The user selected Minimal Fintech and its Focus refinement (HP17–HP18) and, in the follow-up specs, sticky actions with context-aware navigation and the Essential-first editor. These are HTML selections; see the [DESIGN register](../../docs/DESIGN.md#design-explorations-non-normative). Both prototype directories are committed (e368ac2, 53d00e8).
+- [ ] Review of the original mobile-review alternatives (HP01–HP09) and any production adoption decision for the selected direction.
 - [ ] If later implemented in MAUI: native keyboard, TalkBack, Android Back, 200% system text, theme, safe-area and permission/power/lifecycle checks for the changed pages. These are outside this HTML task.
 
 Selecting or exporting prototype choices is not production implementation authorization or release acceptance.

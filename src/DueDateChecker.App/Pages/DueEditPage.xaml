@@ -7,134 +7,140 @@
     <Shell.BackButtonBehavior>
         <BackButtonBehavior IsEnabled="{Binding IsIdle}" />
     </Shell.BackButtonBehavior>
-    <ScrollView>
-        <VerticalStackLayout x:Name="PageContent" Spacing="24">
-            <VerticalStackLayout Spacing="8">
-                <Label Text="{Binding PageTitle}" Style="{StaticResource Heading1}" />
-                <Label Text="A clear plan for your next payment." Style="{StaticResource SupportingLabel}" />
-            </VerticalStackLayout>
-            <VerticalStackLayout Spacing="8">
-                <Label Text="Title" Style="{StaticResource FieldLabel}" />
-                <Border Style="{StaticResource FieldBorder}">
-                    <Border.Triggers>
-                        <DataTrigger TargetType="Border" Binding="{Binding Source={x:Reference TitleEntry}, Path=IsFocused}" Value="True">
-                            <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource FocusLight}, Dark={StaticResource FocusDark}}" />
-                            <Setter Property="StrokeThickness" Value="2" />
-                        </DataTrigger>
-                        <DataTrigger TargetType="Border" Binding="{Binding HasTitleError}" Value="True">
-                            <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource DestructiveLight}, Dark={StaticResource DestructiveDark}}" />
-                            <Setter Property="StrokeThickness" Value="2" />
-                        </DataTrigger>
-                    </Border.Triggers>
-                    <Entry x:Name="TitleEntry" Text="{Binding Title}" Placeholder="For example, electricity"
-                           IsEnabled="{Binding CanEdit}" Unfocused="OnTitleUnfocused"
-                           SemanticProperties.Description="Due title, required" />
-                </Border>
-                <Label Text="{Binding TitleError}" IsVisible="{Binding HasTitleError}" Style="{StaticResource ErrorLabel}" />
-            </VerticalStackLayout>
-            <VerticalStackLayout Spacing="8">
-                <Label Text="Category" Style="{StaticResource FieldLabel}" />
-                <Border Style="{StaticResource FieldBorder}">
-                    <Border.Triggers>
-                        <DataTrigger TargetType="Border" Binding="{Binding Source={x:Reference CategoryPicker}, Path=IsFocused}" Value="True">
-                            <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource PrimaryLight}, Dark={StaticResource PrimaryDark}}" />
-                        </DataTrigger>
-                        <DataTrigger TargetType="Border" Binding="{Binding HasCategoryError}" Value="True">
-                            <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource DestructiveLight}, Dark={StaticResource DestructiveDark}}" />
-                        </DataTrigger>
-                    </Border.Triggers>
-                    <Picker x:Name="CategoryPicker" Title="Choose category" ItemsSource="{Binding Categories}"
-                            SelectedItem="{Binding SelectedCategory}" IsEnabled="{Binding CanEdit}"
-                            Unfocused="OnCategoryUnfocused" AutomationId="DueCategory"
-                            SemanticProperties.Description="Due category, required" />
-                </Border>
-                <Label Text="{Binding CategoryError}" IsVisible="{Binding HasCategoryError}" Style="{StaticResource ErrorLabel}" />
-                <Label Text="All categories require an amount in PHP. Zero is allowed." Style="{StaticResource CaptionLabel}" />
-            </VerticalStackLayout>
-            <VerticalStackLayout Spacing="8">
-                <Label Text="Amount (PHP)" Style="{StaticResource FieldLabel}" />
-                <Border Style="{StaticResource FieldBorder}">
-                    <Border.Triggers>
-                        <DataTrigger TargetType="Border" Binding="{Binding Source={x:Reference AmountEntry}, Path=IsFocused}" Value="True">
-                            <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource FocusLight}, Dark={StaticResource FocusDark}}" />
-                            <Setter Property="StrokeThickness" Value="2" />
-                        </DataTrigger>
-                        <DataTrigger TargetType="Border" Binding="{Binding HasAmountError}" Value="True">
-                            <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource DestructiveLight}, Dark={StaticResource DestructiveDark}}" />
-                            <Setter Property="StrokeThickness" Value="2" />
-                        </DataTrigger>
-                    </Border.Triggers>
-                    <Entry x:Name="AmountEntry" Text="{Binding AmountText}" Keyboard="Numeric" Placeholder="1250.50"
-                           IsEnabled="{Binding CanEdit}" Unfocused="OnAmountUnfocused"
-                           SemanticProperties.Description="Amount in Philippine pesos, required" />
-                </Border>
-                <Label Text="Use a decimal point, without commas or a peso symbol." Style="{StaticResource SupportingLabel}" />
-                <Label Text="{Binding AmountPreview}" FontFamily="JakartaSemibold" LineBreakMode="CharacterWrap"
-                       SemanticProperties.Description="Amount after rounding to centavos" />
-                <Label Text="{Binding AmountError}" IsVisible="{Binding HasAmountError}" Style="{StaticResource ErrorLabel}" />
-            </VerticalStackLayout>
-            <VerticalStackLayout Spacing="8">
-                <Label Text="Due date" Style="{StaticResource FieldLabel}" />
-                <Border Style="{StaticResource FieldBorder}">
-                    <Border.Triggers>
-                        <DataTrigger TargetType="Border" Binding="{Binding Source={x:Reference DueDatePicker}, Path=IsFocused}" Value="True">
-                            <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource FocusLight}, Dark={StaticResource FocusDark}}" />
-                            <Setter Property="StrokeThickness" Value="2" />
-                        </DataTrigger>
-                        <DataTrigger TargetType="Border" Binding="{Binding HasDateError}" Value="True">
-                            <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource DestructiveLight}, Dark={StaticResource DestructiveDark}}" />
-                            <Setter Property="StrokeThickness" Value="2" />
-                        </DataTrigger>
-                    </Border.Triggers>
-                    <DatePicker x:Name="DueDatePicker" Date="{Binding SelectedDate}" Format="yyyy-MM-dd"
-                                MinimumDate="0001-01-01" MaximumDate="9999-12-31" IsEnabled="{Binding CanEdit}"
-                                Unfocused="OnDateUnfocused" SemanticProperties.Description="Due date, required" />
-                </Border>
-                <Label Text="{Binding DateError}" IsVisible="{Binding HasDateError}" Style="{StaticResource ErrorLabel}" />
-            </VerticalStackLayout>
-            <VerticalStackLayout Spacing="8">
-                <Label Text="Notes (optional)" Style="{StaticResource FieldLabel}" />
-                <Border Style="{StaticResource FieldBorder}">
-                    <Border.Triggers>
-                        <DataTrigger TargetType="Border" Binding="{Binding Source={x:Reference NotesEditor}, Path=IsFocused}" Value="True">
-                            <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource FocusLight}, Dark={StaticResource FocusDark}}" />
-                            <Setter Property="StrokeThickness" Value="2" />
-                        </DataTrigger>
-                    </Border.Triggers>
-                    <Editor x:Name="NotesEditor" Text="{Binding Notes}" AutoSize="TextChanges" MinimumHeightRequest="112"
-                            Placeholder="Add a reference or anything useful" IsEnabled="{Binding CanEdit}"
-                            SemanticProperties.Description="Optional notes" />
-                </Border>
-            </VerticalStackLayout>
-            <Border Style="{StaticResource SurfaceCard}" IsVisible="{Binding IsEditMode}">
+    <!-- Essential-first: what is due, how much, when. Category, notes and payment follow.
+         Cancel/Save stay fixed below the scrolling fields; Delete lives in the toolbar (code-behind). -->
+    <Grid RowDefinitions="*,Auto">
+        <ScrollView>
+            <VerticalStackLayout x:Name="PageContent" Spacing="20">
+                <Label Text="Title, amount and date first. Everything else is optional." Style="{StaticResource SupportingLabel}" />
                 <VerticalStackLayout Spacing="8">
-                    <Label Text="Payment status" Style="{StaticResource FieldLabel}" />
-                    <HorizontalStackLayout Spacing="16">
-                        <Switch IsToggled="{Binding IsPaid}" IsEnabled="{Binding CanEdit}"
-                                SemanticProperties.Description="Mark this due as paid"
-                                SemanticProperties.Hint="Payment status changes are stored when you save" />
-                        <Label Text="{Binding PaymentStatusText}" VerticalOptions="Center" />
-                    </HorizontalStackLayout>
-                    <Label Text="Changes apply when you save." Style="{StaticResource SupportingLabel}" />
+                    <Label Text="What is due?" Style="{StaticResource FieldLabel}" />
+                    <Border Style="{StaticResource FieldBorder}">
+                        <Border.Triggers>
+                            <DataTrigger TargetType="Border" Binding="{Binding Source={x:Reference TitleEntry}, Path=IsFocused}" Value="True">
+                                <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource FocusLight}, Dark={StaticResource FocusDark}}" />
+                                <Setter Property="StrokeThickness" Value="3" />
+                            </DataTrigger>
+                            <DataTrigger TargetType="Border" Binding="{Binding HasTitleError}" Value="True">
+                                <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource DestructiveLight}, Dark={StaticResource DestructiveDark}}" />
+                                <Setter Property="StrokeThickness" Value="3" />
+                            </DataTrigger>
+                        </Border.Triggers>
+                        <Entry x:Name="TitleEntry" Text="{Binding Title}" Placeholder="For example, electricity"
+                               IsEnabled="{Binding CanEdit}" Unfocused="OnTitleUnfocused"
+                               SemanticProperties.Description="Due title, required" />
+                    </Border>
+                    <Label Text="{Binding TitleError}" IsVisible="{Binding HasTitleError}" Style="{StaticResource ErrorLabel}" />
                 </VerticalStackLayout>
-            </Border>
-            <Border Style="{StaticResource SurfaceCard}" IsVisible="{Binding HasError}">
-                <Label Text="{Binding ErrorMessage}" Style="{StaticResource ErrorLabel}" />
-            </Border>
-            <VerticalStackLayout Spacing="8" IsVisible="{Binding IsBusy}">
-                <ActivityIndicator IsRunning="{Binding IsBusy}" SemanticProperties.Description="{Binding BusyMessage}" />
-                <Label Text="{Binding BusyMessage}" Style="{StaticResource SupportingLabel}" HorizontalTextAlignment="Center" />
-            </VerticalStackLayout>
-            <VerticalStackLayout Spacing="16">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Amount (PHP)" Style="{StaticResource FieldLabel}" />
+                    <Border Style="{StaticResource FieldBorder}">
+                        <Border.Triggers>
+                            <DataTrigger TargetType="Border" Binding="{Binding Source={x:Reference AmountEntry}, Path=IsFocused}" Value="True">
+                                <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource FocusLight}, Dark={StaticResource FocusDark}}" />
+                                <Setter Property="StrokeThickness" Value="3" />
+                            </DataTrigger>
+                            <DataTrigger TargetType="Border" Binding="{Binding HasAmountError}" Value="True">
+                                <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource DestructiveLight}, Dark={StaticResource DestructiveDark}}" />
+                                <Setter Property="StrokeThickness" Value="3" />
+                            </DataTrigger>
+                        </Border.Triggers>
+                        <Entry x:Name="AmountEntry" Text="{Binding AmountText}" Keyboard="Numeric" Placeholder="1250.50"
+                               IsEnabled="{Binding CanEdit}" Unfocused="OnAmountUnfocused"
+                               SemanticProperties.Description="Amount in Philippine pesos, required" />
+                    </Border>
+                    <Label Text="Use a decimal point, without commas or a peso symbol. Zero is allowed." Style="{StaticResource CaptionLabel}" />
+                    <Label Text="{Binding AmountPreview}" FontFamily="JakartaSemibold" LineBreakMode="CharacterWrap"
+                           SemanticProperties.Description="Amount after rounding to centavos" />
+                    <Label Text="{Binding AmountError}" IsVisible="{Binding HasAmountError}" Style="{StaticResource ErrorLabel}" />
+                </VerticalStackLayout>
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Due date" Style="{StaticResource FieldLabel}" />
+                    <Border Style="{StaticResource FieldBorder}">
+                        <Border.Triggers>
+                            <DataTrigger TargetType="Border" Binding="{Binding Source={x:Reference DueDatePicker}, Path=IsFocused}" Value="True">
+                                <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource FocusLight}, Dark={StaticResource FocusDark}}" />
+                                <Setter Property="StrokeThickness" Value="3" />
+                            </DataTrigger>
+                            <DataTrigger TargetType="Border" Binding="{Binding HasDateError}" Value="True">
+                                <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource DestructiveLight}, Dark={StaticResource DestructiveDark}}" />
+                                <Setter Property="StrokeThickness" Value="3" />
+                            </DataTrigger>
+                        </Border.Triggers>
+                        <DatePicker x:Name="DueDatePicker" Date="{Binding SelectedDate}" Format="yyyy-MM-dd"
+                                    MinimumDate="0001-01-01" MaximumDate="9999-12-31" IsEnabled="{Binding CanEdit}"
+                                    Unfocused="OnDateUnfocused" SemanticProperties.Description="Due date, required" />
+                    </Border>
+                    <Label Text="{Binding DateError}" IsVisible="{Binding HasDateError}" Style="{StaticResource ErrorLabel}" />
+                </VerticalStackLayout>
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Type" Style="{StaticResource FieldLabel}" />
+                    <Border Style="{StaticResource FieldBorder}">
+                        <Border.Triggers>
+                            <DataTrigger TargetType="Border" Binding="{Binding Source={x:Reference CategoryPicker}, Path=IsFocused}" Value="True">
+                                <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource FocusLight}, Dark={StaticResource FocusDark}}" />
+                                <Setter Property="StrokeThickness" Value="3" />
+                            </DataTrigger>
+                            <DataTrigger TargetType="Border" Binding="{Binding HasCategoryError}" Value="True">
+                                <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource DestructiveLight}, Dark={StaticResource DestructiveDark}}" />
+                                <Setter Property="StrokeThickness" Value="3" />
+                            </DataTrigger>
+                        </Border.Triggers>
+                        <Picker x:Name="CategoryPicker" Title="Choose a type" ItemsSource="{Binding Categories}"
+                                SelectedItem="{Binding SelectedCategory}" IsEnabled="{Binding CanEdit}"
+                                Unfocused="OnCategoryUnfocused" AutomationId="DueCategory"
+                                SemanticProperties.Description="Due category, required" />
+                    </Border>
+                    <Label Text="{Binding CategoryError}" IsVisible="{Binding HasCategoryError}" Style="{StaticResource ErrorLabel}" />
+                    <Label Text="Bill, Task, Subscription or Other. All types require an amount in PHP." Style="{StaticResource CaptionLabel}" />
+                </VerticalStackLayout>
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Notes (optional)" Style="{StaticResource FieldLabel}" />
+                    <Border Style="{StaticResource FieldBorder}">
+                        <Border.Triggers>
+                            <DataTrigger TargetType="Border" Binding="{Binding Source={x:Reference NotesEditor}, Path=IsFocused}" Value="True">
+                                <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource FocusLight}, Dark={StaticResource FocusDark}}" />
+                                <Setter Property="StrokeThickness" Value="3" />
+                            </DataTrigger>
+                        </Border.Triggers>
+                        <Editor x:Name="NotesEditor" Text="{Binding Notes}" AutoSize="TextChanges" MinimumHeightRequest="96"
+                                Placeholder="Add a reference or anything useful" IsEnabled="{Binding CanEdit}"
+                                SemanticProperties.Description="Optional notes" />
+                    </Border>
+                </VerticalStackLayout>
+                <Border Style="{StaticResource SurfaceCard}" IsVisible="{Binding IsEditMode}">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="Payment status" Style="{StaticResource FieldLabel}" />
+                        <HorizontalStackLayout Spacing="16">
+                            <Switch IsToggled="{Binding IsPaid}" IsEnabled="{Binding CanEdit}"
+                                    SemanticProperties.Description="Mark this due as paid"
+                                    SemanticProperties.Hint="Payment status changes are stored when you save" />
+                            <Label Text="{Binding PaymentStatusText}" VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+                        <Label Text="Changes apply when you save." Style="{StaticResource SupportingLabel}" />
+                    </VerticalStackLayout>
+                </Border>
+                <Border Style="{StaticResource SurfaceCard}" IsVisible="{Binding HasError}">
+                    <Label Text="{Binding ErrorMessage}" Style="{StaticResource ErrorLabel}" />
+                </Border>
+                <VerticalStackLayout Spacing="8" IsVisible="{Binding IsBusy}">
+                    <ActivityIndicator IsRunning="{Binding IsBusy}" SemanticProperties.Description="{Binding BusyMessage}" />
+                    <Label Text="{Binding BusyMessage}" Style="{StaticResource SupportingLabel}" HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
                 <Button Text="Retry loading" Command="{Binding LoadCommand}" IsVisible="{Binding ShowLoadRetry}"
                         Style="{StaticResource SecondaryButton}" />
-                <Button Text="{Binding SaveButtonText}" Clicked="OnSaveClicked" IsEnabled="{Binding CanSubmit}" />
-                <Button Text="{Binding CancelButtonText}" Clicked="OnCancelClicked" IsEnabled="{Binding IsIdle}"
-                        Style="{StaticResource SecondaryButton}" />
-                <Button Text="Delete due" Clicked="OnDeleteClicked" IsVisible="{Binding ShowDelete}" IsEnabled="{Binding CanDelete}"
-                        Style="{StaticResource DestructiveButton}" SemanticProperties.Description="Delete this due"
-                        SemanticProperties.Hint="Opens a confirmation before removing this due from your list" />
             </VerticalStackLayout>
-        </VerticalStackLayout>
-    </ScrollView>
+        </ScrollView>
+        <Grid Grid.Row="1" RowDefinitions="1,Auto"
+              BackgroundColor="{AppThemeBinding Light={StaticResource SurfaceLight}, Dark={StaticResource SurfaceDark}}">
+            <BoxView HeightRequest="1" Color="{AppThemeBinding Light={StaticResource BorderLight}, Dark={StaticResource BorderDark}}" />
+            <Grid Grid.Row="1" x:Name="ActionBar" ColumnDefinitions="*,*" ColumnSpacing="12"
+                  SemanticProperties.Description="Form actions">
+                <Button Text="{Binding CancelButtonText}" Clicked="OnCancelClicked" IsEnabled="{Binding IsIdle}"
+                        Style="{StaticResource SecondaryButton}" AutomationId="EditorCancel" />
+                <Button Grid.Column="1" Text="{Binding SaveButtonText}" Clicked="OnSaveClicked" IsEnabled="{Binding CanSubmit}"
+                        AutomationId="EditorSave" />
+            </Grid>
+        </Grid>
+    </Grid>
 </ContentPage>

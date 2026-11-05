@@ -88,6 +88,20 @@ public partial class DashboardViewModel : ObservableObject
     public string ProgressDescription => $"{ProgressText}, {PercentageText}";
     public string ResultsHeading => $"{Filter} · {Items.Count}";
 
+    // Focus summary (PRD F02 upcoming-total rule): unpaid dues dated today through the end of
+    // today's Manila month, summed in centavos so the fixed PHP format stays inside Money.
+    private IReadOnlyList<DashboardItem> _ahead = [];
+    public DateOnly MonthEnd => new(Today.Year, Today.Month, DateTime.DaysInMonth(Today.Year, Today.Month));
+    public string MonthLabel => $"Upcoming · {Today.ToString("MMMM", CultureInfo.InvariantCulture)}";
+    public string UpcomingTotalText => Money.FromCentavos(_ahead.Sum(item => item.Due.Amount.Centavos)).ToString();
+    public string UpcomingMetaText => $"{_ahead.Count} unpaid · today to {MonthEnd.ToString("dd MMM", CultureInfo.InvariantCulture)}";
+    public string UpcomingDescription => $"Upcoming total {UpcomingTotalText}, {UpcomingMetaText}";
+    public DashboardItem? NextDue => _allItems.FirstOrDefault(item => item.Status != DueStatus.Paid && item.Due.DueDate >= Today);
+    public bool HasNext => NextDue is not null;
+    public string NextTitle => NextDue?.Title ?? "";
+    public string NextDateText => NextDue is { } next ? $"Next date · {next.ShortDateText}" : "No unpaid dues coming up.";
+    public string PaidCounterText => $"{PaidCount}/{TotalCount}";
+
     partial void OnQueryChanged(string value) => ApplyFilters();
 
     public void SelectFilter(string filter)
@@ -150,9 +164,12 @@ public partial class DashboardViewModel : ObservableObject
             .Where(item => item.Status.HasValue)
             .OrderBy(item => item.Due.DueDate).ThenBy(item => item.Due.CreatedAt)
             .Select(item => new DashboardItem(item.Due, item.Status!.Value)).ToArray());
+        _ahead = _allItems.Where(item => item.Status != DueStatus.Paid && item.Due.DueDate >= today && item.Due.DueDate <= MonthEnd).ToArray();
         foreach (var name in new[] { nameof(Today), nameof(DateText), nameof(TotalCount), nameof(PaidCount),
             nameof(TodayCount), nameof(OverdueCount), nameof(UpcomingCount), nameof(OpenCount), nameof(Completion),
-            nameof(PercentageText), nameof(ProgressText), nameof(ProgressDescription), nameof(IsEmpty) })
+            nameof(PercentageText), nameof(ProgressText), nameof(ProgressDescription), nameof(IsEmpty),
+            nameof(MonthLabel), nameof(UpcomingTotalText), nameof(UpcomingMetaText), nameof(UpcomingDescription),
+            nameof(NextDue), nameof(HasNext), nameof(NextTitle), nameof(NextDateText), nameof(PaidCounterText) })
             OnPropertyChanged(name);
         ApplyFilters();
     }

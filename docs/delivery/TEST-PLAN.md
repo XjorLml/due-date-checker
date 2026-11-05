@@ -110,7 +110,32 @@ On a phone, preserve data and use uniquely tagged zero-amount temporary dues for
 
 Repeat search/filter/selection/Add Cancel and scrolling in both themes at 100%/200% text. Restore all phone theme/font/radio settings. Do not capture a live global Dashboard or log existing financial data; use in-memory assertions or an isolated controlled build for visual evidence. Date rollover is automated unless a native clock-boundary run is recorded. Full TalkBack/keyboard/other-width and intended-key gates remain separate. Record artifact/source identity, observer, exact checks and unchecked cases in STATUS/evidence; test definitions/builds are not native passes.
 
+## Focus adoption verification
+
+Scope: [FA01–FA10](../../specs/focus-adoption/spec.md#acceptance-scenarios), [DESIGN 2.0.0](../DESIGN.md) and the [SDD navigation contract](../SDD.md#6-ui-and-navigation). No view-model or Core code changed, so the Core and App suites are regression gates only; run them sequentially, then a Debug Android build. Styles and Shell markup are not covered by the test projects.
+
+Emulator procedure (new for this slice). Tools live under `%LOCALAPPDATA%\Android\EmulatorSdk` (emulator, platform-tools, Android 35 Google APIs x86_64 image), deliberately outside the auto-detected `Android\Sdk` path so the Visual Studio SDK keeps building the app. Create a Pixel-class AVD with `avdmanager`, boot it, install the Debug APK with `adb install -r`, and launch `com.lem.duedatechecker`. Toggle dark mode with `adb shell cmd uimode night yes|no` and text scale with `adb shell settings put system font_scale 2.0` (restore `1.0`). Both Android 35 images used so far boot with `debug.hwui.drawing_enabled=0`, which makes every app draw nothing: run `adb shell setprop debug.hwui.drawing_enabled 1` after boot or every capture is black. Capture with `adb shell screencap -p /data/local/tmp/s.png` then `adb pull` (PowerShell redirection corrupts binary output) into a folder outside the repository. The Google APIs ATD image cannot render at all and is only useful for `uiautomator dump` structure checks; the AOSP default image renders but has no SystemUI, so status-bar colour cannot be judged on it.
+
+Checks: cold start lands on Dues with the five-slot bar and the lime disc centred; each destination switches and retains state; the Add slot never highlights; the disc opens the editor from all four roots and Save/Cancel return to the same root; the editor shows title, amount, date, type, notes in that order with a fixed Cancel/Save footer and Delete in the header only for an existing due; the bar and disc are absent on the editor, Details and Reminders; Settings shows the bar and Back from it selects Dues; Reminders from Settings hides the bar and returns; light and dark palettes match DESIGN §3; at 200% text the footer, bar and disc remain reachable; empty-state copy points to the bar. Smoke-test create, edit, pay, cancel and delete.
+
+Record environment, APK identity, exact checks and screenshots as **emulator-observed** in the [tasks](../../specs/focus-adoption/tasks.md) and STATUS. Emulator results do not close phone, TalkBack, keyboard-overlap or gesture-inset acceptance; those remain in Remaining acceptance.
+
+## UI consistency verification
+
+Scope: [UC01–UC06](../../specs/ui-consistency/spec.md#acceptance-scenarios). Run the App suite: the Dues, Details, Dashboard and Calendar projection tests now assert the F02 status words on every surface. On the emulator, seed one due per state by moving the device clock (`adb root`, `settings put global auto_time 0`, `date MMDDhhmmYYYY`) rather than editing dates through the picker, then mark one paid. Check that each Dues card, Dashboard and Calendar row and the Details page show one pill with the status word and that `uiautomator dump` reports its description as "Status: word"; check that Dues, Dashboard, Calendar and Settings expose no toolbar title and that the editor, Details and Reminders expose the Shell title and no second heading. Restore `auto_time 1`. Do not `pm clear` a Debug install on an emulator: it deletes the Fast Deployment assemblies. Phone, 200% text on the pills and TalkBack remain separate.
+
+## Focus page content verification
+
+Scenarios: [FP01–FP08](../../specs/focus-pages/spec.md#acceptance-scenarios). Tracking: [tasks](../../specs/focus-pages/tasks.md).
+
+- Unit: `DashboardSummaryTests` cover the upcoming total (unpaid, today through month end, paid and next-month dues excluded), the next due, the zero case and the shared `IDueRow` contract. Existing Dashboard, Calendar, Details and preference tests must stay green.
+- Build: Debug Android build; Release with `-p:AndroidKeyStore=false` while the keystore password is wrong.
+- Emulator (AOSP Android 35, `debug.hwui.drawing_enabled=1`, device clock moved to seed Overdue, Due today, Upcoming and Paid): Dashboard summary text and counters through the accessibility tree; a counter tap changes the results heading; the next-due link opens Details; ledger rows expose the projection description; Calendar shows ‹ › Today controls and 44 × 48 day cells; Settings segments announce selected state and the Reminders row shows the saved state; no Refresh/Retry node on an error-free page; screenshots in light, dark and at 200% text.
+- Still separate: phone acceptance, TalkBack reading order, intended-key signing.
+
 ## Documentation checks
+
+The [mobile HTML study](../../specs/mobile-ui-prototype/spec.md) defines HP01–HP09 for `prototypes/mobile-review/` and HP10–HP18 for the four-concept exploration, Minimal Fintech floating Add and its refinements. Run `node --test prototypes/mobile-review/tests/model.test.cjs` for the original study. For the exploration, run `node --test` over `model.test.cjs`, `ph-catalog.test.cjs` and `essential-model.test.cjs` under `prototypes/design-exploration/tests/`, then `node prototypes/design-exploration/tests/browser-check.cjs`, which drives `ph-browser-flows.cjs`, `interaction-browser-flows.cjs` and `essential-browser-flows.cjs` through a loopback server and an installed headless Edge. [Observed results](../../specs/mobile-ui-prototype/tasks.md) are agent-observed browser evidence only.
 
 The HTML-only [Philippine catalog prototype](../../specs/ph-catalog-prototype/spec.md) has separate PH01–PH09 scenarios and [observed browser/helper evidence](../../specs/ph-catalog-prototype/tasks.md). Run its documented Node and local Edge checks for catalog/picker/schedule changes. These results do not count as MAUI builds, Android persistence, TalkBack or reminder-delivery acceptance.
 
@@ -138,7 +163,7 @@ On the phone, preserve app data and compare pre/post-upgrade active summary memb
 
 ## F07 optional amount verification
 
-Use [OA01-OA06](../../specs/f07-optional-amounts/spec.md#acceptance-scenarios), [PRD rules](../PRD.md#f07-optional-amount-rules) and [SDD contract](../SDD.md#f07-optional-amount-contract). Run Core/App suites sequentially and an Android Release build; automated SQLite tests establish schema/data preservation, not a private phone database inspection.
+Use [OA01-OA06](../../specs/f07-optional-amounts/spec.md#acceptance-scenarios), [PRD rules](../PRD.md#f07-optional-amount-rules) and [SDD contract](../SDD.md#f07-optional-amount-contract). Run Core/App suites sequentially and an Android Release build; automated SQLite tests establish schema/data preservation, not a private phone database inspection. As of the 2026-11-05 source inspection no OA tests, migration 004 or optional-amount code exist; this section is the procedure for when the slice is implemented.
 
 Automated checks must cover schema-3-to-4 active/paid/deleted preservation with the active index recreated, NULL-versus-zero round trips, Bill/Subscription rejection of null (including copied/`with` records at the repository boundary), Task/Other acceptance, editor blank/required/category-switch/clear/failure paths, and Dues/Details/Dashboard/Calendar "No amount" projections and semantics. Confirm amount-free dues do not alter status, counts, sort, filters or reminder planning.
 

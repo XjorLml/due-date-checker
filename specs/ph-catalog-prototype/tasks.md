@@ -33,3 +33,4 @@ Two initial browser assertions assumed a newly created Today due would be in the
 - Native Android code, SQLite, permissions, signing and release state are unchanged. Native accessibility/keyboard/notification delivery acceptance is not established by browser tests.
 - Custom catalogs persist locally; sample dues remain in memory and reset on reload. No real payment integrations, recurring series or OS reminders exist in this HTML.
 - User acceptance of the localized experience remains open. No production adoption is inferred.
+- The artifact is committed as 53d00e8 (2026-11-05); the [DESIGN register](../../docs/DESIGN.md#design-explorations-non-normative) and [PRD exclusions](../../docs/PRD.md#exclusions-and-deferred-capabilities) record the catalog as a deferred proposal for the native app.

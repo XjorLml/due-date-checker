@@ -83,6 +83,7 @@ public sealed class DashboardSummaryTests : IDisposable
 
     public void Dispose()
     {
+        TestDatabase.ClearPoolsUnder(_directory);
         try { Directory.Delete(_directory, true); } catch (IOException) { }
     }
 

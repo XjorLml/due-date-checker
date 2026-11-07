@@ -4,49 +4,90 @@
              xmlns:vm="clr-namespace:DueDateChecker.App.ViewModels"
              x:Class="DueDateChecker.App.Pages.DueDetailPage"
              xmlns:pages="clr-namespace:DueDateChecker.App.Pages"
-             x:DataType="vm:DueDetailViewModel" Title="Due details" Shell.TabBarIsVisible="False">
-    <ScrollView>
-        <VerticalStackLayout x:Name="PageContent" Spacing="20">
-            <Label Text="Saved information · Amounts in PHP · Dates use Asia/Manila" Style="{StaticResource CaptionLabel}" />
-            <!-- Focus item detail: title, large amount and badge, then divided fact rows. -->
-            <VerticalStackLayout Spacing="8" IsVisible="{Binding HasDetails}">
-                <Label Text="{Binding Item.CategoryText}" Style="{StaticResource CaptionLabel}" FontFamily="JakartaSemibold" AutomationId="DetailsCategory" />
-                <Label Text="{Binding Item.Title}" Style="{StaticResource Heading2}" />
-                <Label Text="{Binding Item.AmountText}" Style="{StaticResource HeroAmount}" />
-                <pages:StatusBadge Status="{Binding Item.StatusText}" AutomationId="DetailsStatus" />
-                <BoxView Style="{StaticResource Divider}" Margin="0,12,0,0" />
-                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16" Padding="0,12">
-                    <Label Text="Due date" Style="{StaticResource SupportingLabel}" VerticalOptions="Center" />
-                    <Label Grid.Column="1" Text="{Binding Item.DateText}" Style="{StaticResource FactValue}" VerticalOptions="Center" />
-                </Grid>
-                <BoxView Style="{StaticResource Divider}" />
-                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16" Padding="0,12">
-                    <Label Text="Type" Style="{StaticResource SupportingLabel}" VerticalOptions="Center" />
-                    <Label Grid.Column="1" Text="{Binding Item.CategoryText}" Style="{StaticResource FactValue}" VerticalOptions="Center" />
-                </Grid>
-                <BoxView Style="{StaticResource Divider}" />
-                <VerticalStackLayout Spacing="6" Padding="0,12">
-                    <Label Text="Notes" Style="{StaticResource SupportingLabel}" />
-                    <Label Text="{Binding NotesText}" />
+             x:DataType="vm:DueDetailViewModel" Title="Due details"
+             Shell.NavBarIsVisible="False" Shell.TabBarIsVisible="False">
+    <Grid RowDefinitions="Auto,*">
+        <!-- Prototype pushed header (PA02): Back, title, and the pencil that opens the editor. -->
+        <pages:PushedHeader Title="Due details" ActionKind="edit" ActionDescription="Edit due"
+                            ActionVisible="{Binding HasDetails}" ActionEnabled="{Binding CanEdit}"
+                            ActionClicked="OnEditClicked" BackClicked="OnBackClicked" Padding="8,0" />
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout x:Name="PageContent" Spacing="20">
+                <!-- Prototype Details (PA08): icon, title, amount, status, facts, payment action, notes, times. -->
+                <VerticalStackLayout Spacing="10" IsVisible="{Binding HasDetails}">
+                    <Border WidthRequest="48" HeightRequest="48" StrokeThickness="0" StrokeShape="Ellipse" HorizontalOptions="Start"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource SurfaceMutedLight}, Dark={StaticResource SurfaceMutedDark}}"
+                            AutomationProperties.ExcludedWithChildren="True">
+                        <pages:Glyph Kind="{Binding Item.TypeGlyph}" HorizontalOptions="Center" VerticalOptions="Center"
+                                     Color="{AppThemeBinding Light={StaticResource PrimaryLight}, Dark={StaticResource PrimaryDark}}" />
+                    </Border>
+                    <Label Text="{Binding Item.Title}" Style="{StaticResource Heading1}" FontSize="26" />
+                    <Label Text="{Binding Item.AmountText}" Style="{StaticResource HeroAmount}" IsVisible="{Binding Item.HasAmount}" />
+                    <!-- UX14 (decided 2026-11-06): an absent amount is quiet body text, so it never reads like a peso figure. -->
+                    <Label Text="{Binding Item.AmountText}" Style="{StaticResource BodyLabel}" AutomationId="DetailsNoAmount"
+                           TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}">
+                        <Label.Triggers>
+                            <DataTrigger TargetType="Label" Binding="{Binding Item.HasAmount}" Value="True">
+                                <Setter Property="IsVisible" Value="False" />
+                            </DataTrigger>
+                        </Label.Triggers>
+                    </Label>
+                    <pages:StatusBadge Status="{Binding Item.StatusText}" AutomationId="DetailsStatus" />
+                    <BoxView Style="{StaticResource Divider}" Margin="0,8,0,0" />
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16" Padding="0,10">
+                        <Label Text="Due date" Style="{StaticResource SupportingLabel}" VerticalOptions="Center" />
+                        <Label Grid.Column="1" Text="{Binding Item.DateText}" Style="{StaticResource FactValue}" VerticalOptions="Center" />
+                    </Grid>
+                    <BoxView Style="{StaticResource Divider}" />
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16" Padding="0,10">
+                        <Label Text="Due type" Style="{StaticResource SupportingLabel}" VerticalOptions="Center" />
+                        <Label Grid.Column="1" Text="{Binding Item.CategoryText}" Style="{StaticResource FactValue}" VerticalOptions="Center"
+                               AutomationId="DetailsCategory" />
+                    </Grid>
+                    <BoxView Style="{StaticResource Divider}" />
+                    <!-- F07 recurrence (RC07): only repeating dues show this row. -->
+                    <VerticalStackLayout IsVisible="{Binding Item.IsRepeating}" Spacing="10">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16" Padding="0,10">
+                            <Label Text="Repeats" Style="{StaticResource SupportingLabel}" VerticalOptions="Center" />
+                            <Label Grid.Column="1" Text="{Binding Item.RepeatFactText}" Style="{StaticResource FactValue}" VerticalOptions="Center"
+                                   AutomationId="DetailsRepeat" />
+                        </Grid>
+                        <BoxView Style="{StaticResource Divider}" />
+                    </VerticalStackLayout>
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16" Padding="0,10">
+                        <Label Text="Currency / timezone" Style="{StaticResource SupportingLabel}" VerticalOptions="Center" />
+                        <Label Grid.Column="1" Text="PHP / Asia/Manila" Style="{StaticResource FactValue}" VerticalOptions="Center" />
+                    </Grid>
+                    <BoxView Style="{StaticResource Divider}" />
+                    <!-- UX01 (decided 2026-11-06): one tap saves the payment status. -->
+                    <Button Text="{Binding PaidActionText, StringFormat='✓  {0}'}" Clicked="OnTogglePaidClicked" IsEnabled="{Binding CanTogglePaid}"
+                            HorizontalOptions="Start" Padding="20,0" Margin="0,8,0,0" AutomationId="DetailsTogglePaid"
+                            SemanticProperties.Description="{Binding PaidActionText}" SemanticProperties.Hint="{Binding PaidActionHint}" />
+                    <Label Text="{Binding PaymentError}" IsVisible="{Binding HasPaymentError}" Style="{StaticResource ErrorLabel}" />
+                    <Label Text="{Binding NextOccurrenceText}" IsVisible="{Binding HasNextOccurrenceText}" Style="{StaticResource SupportingLabel}"
+                           AutomationId="DetailsNextAdded" />
+                    <Border Style="{StaticResource SurfaceCard}" Margin="0,8,0,0">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Notes" Style="{StaticResource Heading3}" />
+                            <Label Text="{Binding NotesText}" Style="{StaticResource SupportingLabel}" />
+                        </VerticalStackLayout>
+                    </Border>
+                    <Label Text="{Binding CreatedText, StringFormat='Created · {0}'}" Style="{StaticResource CaptionLabel}" Margin="0,4,0,0" />
+                    <Label Text="{Binding UpdatedText, StringFormat='Updated · {0}'}" Style="{StaticResource CaptionLabel}" />
                 </VerticalStackLayout>
-                <BoxView Style="{StaticResource Divider}" />
-                <Label Text="{Binding CreatedText, StringFormat='Created {0}'}" Style="{StaticResource CaptionLabel}" Margin="0,8,0,0" />
-                <Label Text="{Binding UpdatedText, StringFormat='Last updated {0}'}" Style="{StaticResource CaptionLabel}" />
-            </VerticalStackLayout>
-            <VerticalStackLayout Spacing="8" IsVisible="{Binding IsBusy}">
-                <ActivityIndicator IsRunning="{Binding IsBusy}" SemanticProperties.Description="Loading due details" />
-                <Label Text="Loading due details…" Style="{StaticResource SupportingLabel}" />
-            </VerticalStackLayout>
-            <Border Style="{StaticResource SurfaceCard}" IsVisible="{Binding HasError}">
-                <Label Text="{Binding ErrorMessage}" Style="{StaticResource ErrorLabel}" />
-            </Border>
-            <VerticalStackLayout Spacing="12">
+                <VerticalStackLayout Spacing="8" IsVisible="{Binding IsBusy}">
+                    <ActivityIndicator IsRunning="{Binding IsBusy}" SemanticProperties.Description="Loading due details" />
+                    <Label Text="Loading due details…" Style="{StaticResource SupportingLabel}" />
+                </VerticalStackLayout>
+                <Border Style="{StaticResource SurfaceCard}" IsVisible="{Binding HasError}">
+                    <Label Text="{Binding ErrorMessage}" Style="{StaticResource ErrorLabel}" />
+                </Border>
                 <Button Text="Retry loading" Command="{Binding LoadCommand}" IsVisible="{Binding ShowRetry}"
                         Style="{StaticResource SecondaryButton}" />
-                <Button Text="Edit due" Clicked="OnEditClicked" IsEnabled="{Binding CanEdit}"
-                        SemanticProperties.Hint="Edit this saved due; changes apply when saved" />
-                <Button Text="Back to list" Clicked="OnBackClicked" Style="{StaticResource SecondaryButton}" />
+                <!-- PRD: an unavailable due offers a way back to the list (the header Back does the same). -->
+                <Button Text="Back to list" Clicked="OnBackClicked" IsVisible="{Binding IsUnavailable}"
+                        Style="{StaticResource SecondaryButton}" />
             </VerticalStackLayout>
-        </VerticalStackLayout>
-    </ScrollView>
+        </ScrollView>
+    </Grid>
 </ContentPage>

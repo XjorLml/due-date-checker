@@ -41,12 +41,23 @@ public sealed class DatabaseInitializer(string databasePath)
         return Convert.ToInt32(command.ExecuteScalar(), CultureInfo.InvariantCulture);
     }
 
+    /// <summary>Runs every statement in <paramref name="sql"/>; the first failing one throws.</summary>
+    /// <remarks>
+    /// Not ExecuteNonQuery. SQLite reports a result column for some statements that return no rows,
+    /// such as ALTER TABLE ... ADD COLUMN with a CHECK (migrations 002 and 005). Microsoft.Data.Sqlite
+    /// 10.0.12 then runs the statements after it while disposing the reader and drops their errors
+    /// (observed 2026-11-06), so a failing migration could commit half-applied with its version bumped.
+    /// Moving through every result here makes a later failure throw inside the transaction.
+    /// </remarks>
     private static void Execute(SqliteConnection connection, SqliteTransaction transaction, string sql)
     {
         using var command = connection.CreateCommand();
         command.Transaction = transaction;
         command.CommandText = sql;
-        command.ExecuteNonQuery();
+        using var reader = command.ExecuteReader();
+        while (reader.NextResult())
+        {
+        }
     }
 
     /// <summary>Embedded scripts ordered by their numeric prefix (001_, 002_, ...).</summary>

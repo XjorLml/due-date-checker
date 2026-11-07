@@ -18,8 +18,8 @@ Execution evidence: [2026-10-17 design adoption](../../docs/delivery/evidence/DE
 ## Remaining native acceptance
 
 - [ ] Full TalkBack, keyboard and switch-access focus/order review.
-- [ ] Compact-width and tablet device verification, including landscape and 200% text.
-- [ ] Controlled native failure, empty-state and repeated-tap scenarios on this UI artifact.
+- [ ] Compact-width and tablet device verification, including landscape and 200% text. Emulator evidence 2026-11-06 at 320 dp, 800 dp and landscape ([record](../../docs/delivery/evidence/EMULATOR-HARDENING-2026-11-06.md#screen-sizes-landscape-and-maximum-amounts)); phone pending.
+- [ ] Controlled native failure, empty-state and repeated-tap scenarios on this UI artifact. Emulator evidence 2026-11-06: empty, unreadable and read-only database, three concurrent Save taps ([record](../../docs/delivery/evidence/EMULATOR-HARDENING-2026-11-06.md#controlled-failures-empty-state-and-repeated-taps)); phone pending.
 - [ ] Intended-key signed artifact pass when release/signing work resumes.
 
 Release and optional CI activation remain deferred. Completion of implementation is separate from native acceptance; evidence belongs in STATUS and linked delivery records.

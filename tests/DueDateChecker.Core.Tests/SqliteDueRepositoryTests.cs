@@ -21,14 +21,14 @@ public sealed class SqliteDueRepositoryTests : IDisposable
     public void Dispose()
     {
         // Pooled connections keep the file open; clear them before deleting.
-        SqliteConnection.ClearAllPools();
+        TestDatabase.ClearPool(_dbPath);
         File.Delete(_dbPath);
     }
 
     [Fact]
     public void Initialize_sets_user_version_and_creates_the_dues_table()
     {
-        Assert.Equal(3, ReadUserVersion());
+        Assert.Equal(5, ReadUserVersion());
         Assert.Equal(1L, Scalar("SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'dues'"));
     }
 
@@ -37,7 +37,7 @@ public sealed class SqliteDueRepositoryTests : IDisposable
     {
         new DatabaseInitializer(_dbPath).Initialize();
 
-        Assert.Equal(3, ReadUserVersion());
+        Assert.Equal(5, ReadUserVersion());
     }
 
     [Fact]
@@ -176,6 +176,25 @@ public sealed class SqliteDueRepositoryTests : IDisposable
         Assert.Null(stored.DeletedAt);
         Assert.Equal("Edited", stored.Title);
         Assert.Single(await _repo.ListActiveAsync());
+    }
+
+    [Fact]
+    public async Task Equal_due_dates_list_in_creation_order_regardless_of_insert_order()
+    {
+        // The list query is ORDER BY due_date, created_at. App writes store UTC, so the text
+        // order of created_at matches time order (STATUS known gap, closed 2026-11-06).
+        var date = new DateOnly(2026, 11, 20);
+        var utc = new DateTimeOffset(2026, 11, 6, 1, 0, 0, TimeSpan.Zero);
+        var first = Due.Create("Created first", Money.FromCentavos(100), date, utc);
+        var second = Due.Create("Created second", Money.FromCentavos(100), date, utc.AddMinutes(5));
+        var third = Due.Create("Created third", Money.FromCentavos(100), date, utc.AddHours(2));
+        var earlierDate = Due.Create("Earlier date", Money.FromCentavos(100), date.AddDays(-1), utc.AddHours(3));
+        foreach (var due in new[] { third, earlierDate, first, second })
+            await _repo.AddAsync(due);
+
+        var listed = await new SqliteDueRepository(_dbPath).ListActiveAsync();
+
+        Assert.Equal(new[] { earlierDate.Id, first.Id, second.Id, third.Id }, listed.Select(d => d.Id));
     }
 
     private object Scalar(string sql)

@@ -1,3 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <path d="m3 6 1 1 2-2M10 6h11M3 12h3M10 12h11M3 18h3M10 18h11" />
+  <!-- Focus prototype shape (prototypes/design-exploration/app.js "dues"): a sheet with three lines. -->
+  <rect x="5" y="3" width="14" height="18" rx="3" />
+  <path d="M9 8h6M9 12h6M9 16h3" />
 </svg>

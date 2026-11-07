@@ -54,7 +54,7 @@ public sealed class CategoryTests : IDisposable
         }
         var before=Snapshot();
         new DatabaseInitializer(_path).Initialize();new DatabaseInitializer(_path).Initialize();
-        Assert.Equal(3,Version());Assert.Equal(before,Snapshot());
+        Assert.Equal(5,Version());Assert.Equal(before,Snapshot());
         var repository=new SqliteDueRepository(_path);
         foreach(var id in ids) Assert.Equal(DueCategory.Other,(await repository.GetAsync(id))!.Category);
         Assert.Equal(2,(await repository.ListActiveAsync()).Count);
@@ -110,5 +110,5 @@ public sealed class CategoryTests : IDisposable
         Assert.Equal(1,Version());Assert.Equal(before,Snapshot());
     }
 
-    public void Dispose(){SqliteConnection.ClearAllPools();File.Delete(_path);}
+    public void Dispose(){TestDatabase.ClearPool(_path);File.Delete(_path);}
 }

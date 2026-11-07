@@ -40,7 +40,7 @@ public sealed class DeleteDueTests : IDisposable
     public async Task Confirmed_delete_survives_reopen_retains_fields_and_refreshes_the_list()
     {
         var due = await AddDueAsync();
-        var list = new DuesListViewModel(_database, _repository);
+        var list = new DuesListViewModel(_database, _repository, _clock);
         await list.LoadCommand.ExecuteAsync(null);
         Assert.Single(list.Dues);
         var editor = await OpenAsync(due.Id);
@@ -65,7 +65,7 @@ public sealed class DeleteDueTests : IDisposable
         Assert.Empty(list.Dues);
         Assert.True(list.IsEmpty);
 
-        SqliteConnection.ClearAllPools();
+        TestDatabase.ClearPool(_path);
         var reopened = new SqliteDueRepository(_path);
         var stored = await reopened.GetAsync(due.Id);
         Assert.Equal(due with { DeletedAt = _clock.GetUtcNow(), UpdatedAt = _clock.GetUtcNow() }, stored);
@@ -198,7 +198,7 @@ public sealed class DeleteDueTests : IDisposable
 
     public void Dispose()
     {
-        SqliteConnection.ClearAllPools();
+        TestDatabase.ClearPool(_path);
         File.Delete(_path);
     }
 

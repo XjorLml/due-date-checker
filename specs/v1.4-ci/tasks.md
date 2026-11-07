@@ -8,7 +8,7 @@ See [spec scenarios](spec.md#acceptance-scenarios) and the [plan](plan.md).
 - [x] Add `.github/workflows/ci.yml` per the plan (2026-10-17; committed and present on `origin/develop` and `origin/test_branch`, not `origin/main`, as inspected 2026-11-03).
 - [x] Run the workflow's two `dotnet test` commands locally: 28 Core + 42 App passed on 2026-10-17 (agent-observed; Windows, .NET SDK 10.0.401). This shows the commands work, not that CI passed on Linux.
 - [x] Update STATUS, TEST-PLAN, SDD, and PRD traceability to link this spec.
-- [ ] Observe and record a passing GitHub run (CI01, CI04). The workflow is already pushed on `develop`; landing it on `main` requires the user's go-ahead.
+- [x] Observe and record a passing GitHub run (CI01, CI04). Agent-observed 2026-11-06 through the public GitHub API: 9 runs, all successful; run #9 on `d89ce9d` ran "Core tests" and "App tests" on `ubuntu-latest` ([record](../../docs/delivery/evidence/EMULATOR-HARDENING-2026-11-06.md#optional-ci-r08)). Landing the workflow on `main` still requires the user's go-ahead.
 - [ ] Optional: demonstrate CI02 on a throwaway branch.
 
 ## Completion criteria

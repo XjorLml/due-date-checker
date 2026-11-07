@@ -8,11 +8,13 @@ public partial class DueDetailPage : ContentPage, IQueryAttributable
     private Task? _refreshTask;
     private bool _targetApplied;
     private bool _navigating;
+    private readonly Services.IMessageHost _messages;
 
-    public DueDetailPage(DueDetailViewModel viewModel)
+    public DueDetailPage(DueDetailViewModel viewModel, Services.IMessageHost messages)
     {
         InitializeComponent();
         BindingContext = _viewModel = viewModel;
+        _messages = messages;
         PageLayout.Connect(this, PageContent);
         Appearing += async (_, _) => await RefreshAsync();
     }
@@ -36,7 +38,19 @@ public partial class DueDetailPage : ContentPage, IQueryAttributable
         await NavigateAsync($"{nameof(DueEditPage)}?id={_viewModel.Item!.Id:D}");
     }
 
+    /// <summary>UX06: after an Undo, show the restored due again even if this page had marked it unavailable.</summary>
+    public Task RefreshAfterRestoreAsync(Guid restoredId) => _viewModel.ShowsDue(restoredId) ? _viewModel.ReloadAsync() : RefreshAsync();
+
     private async void OnBackClicked(object? sender, EventArgs e) => await NavigateAsync("..");
+
+    private async void OnTogglePaidClicked(object? sender, EventArgs e)
+    {
+        if (_navigating || !_viewModel.CanTogglePaid) return;
+        await _viewModel.TogglePaidCommand.ExecuteAsync(null);
+        // A failure stays inline and is announced; success shows the UX06 message, which announces itself.
+        if (_viewModel.HasPaymentError) SemanticScreenReader.Default.Announce(_viewModel.PaymentError);
+        else if (_viewModel.HasDetails) _messages.Show(_viewModel.PaymentAnnouncement);
+    }
 
     private async Task NavigateAsync(string route)
     {

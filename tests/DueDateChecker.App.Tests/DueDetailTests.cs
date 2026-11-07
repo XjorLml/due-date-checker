@@ -50,7 +50,7 @@ public sealed class DueDetailTests : IDisposable
         Assert.Equal("₱1,299.00", vm.Item.AmountText);
         Assert.Equal("19 Oct 2026", vm.Item.DateText);
         Assert.Equal(due.Notes, vm.NotesText);
-        Assert.Equal("17 Oct 2026, 08:30 UTC", vm.CreatedText);
+        Assert.Equal("17 Oct 2026, 16:30 Manila", vm.CreatedText); // UX12: 08:30 UTC shown in Asia/Manila
         Assert.Equal(vm.CreatedText, vm.UpdatedText);
         await vm.LoadCommand.ExecuteAsync(null);
         Assert.Equal(due, await _repository.GetAsync(due.Id));
@@ -257,7 +257,7 @@ public sealed class DueDetailTests : IDisposable
 
     public void Dispose()
     {
-        SqliteConnection.ClearAllPools();
+        TestDatabase.ClearPoolsUnder(_directory);
         Directory.Delete(_directory, recursive: true);
     }
 

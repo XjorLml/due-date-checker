@@ -9,6 +9,8 @@
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="interaction-lab.css">
   <link rel="stylesheet" href="essential-editor.css">
+  <link rel="stylesheet" href="decision-lab.css">
+  <link rel="stylesheet" href="notification-lab.css">
   <script src="../mobile-review/model.js" defer></script>
   <script src="design-system.js" defer></script>
   <script src="exploration-model.js" defer></script>
@@ -16,13 +18,15 @@
   <script src="ph-ui.js" defer></script>
   <script src="essential-model.js" defer></script>
   <script src="interaction-lab.js" defer></script>
+  <script src="decision-lab.js" defer></script>
+  <script src="notification-lab.js" defer></script>
   <script src="app.js" defer></script>
 </head>
 <body data-selected-focus="true">
   <a class="skip" href="#main">Skip to design exploration</a>
   <header class="studio-header">
     <a class="brand" href="#a/dashboard"><span class="brand-symbol" aria-hidden="true">✓</span>duewise<span class="brand-divider"></span><span class="brand-note">Design explorations</span></a>
-    <nav class="view-toggle" aria-label="Exploration view"><button data-view="compare" aria-pressed="true">Compare all <span>04</span></button><button data-view="explore" aria-pressed="false">Explore one <span>↗</span></button></nav>
+    <nav class="view-toggle" aria-label="Exploration view"><button data-view="compare" aria-pressed="true">Compare all <span>04</span></button><button data-view="explore" aria-pressed="false">Explore one <span>↗</span></button><button data-view="decide" aria-pressed="false">UX decisions <span>11</span></button><button data-view="notify" aria-pressed="false">Notifications <span>06</span></button></nav>
     <a class="original-link" href="../mobile-review/index.html#dashboard">Original prototype ↗</a>
   </header>
   <main id="main">
@@ -64,6 +68,22 @@
       </div>
       <div class="scenario-toolbar"><label>Sample state <select id="sample-state"><option value="normal">Normal</option><option value="empty">Empty</option><option value="loading">Loading</option><option value="error">Read error</option><option value="stale">Stale data</option></select></label><button id="reset-sample" class="text-action">Reset sample data</button><button class="text-action" data-view="compare">← Back to all four</button></div>
     </section>
+    <section id="decision-view" hidden aria-labelledby="decision-heading">
+      <div class="dl-heading">
+        <div><p class="eyebrow" id="dl-eyebrow">UX DECISIONS</p><h2 id="decision-heading" tabindex="-1">UX decisions</h2>
+          <!-- decision-lab.js fills the eyebrow, heading, intro, sources and round switch for the active round. -->
+          <p id="dl-intro">Each decision shows <strong>today's Android app</strong> next to the proposed options, drawn with the app's real colours and layout.</p>
+          <p>Choices are saved in this browser only. Copy or export them and paste them into the chat: nothing changes in the app until a choice is confirmed and written into the PRD/DESIGN. Sources: <span id="dl-sources"></span>.</p>
+          <div id="dl-rounds" class="dl-rounds" role="group" aria-label="Review round"></div></div>
+        <div class="dl-review"><p id="dl-progress" role="status"></p><button type="button" class="studio-primary" data-dl-cmd="copy">Copy for Claude</button><button type="button" class="studio-secondary" data-dl-cmd="export">Export .md</button><button type="button" class="text-action" data-dl-cmd="clear">Clear choices</button><textarea id="dl-export-text" hidden aria-label="Exported decisions" readonly></textarea></div>
+      </div>
+      <div class="dl-layout">
+        <nav id="dl-list" class="dl-list" aria-label="Decisions by impact"></nav>
+        <div id="dl-main" class="dl-main"></div>
+      </div>
+    </section>
+    <!-- Notification lab (specs/notification-lab): notification-lab.js renders the whole section. -->
+    <section id="notification-view" hidden aria-labelledby="notification-heading"><div id="nl-root"></div></section>
   </main>
   <footer class="studio-footer"><span>Duewise / A study in everyday clarity</span><span>Focus selected. Make it yours. <a href="AUDIT.md">Audit</a> <a href="SYSTEM.md">Design system</a></span></footer>
   <dialog id="confirmation" aria-labelledby="confirmation-title"><form method="dialog"><span class="eyebrow">DUEWISE EXPLORATIONS</span><h2 id="confirmation-title"></h2><p id="confirmation-copy"></p><div class="dialog-actions"><button value="cancel" class="studio-secondary">Cancel</button><button value="confirm" id="confirmation-yes" class="studio-primary">Confirm</button></div></form></dialog>

@@ -93,14 +93,31 @@ public sealed class ReminderTests : IDisposable
             }
             using var version = connection.CreateCommand(); version.CommandText = "PRAGMA user_version=2"; version.ExecuteNonQuery();
         }
-        var repository = new SqliteDueRepository(_path);
         var due = Item() with { IsPaid = true, Category = DueCategory.Subscription, DeletedAt = Now, Notes = "Preserved" };
-        await repository.AddAsync(due);
+        // Seeded with schema-2 columns: the current repository writes columns that only later migrations add.
+        using (var connection = new SqliteConnection($"Data Source={_path}"))
+        {
+            connection.Open();
+            using var insert = connection.CreateCommand();
+            insert.CommandText = """
+                INSERT INTO dues (id, title, amount_centavos, due_date, notes, is_paid, created_at, updated_at, deleted_at, category)
+                VALUES (@id, @title, @amount, @date, @notes, 1, @stamp, @stamp, @stamp, @category)
+                """;
+            insert.Parameters.AddWithValue("@id", due.Id.ToString());
+            insert.Parameters.AddWithValue("@title", due.Title);
+            insert.Parameters.AddWithValue("@amount", due.Amount!.Value.Centavos);
+            insert.Parameters.AddWithValue("@date", due.DueDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+            insert.Parameters.AddWithValue("@notes", due.Notes);
+            insert.Parameters.AddWithValue("@stamp", Now.ToString("O", CultureInfo.InvariantCulture));
+            insert.Parameters.AddWithValue("@category", (int)due.Category);
+            insert.ExecuteNonQuery();
+        }
+        var repository = new SqliteDueRepository(_path);
         new DatabaseInitializer(_path).Initialize(); new DatabaseInitializer(_path).Initialize();
         Assert.Equal(due, await repository.GetAsync(due.Id));
         var store = new SqliteReminderStore(_path); Assert.Equal(new(), await store.ReadSettingsAsync()); Assert.Empty(await store.ReadOccurrencesAsync());
         using var check = new SqliteConnection($"Data Source={_path}"); check.Open(); using var commandCheck = check.CreateCommand();
-        commandCheck.CommandText = "PRAGMA user_version"; Assert.Equal(3L, commandCheck.ExecuteScalar());
+        commandCheck.CommandText = "PRAGMA user_version"; Assert.Equal(5L, commandCheck.ExecuteScalar());
     }
 
     [Fact]
@@ -121,5 +138,5 @@ public sealed class ReminderTests : IDisposable
         Assert.Equal(Now, Assert.Single(await reopened.ReadOccurrencesAsync()).DeliveredAt);
     }
 
-    public void Dispose() { SqliteConnection.ClearAllPools(); File.Delete(_path); }
+    public void Dispose() { TestDatabase.ClearPool(_path); File.Delete(_path); }
 }

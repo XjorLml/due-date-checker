@@ -409,7 +409,7 @@ public sealed class CalendarTests : IDisposable
 
     public void Dispose()
     {
-        SqliteConnection.ClearAllPools();
+        TestDatabase.ClearPoolsUnder(_directory);
         Directory.Delete(_directory, recursive: true);
     }
 

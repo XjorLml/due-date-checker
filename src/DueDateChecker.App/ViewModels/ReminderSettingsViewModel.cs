@@ -13,6 +13,8 @@ public partial class ReminderSettingsViewModel(ReminderCoordinator coordinator, 
     [ObservableProperty] private bool _dayBefore = true;
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(EnabledText))]
+    [NotifyPropertyChangedFor(nameof(IsOff))]
+    [NotifyPropertyChangedFor(nameof(StatusTitle))]
     private bool _enabled;
     [ObservableProperty] private bool _hasLoaded;
     [ObservableProperty]
@@ -20,10 +22,18 @@ public partial class ReminderSettingsViewModel(ReminderCoordinator coordinator, 
     private bool _isBusy;
     [ObservableProperty] private string _statusText = "";
     [ObservableProperty] private string _backgroundText = "";
+    // UX04: shown only while reminders are on, below the general background status.
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasMakerSteps))]
+    private string _makerStepsText = "";
+    public bool HasMakerSteps => !string.IsNullOrEmpty(MakerStepsText);
     [ObservableProperty] private string _message = "";
     [ObservableProperty] private string _scheduleText = "";
     public bool CanEdit => !IsBusy && HasLoaded;
     public string EnabledText => Enabled ? "Reminders enabled in Duewise" : "Reminders are off";
+    // Prototype Reminders page (UX19, decided 2026-11-07): the status card title and the footer state.
+    public string StatusTitle => Enabled ? "Reminders on" : "Reminders off";
+    public bool IsOff => !Enabled;
 
     private bool Eligible() => !IsBusy && HasLoaded;
     private ReminderSettings Draft(bool enabled)
@@ -39,8 +49,17 @@ public partial class ReminderSettingsViewModel(ReminderCoordinator coordinator, 
     {
         try { StatusText = platform.GetAccess().Description; }
         catch (Exception) { StatusText = "Android notification status is unavailable. Retry."; }
-        try { BackgroundText = platform.GetBackgroundStatus().Description; }
-        catch (Exception) { BackgroundText = "Android battery/background status is unavailable. Retry or open Android app settings."; }
+        try
+        {
+            var background = platform.GetBackgroundStatus();
+            BackgroundText = background.Description;
+            MakerStepsText = Enabled ? background.MakerSteps : "";
+        }
+        catch (Exception)
+        {
+            BackgroundText = "Android battery/background status is unavailable. Retry or open Android app settings.";
+            MakerStepsText = "";
+        }
         ScheduleText = coordinator.NextAt is { } next
             ? $"Next check: {TimeZoneInfo.ConvertTime(next, TimeZoneInfo.FindSystemTimeZoneById("Asia/Manila")):dd MMM yyyy HH:mm} Asia/Manila. Android may deliver later."
             : "No future reminder is currently scheduled.";

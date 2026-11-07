@@ -11,5 +11,5 @@
 ## Remaining acceptance
 
 - [ ] Full TalkBack, keyboard/switch access, landscape and other widths/devices.
-- [ ] Native maximum-value amount wrapping and separately controlled native read/navigation failures; these are not implied by fixture/state tests or zero-amount phone checks.
+- [ ] Native maximum-value amount wrapping and separately controlled native read/navigation failures; these are not implied by fixture/state tests or zero-amount phone checks. Emulator 2026-11-06: the maximum amount wraps on Details without clipping, and a startup read failure shows Retry ([record](../../docs/delivery/evidence/EMULATOR-HARDENING-2026-11-06.md)); navigation failures and phone pending.
 - [ ] Intended-key final release acceptance, separately from the completed local verification. Release remains held.

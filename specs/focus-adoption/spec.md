@@ -10,6 +10,8 @@ In scope: palette, type scale, radius, spacing and focus-outline tokens on all s
 
 Out of scope and still deferred (recorded in the [DESIGN register](../../docs/DESIGN.md#design-explorations-non-normative)): Dashboard-first entry, the Philippine category/provider catalog, repeat controls, weekly Calendar, amount totals and charts, multiple reminder offsets, quick-paid confirmation, dirty-exit confirmation and PHP paste normalization. No schema, repository, reminder or status-logic change is made.
 
+Later change, 2026-11-06: [UX11](../ux-improvements/spec.md#decision-log) revised the Essential-first editor order to Title → Type → Amount → Due date, then Repeat, Notes and Payment status ([DESIGN](../../docs/DESIGN.md#add--edit-due-item)). Scenarios below that name the old order describe the 2026-11-05 adoption.
+
 ## Acceptance scenarios
 
 | ID | Observable outcome | Verification boundary |

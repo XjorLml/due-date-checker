@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:pages="clr-namespace:DueDateChecker.App.Pages"
+             x:Class="DueDateChecker.App.Pages.PushedHeader" x:Name="Root">
+    <!-- Prototype pushed-page header (DESIGN prototype alignment): "‹ Back", a centred title and one
+         trailing icon action. Replaces Android's title bar on Details, the editor and Reminders. -->
+    <Grid ColumnDefinitions="Auto,*,Auto" MinimumHeightRequest="56" Padding="4,4">
+        <Label Grid.ColumnSpan="3" Text="{Binding Source={x:Reference Root}, Path=Title}" FontFamily="JakartaSemibold" FontSize="17"
+               HorizontalOptions="Center" VerticalOptions="Center" HorizontalTextAlignment="Center" LineBreakMode="TailTruncation"
+               Margin="96,0" SemanticProperties.HeadingLevel="Level1"
+               TextColor="{AppThemeBinding Light={StaticResource TextLight}, Dark={StaticResource TextDark}}" />
+        <Grid IsVisible="{Binding Source={x:Reference Root}, Path=ShowBack}" MinimumWidthRequest="48" HeightRequest="48">
+            <HorizontalStackLayout Spacing="2" VerticalOptions="Center" InputTransparent="True">
+                <pages:Glyph Kind="back" Size="20" VerticalOptions="Center"
+                             Color="{AppThemeBinding Light={StaticResource TextLight}, Dark={StaticResource TextDark}}" />
+                <Label Text="Back" FontFamily="JakartaMedium" FontSize="16" VerticalOptions="Center"
+                       AutomationProperties.IsInAccessibleTree="False"
+                       TextColor="{AppThemeBinding Light={StaticResource TextLight}, Dark={StaticResource TextDark}}" />
+            </HorizontalStackLayout>
+            <Button Style="{StaticResource OverlayButton}" Clicked="OnBackClicked" AutomationId="HeaderBack"
+                    SemanticProperties.Description="Back" />
+        </Grid>
+        <Grid Grid.Column="2" IsVisible="{Binding Source={x:Reference Root}, Path=HasAction}" WidthRequest="48" HeightRequest="48">
+            <Border x:Name="ActionFrame" StrokeThickness="0" StrokeShape="RoundRectangle 12" InputTransparent="True">
+                <pages:Glyph x:Name="ActionGlyph" Kind="{Binding Source={x:Reference Root}, Path=ActionKind}"
+                             HorizontalOptions="Center" VerticalOptions="Center" />
+            </Border>
+            <Button x:Name="ActionButton" Style="{StaticResource OverlayButton}" Clicked="OnActionClicked" AutomationId="HeaderAction"
+                    IsEnabled="{Binding Source={x:Reference Root}, Path=ActionEnabled}"
+                    SemanticProperties.Description="{Binding Source={x:Reference Root}, Path=ActionDescription}" />
+        </Grid>
+    </Grid>
+</ContentView>

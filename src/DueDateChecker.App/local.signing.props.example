@@ -4,7 +4,7 @@
     <AndroidKeyStore>true</AndroidKeyStore>
     <AndroidSigningKeyStore>D:\LEM\keys\duedatechecker-upload.jks</AndroidSigningKeyStore>
     <AndroidSigningKeyAlias>upload</AndroidSigningKeyAlias>
-    <AndroidSigningKeyPass>CHANGE_ME</AndroidSigningKeyPass>
-    <AndroidSigningStorePass>CHANGE_ME</AndroidSigningStorePass>
+    <AndroidSigningKeyPass>masterkey01</AndroidSigningKeyPass>
+    <AndroidSigningStorePass>masterkey01</AndroidSigningStorePass>
   </PropertyGroup>
 </Project>

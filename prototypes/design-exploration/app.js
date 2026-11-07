@@ -193,11 +193,13 @@ function renderPhone(preserveScroll=true){
   Lab.afterRender();
 }
 function render(){
-  document.body.dataset.view=state.view;$('#compare-view').hidden=state.view!=='compare';$('#explore-view').hidden=state.view!=='explore';
+  document.body.dataset.view=state.view;$('#compare-view').hidden=state.view!=='compare';$('#explore-view').hidden=state.view!=='explore';$('#decision-view').hidden=state.view!=='decide';$('#notification-view').hidden=state.view!=='notify';
   document.querySelectorAll('[data-view]').forEach(el=>{if(el.closest('.view-toggle'))el.setAttribute('aria-pressed',String(el.dataset.view===state.view));});
   if(state.view==='compare')renderGallery();
+  else if(state.view==='decide')window.DecisionLab.render();
+  else if(state.view==='notify')window.NotificationLab.render();
   else{renderInspector();renderPhone();}
-  const hash=Lab.enabled?`#interaction-lab/${state.page}`:state.view==='compare'?'#compare':`#${state.concept}/${state.page}`;
+  const hash=Lab.enabled?`#interaction-lab/${state.page}`:state.view==='compare'?'#compare':state.view==='decide'?window.DecisionLab.hash():state.view==='notify'?window.NotificationLab.hash():`#${state.concept}/${state.page}`;
   if(location.hash!==hash)history.replaceState(null,'',hash);
 }
 async function navigate(page){
@@ -318,6 +320,8 @@ async function loadHash(){
   state.form=null;
   Lab.enabled=parts[0]==='interaction-lab';
   if(parts[0]==='compare'){state.view='compare';}
+  else if(parts[0]==='ux-decisions'){state.view='decide';window.DecisionLab.render(parts[1]);}
+  else if(parts[0]==='notifications'){state.view='notify';window.NotificationLab.render(parts[1]);}
   else{state.concept=D.concepts.some(c=>c.id===parts[0])?parts[0]:'a';state.view='explore';state.page=roots.includes(parts[1])?parts[1]:'dashboard';if(state.page==='settings')state.settingsDraft={...state.prefs};}
   render();
 }

@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DueDateChecker.App.Services;
@@ -7,45 +6,27 @@ using DueDateChecker.Core.Domain;
 
 namespace DueDateChecker.App.ViewModels;
 
+/// <summary>Dashboard summary (PRD F02). Since the prototype alignment (decided 2026-11-07, PRD
+/// "UX09 (revised)") it is a summary only: total, next date, counters and two short lists. Search
+/// and filters live on Dues; the counters open Dues with that status selected.</summary>
 public partial class DashboardViewModel : ObservableObject
 {
+    /// <summary>Rows shown in each summary list ("Needs attention", "A little further ahead").</summary>
+    public const int SectionSize = 3;
     private static readonly TimeZoneInfo ProductZone = TimeZoneInfo.FindSystemTimeZoneById("Asia/Manila");
     private readonly DatabaseDispatcher _database;
     private readonly IDueRepository _repository;
     private readonly TimeProvider _clock;
-    private readonly ObservableCollection<DashboardItem> _visibleItems = [];
     private IReadOnlyList<Due> _dues = [];
     private IReadOnlyList<DashboardItem> _allItems = [];
-    private string _filter = "All";
-    public string Filter => _filter;
-    public IReadOnlyList<string> CategoryFilters { get; } = Array.AsReadOnly(new[] { "All categories", "Bill", "Task", "Subscription", "Other" });
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(HasFilters))]
-    private string _categoryFilter = "All categories";
-
-    partial void OnCategoryFilterChanged(string value)
-    {
-        if (!CategoryFilters.Contains(value)) { CategoryFilter = "All categories"; return; }
-        ApplyFilters();
-    }
-
-
-    // Keep the adapter/header stable while typing; replacing ItemsSource destroys
-    // Android's focused header Entry after its first character.
-    public ReadOnlyObservableCollection<DashboardItem> Items { get; }
 
     public DashboardViewModel(DatabaseDispatcher database, IDueRepository repository, TimeProvider clock)
     {
         _database = database;
         _repository = repository;
         _clock = clock;
-        Items = new ReadOnlyObservableCollection<DashboardItem>(_visibleItems);
         Today = GetToday(clock);
     }
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(HasFilters))]
-    private string _query = "";
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanAdd))]
@@ -54,28 +35,43 @@ public partial class DashboardViewModel : ObservableObject
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanAdd))]
     [NotifyPropertyChangedFor(nameof(IsEmpty))]
-    [NotifyPropertyChangedFor(nameof(IsNoMatches))]
+    [NotifyPropertyChangedFor(nameof(HasSummary))]
     [NotifyCanExecuteChangedFor(nameof(LoadCommand))]
     private bool _isBusy;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsEmpty))]
-    [NotifyPropertyChangedFor(nameof(IsNoMatches))]
+    [NotifyPropertyChangedFor(nameof(HasSummary))]
     private bool _hasLoaded;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasError))]
     [NotifyPropertyChangedFor(nameof(IsEmpty))]
-    [NotifyPropertyChangedFor(nameof(IsNoMatches))]
     private string _errorMessage = "";
+
+    /// <summary>Unpaid dues dated today or earlier, oldest first (prototype "Needs attention").</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasAttention))]
+    private IReadOnlyList<DashboardItem> _attention = [];
+
+    /// <summary>Unpaid dues after today up to month end, earliest first (prototype "A little further ahead").</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasAhead))]
+    private IReadOnlyList<DashboardItem> _later = [];
 
     public DateOnly Today { get; private set; }
     public string DateText => $"{Today.ToString("dddd, dd MMM yyyy", CultureInfo.InvariantCulture)} · Asia/Manila";
     public bool CanAdd => IsReady && !IsBusy;
     public bool HasError => !string.IsNullOrEmpty(ErrorMessage);
-    public bool HasFilters => !string.IsNullOrWhiteSpace(Query) || Filter != "All" || CategoryFilter != "All categories";
     public bool IsEmpty => HasLoaded && TotalCount == 0 && !IsBusy && !HasError;
-    public bool IsNoMatches => HasLoaded && TotalCount > 0 && Items.Count == 0 && !IsBusy && !HasError;
+    /// <summary>The summary and lists show once data has loaded and there is at least one due.</summary>
+    public bool HasSummary => HasLoaded && TotalCount > 0;
+    public bool HasAttention => Attention.Count > 0;
+    public bool HasAhead => Later.Count > 0;
+    /// <summary>The calm lines shown in place of an empty list.</summary>
+    public bool ShowNoAttention => HasSummary && !HasAttention;
+    public bool ShowNoAhead => HasSummary && !HasAhead;
+    public bool ShowNoNext => HasSummary && !HasNext;
     public int TotalCount => _allItems.Count;
     public int PaidCount => Count(DueStatus.Paid);
     public int TodayCount => Count(DueStatus.DueToday);
@@ -86,39 +82,25 @@ public partial class DashboardViewModel : ObservableObject
     public string PercentageText => Math.Round(Completion * 100).ToString("0", CultureInfo.InvariantCulture) + "%";
     public string ProgressText => $"{PaidCount} of {TotalCount} saved dues paid";
     public string ProgressDescription => $"{ProgressText}, {PercentageText}";
-    public string ResultsHeading => $"{Filter} · {Items.Count}";
 
     // Focus summary (PRD F02 upcoming-total rule): unpaid dues dated today through the end of
     // today's Manila month, summed in centavos so the fixed PHP format stays inside Money.
     private IReadOnlyList<DashboardItem> _ahead = [];
     public DateOnly MonthEnd => new(Today.Year, Today.Month, DateTime.DaysInMonth(Today.Year, Today.Month));
     public string MonthLabel => $"Upcoming · {Today.ToString("MMMM", CultureInfo.InvariantCulture)}";
-    public string UpcomingTotalText => Money.FromCentavos(_ahead.Sum(item => item.Due.Amount.Centavos)).ToString();
-    public string UpcomingMetaText => $"{_ahead.Count} unpaid · today to {MonthEnd.ToString("dd MMM", CultureInfo.InvariantCulture)}";
+    // A due without an amount (F07) adds nothing to the total and is counted as excluded instead.
+    // Summed in decimal: each amount fits in a long, but two of the largest allowed do not.
+    public string UpcomingTotalText => Money.Format(_ahead.Sum(item => (decimal)(item.Due.Amount?.Centavos ?? 0)) / 100m);
+    private int AheadWithoutAmount => _ahead.Count(item => item.Due.Amount is null);
+    public string UpcomingMetaText => $"{_ahead.Count} unpaid · today to {MonthEnd.ToString("dd MMM", CultureInfo.InvariantCulture)}"
+        + (AheadWithoutAmount > 0 ? $" · {AheadWithoutAmount} without an amount, excluded" : "");
     public string UpcomingDescription => $"Upcoming total {UpcomingTotalText}, {UpcomingMetaText}";
     public DashboardItem? NextDue => _allItems.FirstOrDefault(item => item.Status != DueStatus.Paid && item.Due.DueDate >= Today);
     public bool HasNext => NextDue is not null;
     public string NextTitle => NextDue?.Title ?? "";
     public string NextDateText => NextDue is { } next ? $"Next date · {next.ShortDateText}" : "No unpaid dues coming up.";
+    public string NextDescription => NextDue is { } next ? $"Next date {next.DateText}, {next.Title}. Opens due details." : "";
     public string PaidCounterText => $"{PaidCount}/{TotalCount}";
-
-    partial void OnQueryChanged(string value) => ApplyFilters();
-
-    public void SelectFilter(string filter)
-    {
-        if (filter is not ("All" or "Overdue" or "Due today" or "Upcoming" or "Paid")) return;
-        if (!SetProperty(ref _filter, filter, nameof(Filter))) return;
-        OnPropertyChanged(nameof(HasFilters));
-        ApplyFilters();
-    }
-
-    [RelayCommand]
-    private void ClearFilters()
-    {
-        Query = "";
-        CategoryFilter = "All categories";
-        SelectFilter("All");
-    }
 
     private bool CanLoad() => !IsBusy;
 
@@ -165,38 +147,15 @@ public partial class DashboardViewModel : ObservableObject
             .OrderBy(item => item.Due.DueDate).ThenBy(item => item.Due.CreatedAt)
             .Select(item => new DashboardItem(item.Due, item.Status!.Value)).ToArray());
         _ahead = _allItems.Where(item => item.Status != DueStatus.Paid && item.Due.DueDate >= today && item.Due.DueDate <= MonthEnd).ToArray();
+        Attention = _allItems.Where(item => item.Status != DueStatus.Paid && item.Due.DueDate <= today).Take(SectionSize).ToArray();
+        Later = _ahead.Where(item => item.Due.DueDate > today).Take(SectionSize).ToArray();
         foreach (var name in new[] { nameof(Today), nameof(DateText), nameof(TotalCount), nameof(PaidCount),
             nameof(TodayCount), nameof(OverdueCount), nameof(UpcomingCount), nameof(OpenCount), nameof(Completion),
-            nameof(PercentageText), nameof(ProgressText), nameof(ProgressDescription), nameof(IsEmpty),
+            nameof(PercentageText), nameof(ProgressText), nameof(ProgressDescription), nameof(IsEmpty), nameof(HasSummary),
             nameof(MonthLabel), nameof(UpcomingTotalText), nameof(UpcomingMetaText), nameof(UpcomingDescription),
-            nameof(NextDue), nameof(HasNext), nameof(NextTitle), nameof(NextDateText), nameof(PaidCounterText) })
+            nameof(NextDue), nameof(HasNext), nameof(NextTitle), nameof(NextDateText), nameof(NextDescription), nameof(PaidCounterText),
+            nameof(ShowNoAttention), nameof(ShowNoAhead), nameof(ShowNoNext) })
             OnPropertyChanged(name);
-        ApplyFilters();
-    }
-
-    private void ApplyFilters()
-    {
-        var query = (Query ?? "").Trim();
-        var matching = _allItems.Where(item =>
-            (Filter == "All" || item.StatusText == Filter) &&
-            (CategoryFilter == "All categories" || item.CategoryText == CategoryFilter) &&
-            (query.Length == 0 || item.Title.Contains(query, StringComparison.OrdinalIgnoreCase))).ToArray();
-        for (var index = 0; index < matching.Length; index++)
-        {
-            var next = matching[index];
-            var existing = -1;
-            for (var candidate = index; candidate < _visibleItems.Count; candidate++)
-                if (_visibleItems[candidate].Id == next.Id) { existing = candidate; break; }
-            if (existing < 0) _visibleItems.Insert(index, next);
-            else
-            {
-                if (existing != index) _visibleItems.Move(existing, index);
-                if (_visibleItems[index] != next) _visibleItems[index] = next;
-            }
-        }
-        while (_visibleItems.Count > matching.Length) _visibleItems.RemoveAt(_visibleItems.Count - 1);
-        OnPropertyChanged(nameof(ResultsHeading));
-        OnPropertyChanged(nameof(IsNoMatches));
     }
 
     private int Count(DueStatus status) => _allItems.Count(item => item.Status == status);

@@ -24,6 +24,13 @@ public sealed class ReminderCoordinator(DatabaseDispatcher database, IDueReposit
         catch (Exception) { LastError = "Your due is saved, but reminders need refreshing. Open Reminders and retry."; }
     }
 
+    /// <summary>UX05: imported dues have no notifications yet, so only a fresh plan is requested.</summary>
+    public void AfterImport()
+    {
+        try { platform.RequestReconciliation(); }
+        catch (Exception) { LastError = "Your dues were imported, but reminders need refreshing. Open Reminders and retry."; }
+    }
+
     public async Task<bool> ReconcileAsync()
     {
         try

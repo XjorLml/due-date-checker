@@ -6,6 +6,15 @@
     <Style TargetType="Page" ApplyToDerivedTypes="True">
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource BackgroundLight}, Dark={StaticResource BackgroundDark}}" />
     </Style>
+    <!-- No scroll bars on any page (user request, 2026-11-07); scrolling itself is unchanged. -->
+    <Style TargetType="ScrollView">
+        <Setter Property="VerticalScrollBarVisibility" Value="Never" />
+        <Setter Property="HorizontalScrollBarVisibility" Value="Never" />
+    </Style>
+    <Style TargetType="CollectionView">
+        <Setter Property="VerticalScrollBarVisibility" Value="Never" />
+        <Setter Property="HorizontalScrollBarVisibility" Value="Never" />
+    </Style>
     <Style TargetType="Shell" ApplyToDerivedTypes="True">
         <Setter Property="Shell.BackgroundColor" Value="{AppThemeBinding Light={StaticResource BackgroundLight}, Dark={StaticResource BackgroundDark}}" />
         <Setter Property="Shell.ForegroundColor" Value="{AppThemeBinding Light={StaticResource TextLight}, Dark={StaticResource TextDark}}" />
@@ -311,6 +320,28 @@
         <Setter Property="StrokeShape" Value="RoundRectangle 11" />
         <Setter Property="Padding" Value="5,8" />
         <Setter Property="MinimumHeightRequest" Value="44" />
+    </Style>
+    <!-- UX10: an invisible native button over a CounterCard. It supplies the tap, focus and "button" role;
+         the card underneath supplies the look. -->
+    <Style TargetType="Button" x:Key="CounterButton">
+        <Setter Property="Text" Value="" />
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="BorderWidth" Value="0" />
+        <Setter Property="CornerRadius" Value="11" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="MinimumHeightRequest" Value="44" />
+        <Setter Property="MinimumWidthRequest" Value="0" />
+    </Style>
+    <!-- Prototype alignment: a transparent native Button laid over a drawn icon or card, so screen readers
+         announce a button while the drawing underneath stays decorative (same idea as CounterButton). -->
+    <Style TargetType="Button" x:Key="OverlayButton">
+        <Setter Property="Text" Value="" />
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="BorderWidth" Value="0" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="MinimumHeightRequest" Value="44" />
+        <Setter Property="MinimumWidthRequest" Value="44" />
     </Style>
     <Style TargetType="Button" x:Key="FilterChip" BasedOn="{StaticResource SecondaryButton}">
         <Setter Property="FontFamily" Value="JakartaMedium" />

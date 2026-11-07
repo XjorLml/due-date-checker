@@ -24,6 +24,21 @@ Actions A are adjacent outlined Cancel/Save; B stacks quiet Cancel above full-wi
 
 `interaction-lab.css` reuses the existing semantic palette tokens. The action region stays outside the content scroll owner, with 48px actions and safe-area padding. VisualViewport sizing and a labeled keyboard-space reservation support review; they are not actual phone-keyboard acceptance. The lab preserves temporary sample-dues behavior and the PH catalog contracts below.
 
+## UX decision lab
+
+The **UX decisions** header tab ([`#ux-decisions`](index.html#ux-decisions)) helps the user choose among the options of a UX review. Unlike the rest of this exploration, its phone drawings show the **native Android app as built** (light tokens from `Colors.xaml`, plus its dark tokens where an option is about the theme), so "Today" and each option compare against the real app rather than the Focus concept.
+
+It holds two rounds, switched by buttons under the heading:
+
+- **Round 2** (default, open): UX17–UX27 from the [2026-11-07 review](../../docs/delivery/UX-REVIEW-2026-11-07.md), drawn against the app after Waves 1–5. Order and scores come from the [round 2 plan](../../specs/ux-improvements-2/plan.md); choices are stored under `duewise.ux-decisions.r2.v1`.
+- **Round 1** (decided record): UX01–UX16 from the [2026-11-06 review](../../docs/delivery/UX-REVIEW-2026-11-06.md). Its drawings are unchanged and show the app before Waves 1–5; the option the user decided is marked "Decided". Choices keep the original key `duewise.ux-decisions.v1`.
+
+`decision-lab.js` owns both rounds' decisions, the drawings and the per-round preference stores; `decision-lab.css` owns the layout and `.m-*` drawing styles. `app.js` only shows the section for `state.view==='decide'` and routes `#ux-decisions/UXnn`, which also selects the round that holds that ID. Drawings are decorative (`aria-hidden`); each option has text, pros and cons. Choices export per round as Markdown or copy for the chat; they are preferences, not decisions. Scenarios [DL01–DL08](../../specs/ux-improvements/spec.md#html-decision-lab) and [DL09–DL13](../../specs/ux-improvements-2/spec.md#html-decision-lab).
+
+## Notification lab
+
+The **Notifications** header tab ([`#notifications`](index.html#notifications), or `#notifications/<due>`) shows what each sample due's reminder could say and a **Mark as paid** action on the notification ([spec](../../specs/notification-lab/spec.md)). `notification-lab.js` owns the six sample dues and a two-on-one-day case, the text rules (`content(due, when, privacy, surface, paid)`), the light Android 13-style shade and lock-screen drawing, the interactive paid/Undo and simulated-unlock states, the table of every reminder and decisions N1 and N2. Choices and notes persist under `duewise.notification-lab.v1`, and the session's paid state does not. `notification-lab.css` owns the layout. `app.js` shows the section for `state.view==='notify'` and routes the hash. Unlike the decision lab, the phone here is interactive: cards are labelled regions and their buttons are real buttons. The text is a proposal; today's app keeps the generic F05 text. Scenarios [NL01–NL10](../../specs/notification-lab/spec.md#acceptance-lab).
+
 ## Focus with Philippine categories
 
 The preceding user brief selected **Focus navigation** and explicitly limited implementation to HTML. Open [Focus](index.html#a/dashboard); the default URL opens it too. The earlier four-concept/refinement-selection material below records historical exploration and is superseded for the ordinary flow. The [Philippine catalog spec](../../specs/ph-catalog-prototype/spec.md) owns its browser data and mutation rules; [tasks](../../specs/ph-catalog-prototype/tasks.md) preserve its initial verification.

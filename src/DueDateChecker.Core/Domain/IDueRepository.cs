@@ -22,4 +22,28 @@ public interface IDueRepository
 
     /// <summary>Marks the due deleted at <paramref name="when"/>; the row is kept for later sync.</summary>
     Task SoftDeleteAsync(Guid id, DateTimeOffset when);
+
+    /// <summary>
+    /// Saves <paramref name="updated"/> (an active due just marked paid) and inserts <paramref name="next"/>,
+    /// the occurrence generated from it (ADR 009). Returns false when an occurrence from the same source
+    /// already exists; then only the update is saved. Throws like <see cref="UpdateAsync"/> for an unknown
+    /// or deleted due. Storage implementations must make this one transaction. This default (update, then
+    /// add, without the duplicate guard) only exists so wrappers and test doubles keep compiling.
+    /// </summary>
+    async Task<bool> UpdateWithNextAsync(Due updated, Due next)
+    {
+        await UpdateAsync(updated);
+        await AddAsync(next);
+        return true;
+    }
+
+    /// <summary>
+    /// UX06 Undo: clears the deletion of <paramref name="id"/> only if it was deleted at exactly
+    /// <paramref name="deletedAt"/>, and sets UpdatedAt to <paramref name="now"/>; every other field stays.
+    /// Returns false (nothing changed) for an active, unknown or differently stamped row, so an Undo can
+    /// reverse only the deletion it was offered for. Storage implementations must provide this; the
+    /// default only lets wrappers and test doubles that never restore keep compiling.
+    /// </summary>
+    Task<bool> RestoreAsync(Guid id, DateTimeOffset deletedAt, DateTimeOffset now) =>
+        throw new NotSupportedException("This repository cannot restore deleted dues.");
 }

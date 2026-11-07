@@ -13,6 +13,24 @@ public sealed class DatabaseDispatcher(DatabaseInitializer initializer)
 
     public Task InitializeAsync() => RunAsync(() => Task.CompletedTask);
 
+    /// <summary>
+    /// For entry points that have no load command of their own, such as the bottom-bar Add
+    /// disc: true once the schema is ready, false when initialization fails right now.
+    /// Never throws, and a failure stays retryable like any other call.
+    /// </summary>
+    public async Task<bool> TryInitializeAsync()
+    {
+        try
+        {
+            await InitializeAsync().ConfigureAwait(false);
+            return true;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
+    }
+
     public Task RunAsync(Func<Task> operation) => RunAsync(async () =>
     {
         await operation().ConfigureAwait(false);

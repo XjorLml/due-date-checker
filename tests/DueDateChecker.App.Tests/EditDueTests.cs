@@ -69,12 +69,12 @@ public sealed class EditDueTests : IDisposable
         editor.IsPaid = true;
         await editor.SaveCommand.ExecuteAsync(null);
         Assert.Equal(due.Id, editor.SavedDueId);
-        SqliteConnection.ClearAllPools();
+        TestDatabase.ClearPool(_path);
         var reopened = new SqliteDueRepository(_path);
         var stored = await reopened.GetAsync(due.Id);
         Assert.NotNull(stored);
         Assert.Equal("Rent updated", stored.Title);
-        Assert.Equal(250001, stored.Amount.Centavos);
+        Assert.Equal(Money.FromCentavos(250001), stored.Amount);
         Assert.Equal(new DateOnly(2026, 10, 20), stored.DueDate);
         Assert.Equal("updated note", stored.Notes);
         Assert.True(stored.IsPaid);
@@ -82,7 +82,7 @@ public sealed class EditDueTests : IDisposable
         Assert.Equal(_clock.GetUtcNow(), stored.UpdatedAt);
         Assert.Null(stored.DeletedAt);
 
-        var list = new DuesListViewModel(new DatabaseDispatcher(new DatabaseInitializer(_path)), reopened);
+        var list = new DuesListViewModel(new DatabaseDispatcher(new DatabaseInitializer(_path)), reopened, _clock);
         await list.LoadCommand.ExecuteAsync(null);
         Assert.Equal(new[] { "Rent updated", "Other" }, list.Dues.Select(row => row.Title));
         Assert.Equal("Paid", list.Dues[0].StatusText);
@@ -318,7 +318,7 @@ public sealed class EditDueTests : IDisposable
 
     public void Dispose()
     {
-        SqliteConnection.ClearAllPools();
+        TestDatabase.ClearPool(_path);
         File.Delete(_path);
     }
 

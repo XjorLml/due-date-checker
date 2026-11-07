@@ -30,5 +30,11 @@ public readonly record struct Money
 
     // Fixed format on purpose: Android culture data varies by device, and the
     // app is PHP-only (ADR 002).
-    public override string ToString() => "₱" + ToDecimal().ToString("N2", CultureInfo.InvariantCulture);
+    public override string ToString() => Format(ToDecimal());
+
+    /// <summary>
+    /// The same fixed peso format for a figure that is not one stored amount, such as a
+    /// display total that can exceed the largest single <see cref="Money"/> value.
+    /// </summary>
+    public static string Format(decimal pesos) => "₱" + pesos.ToString("N2", CultureInfo.InvariantCulture);
 }

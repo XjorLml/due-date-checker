@@ -6,7 +6,9 @@ internal static class PageLayout
 {
     /// <param name="footer">An optional fixed action row below the scrolling content; it shares the horizontal margins.</param>
     /// <param name="extraBottom">Extra bottom clearance, used by root pages so the last row stays clear of the raised Add action.</param>
-    public static void Connect(ContentPage page, Layout content, Layout? footer = null, double extraBottom = 0)
+    /// <param name="heading">A root page's main heading, made compact in landscape (UX16).</param>
+    /// <param name="scrollsInside">The content is a list that scrolls itself (CollectionView): no bottom padding outside it, so rows scroll right up to the bottom bar; the page adds a footer spacer inside the list instead.</param>
+    public static void Connect(ContentPage page, Layout content, Layout? footer = null, double extraBottom = 0, Label? heading = null, bool scrollsInside = false)
     {
         page.SizeChanged += (_, _) => Apply();
         page.Loaded += (_, _) => Apply();
@@ -19,7 +21,8 @@ internal static class PageLayout
             var readable = Math.Min(width, width >= 840 ? 720 : width >= 600 ? 640 : width);
             content.WidthRequest = readable;
             content.HorizontalOptions = LayoutOptions.Center;
-            content.Padding = new Thickness(margin, 12, margin, 24 + extraBottom);
+            content.Padding = new Thickness(margin, 12, margin, scrollsInside ? 0 : 24 + extraBottom);
+            if (heading is not null) heading.FontSize = ViewModels.LayoutRules.RootHeadingSize(width, page.Height);
             if (footer is null) return;
             footer.WidthRequest = readable;
             footer.HorizontalOptions = LayoutOptions.Center;

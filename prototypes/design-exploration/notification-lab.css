@@ -1,0 +1,69 @@
+/* Notification lab (specs/notification-lab). Page chrome reuses the studio look; the phone is a
+   light Android 13-style notification shade and lock screen, drawn for illustration only. */
+#notification-view{padding:28px 0 60px}
+body[data-view=notify] .introduction{display:none}
+.nl-heading{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;padding-bottom:22px;border-bottom:1px solid var(--studio-line);margin-bottom:24px}
+.nl-heading>div:first-child{max-width:720px}.nl-heading h2{font-size:clamp(28px,4vw,42px);letter-spacing:-1.6px;line-height:1.1;margin:8px 0 12px}
+.nl-heading p{margin:6px 0;color:var(--studio-muted);font-size:14px;line-height:1.6}.nl-heading a{color:inherit}
+.nl-review{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.nl-review p{margin:0;font-size:13px;color:var(--studio-muted);flex-basis:100%}.nl-review button{min-height:44px}
+#nl-export-text{width:100%;min-height:140px;margin-top:12px;font:12px/1.5 ui-monospace,Consolas,monospace}
+.nl-layout{display:grid;grid-template-columns:250px minmax(0,1fr);gap:32px;align-items:start}
+.nl-dues{display:grid;gap:4px;position:sticky;top:16px}
+.nl-dues button{display:grid;gap:2px;text-align:left;min-height:52px;padding:8px 12px;border-radius:12px;border:1px solid transparent;background:transparent;color:inherit;font:inherit;cursor:pointer}
+.nl-dues button:hover{background:#eef1e8}.nl-dues button[aria-current=true]{background:#fff;border-color:var(--studio-line);box-shadow:0 1px 0 #0000000a}
+.nl-dues b{font-size:14px}.nl-dues small{font-size:11px;color:var(--studio-muted)}.nl-paid{font-size:11px;font-weight:700;color:#166534}
+.nl-controls{display:grid;gap:10px;margin-bottom:20px}
+.nl-seg{display:flex;flex-wrap:wrap;align-items:center;gap:6px}.nl-seg>span{font-size:12px;color:var(--studio-muted);min-width:96px}
+.nl-seg button{min-height:40px;padding:0 14px;border-radius:99px;border:1px solid var(--studio-line);background:#fff;color:inherit;font:inherit;font-size:13px;cursor:pointer}
+.nl-seg button[aria-pressed=true]{background:#253c20;border-color:#253c20;color:#fff}.nl-seg em{font-style:normal;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;padding:2px 6px;border-radius:99px;background:#d9f27e;color:#203019;margin-left:4px}
+.nl-stage{display:flex;gap:28px;align-items:flex-start;flex-wrap:wrap}
+.nl-explain{flex:1;min-width:240px;max-width:460px;font-size:14px;line-height:1.55}.nl-explain h3{margin:0 0 8px;font-size:16px}.nl-explain ul{margin:0;padding-left:18px;display:grid;gap:8px}
+
+/* ---- Phone ---- */
+.nl-phone{--surface:#f3f5f2;--card:#fff;--text:#1b1d1c;--text2:#5d625f;--accent:#253c20;
+  position:relative;width:340px;max-width:100%;min-height:560px;border:8px solid #1c241f;border-radius:36px;background:var(--surface);color:var(--text);padding:10px 14px 18px;box-shadow:0 10px 26px #1c241f26;display:flex;flex-direction:column;gap:10px;overflow:hidden;font-family:Roboto,"Segoe UI",system-ui,sans-serif}
+.nl-phone.nl-lock{--surface:#26302b;--card:#f3f5f2ee;color:#fff;background:linear-gradient(160deg,#3a4a3f,#1f2622)}
+.nl-status{display:flex;justify-content:space-between;font-size:12px;opacity:.8;padding:0 4px}
+.nl-shade-head{display:flex;justify-content:space-between;align-items:baseline;padding:4px 6px}.nl-shade-head b{font-size:26px;font-weight:400}.nl-shade-head span{font-size:13px;color:var(--text2)}
+.nl-tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}.nl-tiles i{font-style:normal;font-size:11px;padding:10px;border-radius:16px;background:#dfe5dc;color:#2c332f}
+.nl-clock{font-size:64px;font-weight:300;text-align:center;margin-top:18px;line-height:1}.nl-date{text-align:center;font-size:14px;opacity:.85;margin-bottom:10px}
+.nl-cards{display:grid;gap:8px}
+.nl-card,.nl-group{background:var(--card);color:var(--text);border-radius:24px;padding:12px 14px;display:grid;gap:4px}
+.nl-group{gap:0}.nl-child{background:transparent;padding:10px 0 6px;border-top:1px solid #e3e7e1;border-radius:0}.nl-group .nl-card-top{margin-bottom:4px}
+.nl-card-top{display:flex;align-items:center;gap:8px}.nl-card-top small{font-size:12px;color:var(--text2);flex:1}
+.nl-app{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#d9f27e;font-size:12px;font-weight:700}
+.nl-chev{color:var(--text2)}
+.nl-title{font-size:15px;font-weight:600}.nl-text{margin:0;font-size:14px;color:var(--text2);line-height:1.4}
+.nl-hidden .nl-text{font-style:italic}
+.nl-actions{display:flex;gap:18px;margin-top:6px}
+.nl-action{min-height:40px;padding:0 4px;border:0;background:transparent;color:var(--accent);font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.nl-action:focus-visible{outline:3px solid #253c20;outline-offset:2px;border-radius:8px}
+.nl-strong{background:var(--accent);color:#fff;border-radius:99px;padding:0 16px}
+.nl-manage{display:flex;justify-content:space-between;font-size:13px;color:var(--text2);padding:4px 6px;margin-top:auto}
+.nl-lockhint{text-align:center;font-size:12px;opacity:.7;margin-top:auto}
+.nl-overlay{position:absolute;inset:0;background:#0009;display:grid;place-items:center;padding:20px}
+.nl-unlock{background:#fff;color:#1b1d1c;border-radius:24px;padding:18px;display:grid;gap:6px;justify-items:center;text-align:center}.nl-unlock span{font-size:28px}.nl-unlock small{color:#5d625f}
+.nl-toast{position:absolute;left:16px;right:16px;bottom:22px;background:#1b1d1c;color:#fff;border-radius:12px;padding:10px 12px;font-size:13px}
+
+/* ---- Table and choices ---- */
+.nl-table,.nl-choose{margin-top:36px}.nl-table h3,.nl-choose h3{font-size:20px;margin:0 0 10px}.nl-table h3 small{font-size:13px;font-weight:400;color:var(--studio-muted)}
+.nl-table-scroll{overflow-x:auto;border:1px solid var(--studio-line);border-radius:16px;background:#fff}
+.nl-table table{border-collapse:collapse;width:100%;min-width:720px;font-size:13px}
+.nl-table th,.nl-table td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid var(--studio-line)}
+.nl-table thead th{font-size:12px;color:var(--studio-muted);font-weight:600}.nl-table tbody th small{display:block;font-weight:400;color:var(--studio-muted)}
+.nl-small{font-size:13px;color:var(--studio-muted);line-height:1.5}
+.nl-warn{font-size:13px;padding:8px 12px;border-radius:10px;background:#fff0f0;color:#ae2638}
+.nl-decisions{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px}
+.nl-decision h4{margin:4px 0;font-size:18px}
+.nl-option{background:#fff;border:1px solid var(--studio-line);border-radius:18px;padding:14px;margin-top:12px;display:grid;gap:8px}
+.nl-option.nl-rec{border-color:#9db38a}.nl-option.nl-picked{border:2px solid #253c20;box-shadow:0 6px 18px #253c2018}
+.nl-option header{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.nl-option p{margin:0;font-size:13px;line-height:1.5}
+.nl-key{display:grid;place-items:center;min-width:28px;height:28px;border-radius:8px;background:#253c20;color:#d9f27e;font-weight:700;font-size:13px}
+.nl-badge{font-size:10px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;padding:4px 8px;border-radius:99px;background:#d9f27e;color:#203019}
+.nl-option ul{list-style:none;margin:0;padding:0;display:grid;gap:3px;font-size:12px}.nl-option li{padding-left:16px;position:relative}
+.nl-option .pro:before{content:'+';position:absolute;left:2px;color:#166534;font-weight:700}.nl-option .con:before{content:'–';position:absolute;left:2px;color:#ae2638;font-weight:700}
+.nl-option button{min-height:44px}
+.nl-note{display:grid;gap:6px;font-size:13px;margin-top:12px}.nl-note textarea{border:1px solid var(--studio-line);border-radius:12px;padding:10px;font-size:14px}
+
+@media(max-width:960px){.nl-layout{grid-template-columns:1fr}.nl-dues{position:static;display:flex;overflow-x:auto;gap:6px;padding-bottom:6px}.nl-dues button{flex:none;width:200px;background:#fff;border-color:var(--studio-line)}}
+@media(max-width:560px){#notification-view{padding-top:18px}.nl-heading h2{font-size:28px}.nl-seg>span{flex-basis:100%}.nl-phone{width:100%}}

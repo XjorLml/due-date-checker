@@ -14,17 +14,12 @@ public partial class DashboardPage : ContentPage
     {
         InitializeComponent();
         BindingContext = _viewModel = viewModel;
-        PageLayout.Connect(this, PageContent, extraBottom: 24);
+        PageLayout.Connect(this, PageContent, extraBottom: 24, heading: Heading);
         _dateTimer = Dispatcher.CreateTimer();
         _dateTimer.Interval = TimeSpan.FromMinutes(1);
         _dateTimer.Tick += (_, _) => _viewModel.RefreshDate();
         Appearing += async (_, _) => { _dateTimer.Start(); await RefreshAsync(); };
         Disappearing += (_, _) => _dateTimer.Stop();
-        _viewModel.PropertyChanged += (_, args) =>
-        {
-            if (args.PropertyName == nameof(DashboardViewModel.Filter)) UpdateFilterStyles();
-        };
-        UpdateFilterStyles();
     }
 
     public Task RefreshAsync()
@@ -33,15 +28,15 @@ public partial class DashboardPage : ContentPage
         return _refreshTask = _viewModel.LoadCommand.ExecuteAsync(null);
     }
 
-    private void OnFilterClicked(object? sender, EventArgs e)
+    // The counters are the prototype's status links: they open Dues with that status selected.
+    private void OnCounterClicked(object? sender, EventArgs e)
     {
-        if (sender is Button { CommandParameter: string filter }) _viewModel.SelectFilter(filter);
+        if (sender is Button { CommandParameter: string filter } && Shell.Current is AppShell shell) shell.ShowDues(filter);
     }
 
-    // The three summary counters are the mockup's status links: they select the same filter as the chips.
-    private void OnCounterTapped(object? sender, TappedEventArgs e)
+    private void OnAllDuesClicked(object? sender, EventArgs e)
     {
-        if (e.Parameter is string filter) _viewModel.SelectFilter(filter);
+        if (Shell.Current is AppShell shell) shell.ShowDues(null);
     }
 
     private async void OnNextClicked(object? sender, EventArgs e)
@@ -49,22 +44,12 @@ public partial class DashboardPage : ContentPage
         if (_viewModel.NextDue is { } next) await NavigateAsync($"{nameof(DueDetailPage)}?id={next.Id:D}");
     }
 
-    private void UpdateFilterStyles()
+    private async void OnRowTapped(object? sender, TappedEventArgs e)
     {
-        foreach (var button in new[] { AllFilter, PaidFilter, OverdueFilter, TodayFilter, UpcomingFilter })
-        {
-            var selected = Equals(button.CommandParameter, _viewModel.Filter);
-            button.Style = (Style)Application.Current!.Resources[selected ? "FilterChipSelected" : "FilterChip"];
-            SemanticProperties.SetDescription(button, $"{button.Text} saved dues, {(selected ? "selected" : "not selected")} filter");
-        }
+        if (sender is BindableObject { BindingContext: DashboardItem item }) await NavigateAsync($"{nameof(DueDetailPage)}?id={item.Id:D}");
     }
 
-    private async void OnDueSelected(object? sender, SelectionChangedEventArgs e)
-    {
-        var item = e.CurrentSelection.OfType<DashboardItem>().FirstOrDefault();
-        Results.SelectedItem = null;
-        if (item is not null) await NavigateAsync($"{nameof(DueDetailPage)}?id={item.Id:D}");
-    }
+    private async void OnRemindersClicked(object? sender, EventArgs e) => await NavigateAsync(nameof(ReminderSettingsPage));
 
     private async Task NavigateAsync(string route)
     {

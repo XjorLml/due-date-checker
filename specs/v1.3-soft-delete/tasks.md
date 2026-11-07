@@ -21,10 +21,10 @@ Implementation and basic verification recorded 2026-10-17. See [spec scenarios](
 
 - [x] SD08: repeat native delete/cancel/restart in airplane mode. Agent-observed on 2026-10-17 using the existing V1.3 APK; see [core-flow evidence](../../docs/delivery/evidence/CORE-FLOWS-2026-10-17.md#native-checks). Final intended-key artifact pass remains pending.
 - [x] Exercise native dialog Back/dismissal. Same follow-up verified retained unsaved input and an active saved due after dismissal/restart.
-- [ ] Exercise repeated taps during a native write.
+- [ ] Exercise repeated taps during a native write. Emulator 2026-11-06: three concurrent Save taps on create stored one row ([record](../../docs/delivery/evidence/EMULATOR-HARDENING-2026-11-06.md#controlled-failures-empty-state-and-repeated-taps)); delete path and phone pending.
 - [ ] Exercise controlled native confirmation-display, storage-write, and return-navigation failures from TP05.
 - [ ] Verify both themes, large text, accessibility focus, and the destructive action on-device.
-- [ ] Inspect retained tombstones in an authorized phone test database; automated SQLite retention evidence does not establish this device-level gate.
+- [ ] Inspect retained tombstones in an authorized phone test database; automated SQLite retention evidence does not establish this device-level gate. Emulator equivalent 2026-11-06: eight tombstones kept every field with `deleted_at = updated_at` ([record](../../docs/delivery/evidence/EMULATOR-HARDENING-2026-11-06.md#tombstones-v13-emulator-equivalent)); phone pending.
 - [ ] Complete intended-key signing and rerun release acceptance with that artifact.
 
 The unchecked items do not negate the completed implementation/observed checks. They remain explicit acceptance work; no user acceptance is inferred for them.

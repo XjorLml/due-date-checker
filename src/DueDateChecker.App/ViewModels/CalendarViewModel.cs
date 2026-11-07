@@ -9,7 +9,8 @@ namespace DueDateChecker.App.ViewModels;
 
 public sealed record CalendarDay(DateOnly? Date, int Count, bool IsSelected, bool IsToday)
 {
-    public string Indicator => Count == 0 ? "" : Count.ToString(CultureInfo.InvariantCulture);
+    /// <summary>UX24, settled by the prototype alignment (2026-11-07): the count as words under the day number.</summary>
+    public string Indicator => Count switch { 0 => "", 1 => "1 due", _ => $"{Count.ToString(CultureInfo.InvariantCulture)} dues" };
     public string AccessibilityText => Date is { } date
         ? $"{date.ToString("dddd, MMMM d, yyyy", CultureInfo.InvariantCulture)}, {Count} saved dues{(IsSelected ? ", selected" : "")}{(IsToday ? ", today" : "")}"
         : "";
@@ -65,7 +66,7 @@ public partial class CalendarViewModel : ObservableObject
     public WeekStartPreference WeekStart { get; private set; }
     public IReadOnlyList<string> Weekdays => WeekStart == WeekStartPreference.Sunday
         ? ["Su", "M", "Tu", "W", "Th", "F", "Sa"] : ["M", "Tu", "W", "Th", "F", "Sa", "Su"];
-    public string WeekStartDescription => $"{WeekStart} first · Numbers count all saved dues, including Paid";
+    public string WeekStartDescription => $"{WeekStart} first · includes paid";
     public DateOnly Month { get; private set; }
     public DateOnly SelectedDate { get; private set; }
     public IReadOnlyList<CalendarDay> Days { get; private set; } = [];

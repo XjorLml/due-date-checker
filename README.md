@@ -4,9 +4,16 @@ An offline-first Android app built with .NET MAUI and SQLite for tracking dues i
 
 ## Project status
 
-The approved v1 scope is Android local create/list/edit/paid/soft-delete, without reminders, login, or synchronization. Duewise is the chosen product name (user decision, 2026-10-17); existing projects and the app title still use Due Date Checker.
+Duewise (the product name; projects keep the Due Date Checker name) is an offline Android app for dues in Philippine pesos and Asia/Manila time. As of 2026-11-07, version 1.0 covers:
+- create, list, edit, mark paid and soft-delete with a 5-second Undo;
+- the Dashboard, Calendar and Details pages;
+- due types with optional amounts for tasks;
+- repeating bills and subscriptions;
+- optional local reminders;
+- export and import to a file the user chooses;
+- the Focus design, aligned with the live HTML prototype.
 
-Create/list/edit/paid and delete confirmation code are committed through `7c22b4b` (source inspected 2026-10-17). See [delivery status](docs/delivery/STATUS.md) for dated automated results, attributed phone checks, and outstanding signing/V1.3 acceptance. Source presence does not establish release acceptance.
+There is no login, sync or cloud backup. A signed v1.0 release APK has been built but not published. See [delivery status](docs/delivery/STATUS.md) for dated automated results, emulator and phone evidence, and open acceptance. Source presence does not establish release acceptance.
 
 ## Build and test
 
@@ -20,7 +27,9 @@ dotnet build src/DueDateChecker.App/DueDateChecker.App.csproj -c Release
 
 The test projects run without an Android device. The App test harness exercises platform-independent view-model/database behavior; native screens, navigation, and Release runtime behavior still require phone testing.
 
-APK output: `src/DueDateChecker.App/bin/Release/net10.0-android/com.lem.duedatechecker-Signed.apk`. Configure the intended keystore through the ignored `local.signing.props` file using the checked-in example before release acceptance. Never commit keys or passwords.
+Release APK: add `-f net10.0-android -p:AndroidPackageFormat=apk` to the Release build. The output is `src/DueDateChecker.App/bin/Release/net10.0-android/com.lem.duedatechecker-Signed.apk`.
+
+Release builds are signed with the upload key configured in the ignored `local.signing.props`; copy the checked-in `local.signing.props.example` to create it. To check that Release compiles without the key, add `-p:AndroidKeyStore=false`. Release artifacts for GitHub go in the ignored `artifacts/release/` folder. Never commit keys or passwords.
 
 ## Documentation
 

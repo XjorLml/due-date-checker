@@ -58,6 +58,29 @@ public sealed class ReminderTests : IDisposable
     }
 
     [Fact]
+    public async Task Paid_with_next_uses_the_one_transaction_write_and_plans_the_new_occurrence()
+    {
+        var due = Due.Create("Private due title", Money.FromCentavos(12345), new DateOnly(2026, 10, 19), _clock.Now,
+            category: DueCategory.Bill, repeat: RepeatRule.Weekly);
+        await _writes.AddAsync(due);
+        var paid = due with { IsPaid = true, UpdatedAt = _clock.Now };
+        var next = Recurrence.NextOccurrence(paid, _clock.Now)!;
+        var requests = _platform.Requests;
+
+        // An id clash fails the insert. Only the repository's own transaction also undoes the paid
+        // update, so this proves the wrapper forwards instead of using the interface default.
+        await Assert.ThrowsAsync<SqliteException>(() => _writes.UpdateWithNextAsync(paid, next with { Id = due.Id }));
+        Assert.Equal(due, await _repository.GetAsync(due.Id));
+
+        Assert.True(await _writes.UpdateWithNextAsync(paid, next));
+        Assert.False(await _writes.UpdateWithNextAsync(paid, Recurrence.NextOccurrence(paid, _clock.Now)!));
+        Assert.True(_platform.Requests > requests);
+        Assert.Equal(2, (await _repository.ListActiveAsync()).Count);
+        Assert.True(await _coordinator.SaveSettingsAsync(Enabled));
+        Assert.Equal(2, _coordinator.PendingCount); // 26 Oct: day before and due day; the paid one has none
+    }
+
+    [Fact]
     public async Task New_elapsed_times_skip_but_previously_queued_can_deliver_late_until_due_date()
     {
         var queued = await Queue();
@@ -231,6 +254,52 @@ public sealed class ReminderTests : IDisposable
         Assert.Contains("optimization is off", vm.BackgroundText); Assert.False(vm.DayBefore); Assert.False(vm.Enabled);
     }
 
+    [Theory]
+    [InlineData("Xiaomi", "Redmi", true)]
+    [InlineData("Xiaomi", "POCO", true)]
+    [InlineData("Xiaomi", "Xiaomi", true)]
+    [InlineData("XIAOMI", "", true)]
+    [InlineData("", "poco", true)]
+    [InlineData("Google", "google", false)]
+    [InlineData("samsung", "samsung", false)]
+    [InlineData("", "", false)]
+    public async Task Maker_steps_appear_for_xiaomi_redmi_and_poco_only_while_reminders_are_on(string manufacturer, string brand, bool expected)
+    {
+        _platform.Background = new(false, false, true, manufacturer, brand);
+        var vm = new ReminderSettingsViewModel(_coordinator, _platform); await vm.LoadCommand.ExecuteAsync(null);
+        Assert.False(vm.HasMakerSteps); // reminders are off
+
+        await vm.EnableCommand.ExecuteAsync(null);
+
+        Assert.True(vm.Enabled);
+        Assert.Equal(expected, vm.HasMakerSteps);
+        Assert.Contains("optimization is active", vm.BackgroundText); // the general status stays
+        if (expected)
+        {
+            Assert.Contains("Autostart", vm.MakerStepsText);
+            Assert.Contains("No restrictions", vm.MakerStepsText);
+            Assert.Contains("Android app / battery settings", vm.MakerStepsText); // names the existing button
+        }
+        else Assert.Equal("", vm.MakerStepsText);
+
+        await vm.DisableCommand.ExecuteAsync(null);
+        Assert.False(vm.HasMakerSteps);
+    }
+
+    [Fact]
+    public async Task Maker_steps_are_hidden_when_the_background_status_is_unavailable()
+    {
+        _platform.Background = new(false, false, true, "Xiaomi", "Redmi");
+        var vm = new ReminderSettingsViewModel(_coordinator, _platform);
+        await vm.LoadCommand.ExecuteAsync(null); await vm.EnableCommand.ExecuteAsync(null);
+        Assert.True(vm.HasMakerSteps);
+
+        _platform.FailBackground = true; await vm.LoadCommand.ExecuteAsync(null);
+
+        Assert.False(vm.HasMakerSteps);
+        Assert.Contains("unavailable", vm.BackgroundText);
+    }
+
     [Fact]
     public async Task Unavailable_background_status_does_not_misreport_saved_settings_or_lose_draft()
     {
@@ -334,5 +403,5 @@ public sealed class ReminderTests : IDisposable
         public void Post(ReminderOccurrence item) { if (FailPost) throw new IOException("Controlled post failure"); Posted.Add(item); Visible.Add(item.Key); AfterPost?.Invoke(); }
         public void PostTest() { Tests++; TestVisible = true; }
     }
-    public void Dispose() { SqliteConnection.ClearAllPools(); File.Delete(_path); }
+    public void Dispose() { TestDatabase.ClearPool(_path); File.Delete(_path); }
 }

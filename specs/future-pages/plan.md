@@ -40,6 +40,12 @@ F02 was subsequently authorized on 2026-10-18 and is implemented/verified throug
 
 F01 Details, F02 Dashboard and F03 Calendar are now authorized and specified separately. Their tasks/evidence distinguish implementation from automated/native verification. F03 resolves fixed Monday start and date-selection/Today policy in PRD. Follow the P2 order above for subsequent proposals: category/recurrence policy (F07), reminder scheduling (F05), and necessary settings/export (F04), after relevant open acceptance checks. The later "implement f07" request authorizes the [category slice](../f07-categories/spec.md); recurrence/timing remain separate F07 work. The 2026-11-03 F07-extension decision authorizes [optional amounts](../f07-optional-amounts/spec.md) under the PRD rules. The later "implement next f05" request authorizes [date-only reminders](../f05-reminders/spec.md), with day-before plus due-date defaults confirmed by the user. No other slice is authorized by this roadmap alone.
 
+## UX review priorities (2026-11-06)
+
+The [2026-11-06 UI/UX review](../../docs/delivery/UX-REVIEW-2026-11-06.md) ranked sixteen improvements by impact. Their order is owned by the [UX improvements plan](../ux-improvements/plan.md): Details "Mark as paid" (UX01) and a Dues list that shows what is next (UX02) come first, then F07 recurrence (UX03) with reminder reliability guidance (UX04), then F04 export/import (UX05), then smaller polish. This keeps P2's existing order (F07 recurrence before F04 export) and places UX01 and UX02 ahead of both; P3 and P4 are unchanged. All sixteen were decided by the user on 2026-11-06 and shipped on 2026-11-06/07 in Waves 1–5.
+
+A [second review on 2026-11-07](../../docs/delivery/UX-REVIEW-2026-11-07.md) added UX17–UX27. Their proposed order (Waves 6–9: reminders and amounts owed first, then denser main pages, then protecting data and typing) is owned by the [round 2 plan](../ux-improvements-2/plan.md). None is decided yet. They are improvements to existing pages and come before P3 and P4 only if the user decides them; the roadmap order is otherwise unchanged.
+
 ## Page mapping and acceptance
 
 | Slice / page | DESIGN mapping | Proposed modules and dependencies | Observable acceptance before completion |

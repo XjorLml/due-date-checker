@@ -1,37 +1,25 @@
+using DueDateChecker.App.Services;
 using DueDateChecker.App.ViewModels;
+using DueDateChecker.Core.Domain;
 
 namespace DueDateChecker.App.Pages;
 
 public partial class DueEditPage : ContentPage, IQueryAttributable
 {
     private readonly DueEditViewModel _viewModel;
-    private readonly ToolbarItem _deleteItem;
+    private readonly IMessageHost _messages;
+    private readonly DeletionUndo _undo;
     private bool _handlingAction;
     private bool _editTargetApplied;
 
-    public DueEditPage(DueEditViewModel viewModel)
+    public DueEditPage(DueEditViewModel viewModel, IMessageHost messages, DeletionUndo undo)
     {
         InitializeComponent();
         BindingContext = _viewModel = viewModel;
+        _messages = messages;
+        _undo = undo;
         PageLayout.Connect(this, PageContent, ActionBar);
-        // Delete sits in the header (Focus selection); the toolbar item exists only while the
-        // loaded due can be deleted, so a new due or an unavailable target never shows it.
-        _deleteItem = new ToolbarItem { Text = "Delete", Order = ToolbarItemOrder.Primary, Priority = 0, AutomationId = "EditorDelete" };
-        _deleteItem.Clicked += OnDeleteClicked;
-        _viewModel.PropertyChanged += (_, args) =>
-        {
-            if (args.PropertyName is nameof(DueEditViewModel.ShowDelete) or nameof(DueEditViewModel.CanDelete)) UpdateDeleteItem();
-        };
-        UpdateDeleteItem();
         Appearing += async (_, _) => await _viewModel.LoadCommand.ExecuteAsync(null);
-    }
-
-    private void UpdateDeleteItem()
-    {
-        var present = ToolbarItems.Contains(_deleteItem);
-        if (_viewModel.ShowDelete && !present) ToolbarItems.Add(_deleteItem);
-        else if (!_viewModel.ShowDelete && present) ToolbarItems.Remove(_deleteItem);
-        _deleteItem.IsEnabled = _viewModel.CanDelete;
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -52,7 +40,13 @@ public partial class DueEditPage : ContentPage, IQueryAttributable
         try
         {
             await _viewModel.SaveCommand.ExecuteAsync(null);
-            if (_viewModel.HasCompleted) await ReturnToParentAsync();
+            if (_viewModel.HasCompleted)
+            {
+                await ReturnToParentAsync();
+                // UX06: shown after returning, so it sits above the bottom bar the parent page brings back.
+                // The message itself is announced; nothing else is.
+                if (_viewModel.HasSaved && _viewModel.CompletionMessage is { Length: > 0 } message) _messages.Show(message);
+            }
             else FocusFirstError();
         }
         finally
@@ -67,11 +61,26 @@ public partial class DueEditPage : ContentPage, IQueryAttributable
         _handlingAction = true;
         try
         {
-            await ReturnToParentAsync();
+            if (await ConfirmLeaveAsync()) await ReturnToParentAsync();
         }
         finally
         {
             _handlingAction = false;
+        }
+    }
+
+    /// <summary>UX22 (decided 2026-11-07): with changes, ask before discarding; Keep editing is the safe choice.
+    /// Without changes, leave at once.</summary>
+    private async Task<bool> ConfirmLeaveAsync()
+    {
+        if (!_viewModel.HasChanges) return true;
+        try
+        {
+            return await DisplayAlertAsync("Discard changes?", "What you typed here will not be saved.", "Discard", "Keep editing");
+        }
+        catch (Exception)
+        {
+            return false; // could not ask: keep the input
         }
     }
 
@@ -93,12 +102,40 @@ public partial class DueEditPage : ContentPage, IQueryAttributable
             }
 
             await _viewModel.DeleteCommand.ExecuteAsync(confirmed);
-            if (_viewModel.HasDeleted) await ReturnToParentAsync();
+            if (_viewModel.HasDeleted)
+            {
+                await ReturnToParentAsync();
+                if (_viewModel.Deletion is { } deletion) _undo.Offer(deletion); // "Due deleted." with Undo
+            }
         }
         finally
         {
             _handlingAction = false;
         }
+    }
+
+    // Prototype "Type: Bill · Change": the four types in a native sheet; Cancel keeps the current type.
+    private async void OnChangeTypeClicked(object? sender, EventArgs e)
+    {
+        if (_handlingAction || !_viewModel.CanEdit) return;
+        string? choice;
+        try { choice = await DisplayActionSheetAsync("Due type", "Cancel", null, "Bill", "Subscription", "Task", "Other"); }
+        catch (Exception) { return; }
+        if (Enum.TryParse<DueCategory>(choice, out var type) && _viewModel.CanEdit)
+        {
+            _viewModel.SelectedCategory = type;
+            _viewModel.ValidateCategory();
+        }
+    }
+
+    private void OnRepeatToggled(object? sender, EventArgs e) => Toggle(RepeatBody, RepeatGlyph);
+    private void OnNotesToggled(object? sender, EventArgs e) => Toggle(NotesBody, NotesGlyph);
+
+    // A collapsible editor row (prototype disclosure): the summary row stays; the field shows below it.
+    private static void Toggle(VisualElement body, Glyph glyph)
+    {
+        body.IsVisible = !body.IsVisible;
+        glyph.Kind = body.IsVisible ? "minus" : "plus";
     }
 
     private async Task ReturnToParentAsync()
@@ -129,18 +166,46 @@ public partial class DueEditPage : ContentPage, IQueryAttributable
         if (_viewModel.CanEdit) _viewModel.ValidateDate();
     }
 
-    private void OnCategoryUnfocused(object? sender, FocusEventArgs e)
-    {
-        if (_viewModel.CanEdit) _viewModel.ValidateCategory();
-    }
-
     private void FocusFirstError()
     {
         if (_viewModel.HasTitleError) { TitleEntry.Focus(); SemanticScreenReader.Default.Announce(_viewModel.TitleError); }
-        else if (_viewModel.HasCategoryError) { CategoryPicker.Focus(); SemanticScreenReader.Default.Announce(_viewModel.CategoryError); }
+        else if (_viewModel.HasCategoryError) { ChangeTypeButton.Focus(); SemanticScreenReader.Default.Announce(_viewModel.CategoryError); }
         else if (_viewModel.HasAmountError) { AmountEntry.Focus(); SemanticScreenReader.Default.Announce(_viewModel.AmountError); }
         else if (_viewModel.HasDateError) { DueDatePicker.Focus(); SemanticScreenReader.Default.Announce(_viewModel.DateError); }
     }
 
-    protected override bool OnBackButtonPressed() => _handlingAction || _viewModel.IsBusy || base.OnBackButtonPressed();
+    // System Back: blocked while busy; with changes it asks first (UX22), otherwise Shell pops the page.
+    protected override bool OnBackButtonPressed()
+    {
+        if (_handlingAction || _viewModel.IsBusy) return true;
+        if (!_viewModel.HasChanges) return base.OnBackButtonPressed();
+        _handlingAction = true;
+        Dispatcher.Dispatch(async () =>
+        {
+            try { if (await ConfirmLeaveAsync()) await ReturnToParentAsync(); }
+            finally { _handlingAction = false; }
+        });
+        return true;
+    }
+
+    // Android pans the whole window by default, which leaves the fixed Cancel/Save row under the
+    // on-screen keyboard. While the editor is visible the window resizes instead, so the row sits
+    // above the keyboard. Root pages keep panning, so the tab bar does not ride on the keyboard.
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        SetSoftInputAdjust(Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.WindowSoftInputModeAdjust.Resize);
+    }
+
+    protected override void OnDisappearing()
+    {
+        SetSoftInputAdjust(Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.WindowSoftInputModeAdjust.Pan);
+        base.OnDisappearing();
+    }
+
+    private static void SetSoftInputAdjust(Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.WindowSoftInputModeAdjust mode)
+    {
+        if (Application.Current is not { } app) return;
+        Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.Application.SetWindowSoftInputModeAdjust(app, mode);
+    }
 }

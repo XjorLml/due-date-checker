@@ -33,11 +33,16 @@ async function run(){
   const shot=async name=>{await evaluate('document.fonts.ready');const image=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:true});fs.writeFileSync(path.join(qa,name+'.png'),Buffer.from(image.data,'base64'));};
   const noOverflow=async label=>{const result=await evaluate("({body:document.documentElement.scrollWidth>innerWidth+1,app:!document.querySelector('#explore-view').hidden&&document.querySelector('#app-body').scrollWidth>document.querySelector('#app-body').clientWidth+1})");assert.deepEqual(result,{body:false,app:false},'Overflow '+label+' '+JSON.stringify(result));};
   await send('Runtime.enable');await send('Page.enable');await send('Page.navigate',{url});
-  if(!process.argv.includes('--essential')){
+  const decisionsOnly=process.argv.includes('--decisions'),notificationsOnly=process.argv.includes('--notifications');
+  if(!decisionsOnly&&!notificationsOnly&&!process.argv.includes('--essential')){
     await require('./ph-browser-flows.cjs')({fs,path,folder,qa,url,send,evaluate,waitFor,reloadAndWait,click,input,page,dims,shot,noOverflow,delay,pathToFileURL});
     await require('./interaction-browser-flows.cjs')({url,send,evaluate,waitFor,reloadAndWait,click,input,page,dims,shot,noOverflow,delay});
   }
-  await require('./essential-browser-flows.cjs')({send,evaluate,waitFor,click,input,page,dims,shot,noOverflow,delay});
+  if(!decisionsOnly&&!notificationsOnly)await require('./essential-browser-flows.cjs')({send,evaluate,waitFor,click,input,page,dims,shot,noOverflow,delay});
+  // UX decision lab (specs/ux-improvements); `--decisions` runs only this flow.
+  if(!notificationsOnly)await require('./decision-browser-flows.cjs')({url,send,evaluate,waitFor,reloadAndWait,click,dims,shot,delay});
+  // Notification lab (specs/notification-lab); `--notifications` runs only this flow.
+  if(!decisionsOnly)await require('./notification-browser-flows.cjs')({url,send,evaluate,waitFor,reloadAndWait,click,dims,shot,delay});
   assert.deepEqual(errors,[],'Browser runtime errors');
 
 }

@@ -42,7 +42,8 @@ public sealed class AndroidReminderPlatform : IReminderPlatform
         var activity = (ActivityManager)Context.GetSystemService(Context.ActivityService)!;
         var power = (PowerManager)Context.GetSystemService(Context.PowerService)!;
         return new(OperatingSystem.IsAndroidVersionAtLeast(28) && activity.IsBackgroundRestricted,
-            power.IsPowerSaveMode, !power.IsIgnoringBatteryOptimizations(Context.PackageName!));
+            power.IsPowerSaveMode, !power.IsIgnoringBatteryOptimizations(Context.PackageName!),
+            Build.Manufacturer ?? "", Build.Brand ?? "");
     }
     public void OpenAppSettings() => Context.StartActivity(
         new Intent(global::Android.Provider.Settings.ActionApplicationDetailsSettings,

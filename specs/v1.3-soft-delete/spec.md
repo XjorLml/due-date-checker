@@ -9,6 +9,8 @@ Implementation approach: [plan](plan.md). Evidence: [V1.3 record](../../docs/pha
 
 Expose the existing soft-delete contract through an editor-only Delete action and explicit native confirmation. The PRD owns the product rule: hide the due while retaining its database row. No Undo, restore, hard delete, schema migration, dependency addition, or notification work is included.
 
+Later change, 2026-11-06: [UX06](../ux06-confirmations-undo/spec.md) adds a 5-second Undo right after a confirmed Delete. It restores only that exact deletion through the guarded `RestoreAsync` ([SDD](../../docs/SDD.md#ux06-confirmation-and-undo-contract)). Everything else in this spec (no hard delete, no recycle bin, tombstones kept) still holds.
+
 ## Acceptance scenarios
 
 | ID | Scenario | Expected observable result | Verification |

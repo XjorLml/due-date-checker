@@ -9,9 +9,14 @@ public interface IDueRow
     string Title { get; }
     string CategoryText { get; }
     string AmountText { get; }
+    /// <summary>False for a due without an amount: the row shows "No amount" as quiet text.</summary>
+    bool HasAmount { get; }
     string DateText { get; }
     string ShortDateText { get; }
     string MetaText { get; }
+    bool IsRepeating { get; }
+    string RepeatLineText { get; }
+    string TypeGlyph { get; }
     string StatusText { get; }
     string AccessibilityText { get; }
 }

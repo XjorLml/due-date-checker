@@ -52,9 +52,9 @@ public sealed class CreateAndListTests : IDisposable
         sooner.Notes = "ref 123";
         await sooner.SaveCommand.ExecuteAsync(null);
 
-        SqliteConnection.ClearAllPools();
+        TestDatabase.ClearPool(_path);
         var reopened = new SqliteDueRepository(_path);
-        var restarted = new DuesListViewModel(new DatabaseDispatcher(new DatabaseInitializer(_path)), reopened);
+        var restarted = new DuesListViewModel(new DatabaseDispatcher(new DatabaseInitializer(_path)), reopened, _clock);
         await restarted.LoadCommand.ExecuteAsync(null);
 
         Assert.True(restarted.IsReady);
@@ -62,7 +62,7 @@ public sealed class CreateAndListTests : IDisposable
         Assert.Equal(new[] { "Electricity", "Rent" }, restarted.Dues.Select(d => d.Title));
         var stored = await reopened.GetAsync(later.SavedDueId!.Value);
         Assert.NotNull(stored);
-        Assert.Equal(245001, stored.Amount.Centavos);
+        Assert.Equal(Money.FromCentavos(245001), stored.Amount);
         Assert.Null(stored.Notes);
         Assert.False(stored.IsPaid);
         Assert.Equal(_clock.GetUtcNow(), stored.CreatedAt);
@@ -87,7 +87,7 @@ public sealed class CreateAndListTests : IDisposable
         editor.AmountText = text;
         await editor.SaveCommand.ExecuteAsync(null);
         Assert.True(editor.HasSaved);
-        Assert.Equal(expected, (await _repository.GetAsync(editor.SavedDueId!.Value))!.Amount.Centavos);
+        Assert.Equal(Money.FromCentavos(expected), (await _repository.GetAsync(editor.SavedDueId!.Value))!.Amount);
     }
 
     [Theory]
@@ -166,7 +166,7 @@ public sealed class CreateAndListTests : IDisposable
         var saved = await _repository.GetAsync(editor.SavedDueId!.Value);
         Assert.NotNull(saved);
         Assert.Equal("Valid title", saved.Title);
-        Assert.Equal(124, saved.Amount.Centavos);
+        Assert.Equal(Money.FromCentavos(124), saved.Amount);
         Assert.Equal("  keep this note  ", saved.Notes);
     }
 
@@ -212,11 +212,29 @@ public sealed class CreateAndListTests : IDisposable
     }
 
     [Fact]
+    public async Task TryInitialize_reports_failure_without_throwing_and_succeeds_once_fixed()
+    {
+        // The bottom-bar Add disc lives outside the list page and its CanAdd guard (Focus
+        // adoption). It asks the dispatcher instead, so a failed startup cannot open the editor
+        // (found on the emulator 2026-11-06; SDD §7 startup contract).
+        var nestedDirectory = Path.Combine(_directory, "not-created-for-add");
+        var path = Path.Combine(nestedDirectory, "dues.db");
+        var database = new DatabaseDispatcher(new DatabaseInitializer(path));
+
+        Assert.False(await database.TryInitializeAsync());
+        Assert.False(File.Exists(path));
+
+        Directory.CreateDirectory(nestedDirectory);
+        Assert.True(await database.TryInitializeAsync());
+        Assert.True(File.Exists(path));
+    }
+
+    [Fact]
     public async Task Failed_startup_disables_add_and_retry_initializes_database()
     {
         var nestedDirectory = Path.Combine(_directory, "not-created-yet");
         var path = Path.Combine(nestedDirectory, "dues.db");
-        var vm = new DuesListViewModel(new DatabaseDispatcher(new DatabaseInitializer(path)), new SqliteDueRepository(path));
+        var vm = new DuesListViewModel(new DatabaseDispatcher(new DatabaseInitializer(path)), new SqliteDueRepository(path), _clock);
         await vm.LoadCommand.ExecuteAsync(null);
         Assert.False(vm.IsReady);
         Assert.False(vm.CanAdd);
@@ -233,7 +251,7 @@ public sealed class CreateAndListTests : IDisposable
     public async Task Failed_refresh_preserves_rows_and_successful_reload_does_not_duplicate()
     {
         var fake = new ControlledRepository();
-        var vm = new DuesListViewModel(_database, fake);
+        var vm = new DuesListViewModel(_database, fake, _clock);
         await vm.LoadCommand.ExecuteAsync(null);
         Assert.Single(vm.Dues);
         fake.Fail = true;
@@ -249,7 +267,7 @@ public sealed class CreateAndListTests : IDisposable
 
     public void Dispose()
     {
-        SqliteConnection.ClearAllPools();
+        TestDatabase.ClearPoolsUnder(_directory);
         Directory.Delete(_directory, recursive: true);
     }
 

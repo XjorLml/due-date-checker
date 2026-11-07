@@ -11,9 +11,10 @@
                         SemanticProperties.Description="Saved dues for the selected day; select one for details">
             <CollectionView.Header>
                 <VerticalStackLayout Spacing="20" Padding="0,8,0,0">
+                    <pages:RootHeader RemindersClicked="OnRemindersClicked" />
                     <VerticalStackLayout Spacing="6">
-                        <Label Text="A date for everything." Style="{StaticResource Heading1}" />
-                        <Label Text="Find your day. See what's on it. Dates use Asia/Manila." Style="{StaticResource CaptionLabel}" />
+                        <Label x:Name="Heading" Text="A date for everything." Style="{StaticResource Heading1}" />
+                        <Label Text="Find your day. See what's on it." Style="{StaticResource CaptionLabel}" />
                     </VerticalStackLayout>
                     <VerticalStackLayout Spacing="8" IsVisible="{Binding IsBusy}">
                         <ActivityIndicator IsRunning="{Binding IsBusy}" SemanticProperties.Description="Loading saved calendar dues" />
@@ -25,24 +26,45 @@
                             <Button Text="Refresh / Retry" Command="{Binding LoadCommand}" Style="{StaticResource SecondaryButton}" HorizontalOptions="Start" />
                         </VerticalStackLayout>
                     </Border>
-                    <VerticalStackLayout Spacing="8">
-                        <!-- Focus calendar controls: month on the left, arrows and Today on the right. -->
-                        <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="2">
+                    <VerticalStackLayout Spacing="10">
+                        <!-- Prototype calendar controls (PA06): month on the left, previous and next on the right. -->
+                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="4">
                             <Label Text="{Binding MonthText}" Style="{StaticResource Heading2}" VerticalOptions="Center" AutomationId="CalendarMonth" />
-                            <Button Grid.Column="1" Text="‹" Style="{StaticResource IconButton}" Clicked="OnPreviousClicked"
-                                    IsEnabled="{Binding CanGoPrevious}" SemanticProperties.Description="Previous month" AutomationId="CalendarPrevious" />
-                            <Button Grid.Column="2" Text="›" Style="{StaticResource IconButton}" Clicked="OnNextClicked"
-                                    IsEnabled="{Binding CanGoNext}" SemanticProperties.Description="Next month" AutomationId="CalendarNext" />
-                            <Button Grid.Column="3" Text="Today" Style="{StaticResource FilterChip}" Clicked="OnTodayClicked"
-                                    SemanticProperties.Description="{Binding TodayDescription}" AutomationId="CalendarToday" />
+                            <Grid Grid.Column="1" WidthRequest="44" HeightRequest="44" IsEnabled="{Binding CanGoPrevious}">
+                                <pages:Glyph Kind="back" HorizontalOptions="Center" VerticalOptions="Center"
+                                             Color="{AppThemeBinding Light={StaticResource TextLight}, Dark={StaticResource TextDark}}" />
+                                <Button Style="{StaticResource OverlayButton}" Clicked="OnPreviousClicked" IsEnabled="{Binding CanGoPrevious}"
+                                        SemanticProperties.Description="Previous month" AutomationId="CalendarPrevious" />
+                            </Grid>
+                            <Grid Grid.Column="2" WidthRequest="44" HeightRequest="44">
+                                <pages:Glyph Kind="next" HorizontalOptions="Center" VerticalOptions="Center"
+                                             Color="{AppThemeBinding Light={StaticResource TextLight}, Dark={StaticResource TextDark}}" />
+                                <Button Style="{StaticResource OverlayButton}" Clicked="OnNextClicked" IsEnabled="{Binding CanGoNext}"
+                                        SemanticProperties.Description="Next month" AutomationId="CalendarNext" />
+                            </Grid>
                         </Grid>
-                        <Label Text="{Binding WeekStartDescription}" Style="{StaticResource CaptionLabel}" AutomationId="CalendarWeekStart" />
-                        <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Default">
-                            <Grid x:Name="MonthGrid" MinimumWidthRequest="322" ColumnDefinitions="*,*,*,*,*,*,*" RowSpacing="4" ColumnSpacing="2" />
-                        </ScrollView>
+                        <!-- UX15 (decided 2026-11-06, option B): no sideways scroll. Seven 44 dp columns where they fit;
+                             on narrower rows the cells share the width (code-behind, LayoutRules.DayCellMinimumWidth). -->
+                        <Grid x:Name="MonthGrid" ColumnDefinitions="*,*,*,*,*,*,*" RowSpacing="4" ColumnSpacing="2" />
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                            <Label Text="{Binding WeekStartDescription}" Style="{StaticResource CaptionLabel}" VerticalOptions="Center"
+                                   AutomationId="CalendarWeekStart" />
+                            <Grid Grid.Column="1" MinimumHeightRequest="44">
+                                <HorizontalStackLayout Spacing="6" VerticalOptions="Center" InputTransparent="True">
+                                    <Label Text="Today" FontFamily="JakartaMedium" FontSize="14" VerticalOptions="Center"
+                                           AutomationProperties.IsInAccessibleTree="False"
+                                           TextColor="{AppThemeBinding Light={StaticResource TextLight}, Dark={StaticResource TextDark}}" />
+                                    <pages:Glyph Kind="calendar" Size="18" VerticalOptions="Center"
+                                                 Color="{AppThemeBinding Light={StaticResource TextLight}, Dark={StaticResource TextDark}}" />
+                                </HorizontalStackLayout>
+                                <Button Style="{StaticResource OverlayButton}" Clicked="OnTodayClicked"
+                                        SemanticProperties.Description="{Binding TodayDescription}" AutomationId="CalendarToday" />
+                            </Grid>
+                        </Grid>
                     </VerticalStackLayout>
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
-                        <Label Text="{Binding SelectedDateText}" Style="{StaticResource Heading3}" VerticalOptions="Center" AutomationId="CalendarSelectedDate" />
+                        <Label Text="{Binding SelectedDateText}" Style="{StaticResource Heading3}" VerticalOptions="Center"
+                               AutomationId="CalendarSelectedDate" SemanticProperties.HeadingLevel="Level2" />
                         <Label Grid.Column="1" Text="{Binding AgendaSummary}" IsVisible="{Binding HasLoaded}" Style="{StaticResource CaptionLabel}"
                                VerticalOptions="Center" AutomationId="CalendarAgendaSummary" />
                     </Grid>
@@ -52,11 +74,8 @@
                             <Label Text="Tap Add in the bottom bar to create your first due. Your saved information stays available offline." />
                         </VerticalStackLayout>
                     </Border>
-                    <Border Style="{StaticResource SurfaceCard}" IsVisible="{Binding IsDayEmpty}">
-                        <VerticalStackLayout Spacing="8">
-                            <Label Text="Nothing due on this day." Style="{StaticResource Heading2}" />
-                            <Label Text="Choose another date or add a due." />
-                        </VerticalStackLayout>
+                    <Border Style="{StaticResource NoticeCard}" IsVisible="{Binding IsDayEmpty}">
+                        <Label Text="Nothing due. A little breathing room." />
                     </Border>
                     <BoxView Style="{StaticResource Divider}" IsVisible="{Binding HasLoaded}" />
                 </VerticalStackLayout>
@@ -66,6 +85,10 @@
                     <pages:DueRow />
                 </DataTemplate>
             </CollectionView.ItemTemplate>
+            <CollectionView.Footer>
+                <Label Text="Add defaults to Today, independently of this selected date." Style="{StaticResource CaptionLabel}"
+                       Margin="0,16,0,24" />
+            </CollectionView.Footer>
         </CollectionView>
     </Grid>
 </ContentPage>

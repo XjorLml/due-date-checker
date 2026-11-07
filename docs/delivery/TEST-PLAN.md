@@ -30,12 +30,12 @@ These are inspected test definitions, not new execution results. Historical runs
 | R02, R03, R07 | [CreateAndListTests](../../tests/DueDateChecker.App.Tests/CreateAndListTests.cs): Manila date boundary; reopened-file persistence/order; PHP/timezone defaults; required fields; amount limits/overflow; retries; duplicate Save; startup/read failures | Android lifecycle, input controls, and airplane-mode acceptance require a phone. |
 | R04, R05 | [EditDueTests](../../tests/DueDateChecker.App.Tests/EditDueTests.cs): load/no-write, edit/paid reopen, identity/timestamps, refreshed order/status, invalid IDs/fields, stale deletion, read/write retry, repeated load/Save | Native navigation, XAML binding, and trimming need Release/device checks. |
 | R06 | [DeleteDueTests](../../tests/DueDateChecker.App.Tests/DeleteDueTests.cs): cancel without storage access, persisted tombstone/reopen/list refresh, invalid unsaved fields, missing/deleted targets, failure/retry, repeated Delete/Save, navigation-retry state, concurrent deletion | Native confirmation display/dismissal, page action handling, and lifecycle are outside this harness. |
-| R02–R06 / persistence | [SqliteDueRepositoryTests](../../tests/DueDateChecker.Core.Tests/SqliteDueRepositoryTests.cs): initialization/idempotence, round trips, date sorting, missing IDs, active-row update safeguards, retained tombstones, repeated/unknown delete, newer-schema data preservation | F07 CategoryTests add legacy upgrade and duplicate-column migration-failure preservation; mid-script rollback and explicit repository equal-due-date/created_at ordering remain unverified. |
+| R02–R06 / persistence | [SqliteDueRepositoryTests](../../tests/DueDateChecker.Core.Tests/SqliteDueRepositoryTests.cs): initialization/idempotence, round trips, date sorting, missing IDs, active-row update safeguards, retained tombstones, repeated/unknown delete, newer-schema data preservation | F07 CategoryTests add legacy upgrade and duplicate-column migration-failure preservation. Since 2026-11-06 `OptionalAmountTests` covers a mid-script migration failure (rollback after an earlier DDL statement succeeded) and `SqliteDueRepositoryTests` covers equal due dates ordered by `created_at` (UTC writes; rows with mixed historical offsets sort by stored text). |
 | Domain rules | [MoneyTests](../../tests/DueDateChecker.Core.Tests/MoneyTests.cs), [DueTests](../../tests/DueDateChecker.Core.Tests/DueTests.cs): rounding, negative amounts, formatting/value equality, create defaults, title validation/trim, `with` validation, identity | No inferred coverage beyond these tests. |
 
 F05 automated contract: Core [ReminderTests](../../tests/DueDateChecker.Core.Tests/ReminderTests.cs) cover default/off and due-date-only planning, Manila instants, quiet-hour variants/bounds, culture-invariant identities, invalid settings, schema-2 preservation, receipt persistence and transactional pending rollback. App [ReminderTests](../../tests/DueDateChecker.App.Tests/ReminderTests.cs) cover reconciliation/restart replay, late versus newly elapsed work, paid/date/delete/disable/revocation cancellation, bounded posting, controlled platform failures, post-commit write safety, delivered-key validation and settings draft/permission/test boundaries. These use a fake platform; they do not execute Android APIs, Shell or permission dialogs.
 
-Temporary database tests should close/clear pooled connections before cleanup. Test failure behavior and persistent outcomes rather than generated MVVM boilerplate. A future migration failure test needs a controlled seam; do not modify shipped migrations to simulate failure.
+Temporary database tests should close/clear pooled connections before cleanup, and only for their own files: use `TestDatabase.ClearPool(path)` or `ClearPoolsUnder(directory)`. `SqliteConnection.ClearAllPools()` is process-wide and, with xUnit running test classes in parallel, caused an intermittent `ObjectDisposedException` in another class (found and fixed 2026-11-06). Test failure behavior and persistent outcomes rather than generated MVVM boilerplate. A future migration failure test needs a controlled seam; do not modify shipped migrations to simulate failure.
 
 ## Device procedures
 
@@ -135,7 +135,7 @@ Scenarios: [FP01–FP08](../../specs/focus-pages/spec.md#acceptance-scenarios). 
 
 ## Documentation checks
 
-The [mobile HTML study](../../specs/mobile-ui-prototype/spec.md) defines HP01–HP09 for `prototypes/mobile-review/` and HP10–HP18 for the four-concept exploration, Minimal Fintech floating Add and its refinements. Run `node --test prototypes/mobile-review/tests/model.test.cjs` for the original study. For the exploration, run `node --test` over `model.test.cjs`, `ph-catalog.test.cjs` and `essential-model.test.cjs` under `prototypes/design-exploration/tests/`, then `node prototypes/design-exploration/tests/browser-check.cjs`, which drives `ph-browser-flows.cjs`, `interaction-browser-flows.cjs` and `essential-browser-flows.cjs` through a loopback server and an installed headless Edge. [Observed results](../../specs/mobile-ui-prototype/tasks.md) are agent-observed browser evidence only.
+The [mobile HTML study](../../specs/mobile-ui-prototype/spec.md) defines HP01–HP09 for `prototypes/mobile-review/` and HP10–HP18 for the four-concept exploration, Minimal Fintech floating Add and its refinements. Run `node --test prototypes/mobile-review/tests/model.test.cjs` for the original study. For the exploration, run `node --test` over `model.test.cjs`, `ph-catalog.test.cjs`, `essential-model.test.cjs`, `decision-lab.test.cjs` and `notification-lab.test.cjs` under `prototypes/design-exploration/tests/`, then `node prototypes/design-exploration/tests/browser-check.cjs`, which drives `ph-browser-flows.cjs`, `interaction-browser-flows.cjs`, `essential-browser-flows.cjs`, `decision-browser-flows.cjs` and `notification-browser-flows.cjs` through a loopback server and an installed headless Edge. `--notifications` runs only the notification lab flow ([NL05–NL10](../../specs/notification-lab/spec.md#acceptance-lab)); `--decisions` runs only the UX decision lab flow (both rounds, [DL01–DL08](../../specs/ux-improvements/spec.md#html-decision-lab) and [DL09–DL13](../../specs/ux-improvements-2/spec.md#html-decision-lab)). [Observed results](../../specs/mobile-ui-prototype/tasks.md) are agent-observed browser evidence only.
 
 The HTML-only [Philippine catalog prototype](../../specs/ph-catalog-prototype/spec.md) has separate PH01–PH09 scenarios and [observed browser/helper evidence](../../specs/ph-catalog-prototype/tasks.md). Run its documented Node and local Edge checks for catalog/picker/schedule changes. These results do not count as MAUI builds, Android persistence, TalkBack or reminder-delivery acceptance.
 
@@ -163,11 +163,79 @@ On the phone, preserve app data and compare pre/post-upgrade active summary memb
 
 ## F07 optional amount verification
 
-Use [OA01-OA06](../../specs/f07-optional-amounts/spec.md#acceptance-scenarios), [PRD rules](../PRD.md#f07-optional-amount-rules) and [SDD contract](../SDD.md#f07-optional-amount-contract). Run Core/App suites sequentially and an Android Release build; automated SQLite tests establish schema/data preservation, not a private phone database inspection. As of the 2026-11-05 source inspection no OA tests, migration 004 or optional-amount code exist; this section is the procedure for when the slice is implemented.
+Use [OA01-OA06](../../specs/f07-optional-amounts/spec.md#acceptance-scenarios), [PRD rules](../PRD.md#f07-optional-amount-rules) and [SDD contract](../SDD.md#f07-optional-amount-contract). Run Core/App suites sequentially and an Android Release build; automated SQLite tests establish schema/data preservation, not a private phone database inspection. Implemented 2026-11-06: `OptionalAmountTests` in both test projects cover the automated list below, and the [emulator evidence](evidence/F07-OPTIONAL-AMOUNTS-2026-11-06.md) includes a real schema 3→4 upgrade dumped with the device's `sqlite3` through `run-as` (possible only for a debuggable build). The phone steps below are still open.
 
 Automated checks must cover schema-3-to-4 active/paid/deleted preservation with the active index recreated, NULL-versus-zero round trips, Bill/Subscription rejection of null (including copied/`with` records at the repository boundary), Task/Other acceptance, editor blank/required/category-switch/clear/failure paths, and Dues/Details/Dashboard/Calendar "No amount" projections and semantics. Confirm amount-free dues do not alter status, counts, sort, filters or reminder planning.
 
 On the phone, preserve data and use only uniquely tagged temporary records. Verify Bill blank blocks Save; Task/Other blank saves and survives restart; zero displays `₱0.00`; clear an existing Task/Other amount and verify "No amount" on Dues/Details/Dashboard/Calendar; reopen after restart. Check both themes at normal and 200% text, retain unrelated settings and delete only the temporary records. Keep private titles/amounts out of logs/screenshots. Full TalkBack/keyboard/switch, other devices/widths, controlled native migration/write/read failures and intended-key acceptance remain separate; release stays held.
+
+## UX Wave 2 verification: recurrence (UX03) and maker steps (UX04)
+
+Use [RC01–RC08](../../specs/f07-recurrence/spec.md#acceptance-scenarios), [PRD UX03/UX04](../PRD.md#ux-review-decisions-2026-11-06), the [SDD recurrence contract](../SDD.md#f07-recurrence-contract) and [ADR 009](../adr/009-recurring-dues.md). Automated: Core [RecurrenceTests](../../tests/DueDateChecker.Core.Tests/RecurrenceTests.cs) (date rules and bounds, domain rules, migration 005 fresh/upgrade/rollback, one-transaction write and one occurrence per source) and App [RecurrenceTests](../../tests/DueDateChecker.App.Tests/RecurrenceTests.cs) (Details, editor, row text), plus App [ReminderTests](../../tests/DueDateChecker.App.Tests/ReminderTests.cs) for the forwarding wrapper and maker steps. The rollback test also guards the migration runner: a failing statement after an `ALTER … CHECK` must throw and leave the previous schema. Executed 2026-11-06 with an emulator pass: [evidence](evidence/UX-WAVE2-2026-11-06.md).
+
+On the phone, after reinstalling from the laptop that holds its key: confirm the schema 4→5 upgrade keeps every due. With a uniquely named temporary Bill, choose Monthly on a date late in a month, mark it paid on Details, and check the visible "Next one added" line and the new row's date, type, amount and notes. Mark it unpaid and paid again and confirm no second occurrence. Switch a temporary Bill to Task and confirm Repeat disappears and the saved due no longer repeats. With reminders on, open Reminders and compare the Xiaomi/Redmi/POCO steps with the phone's own app-info labels (Autostart, Battery saver → No restrictions), following them from "Android app / battery settings". Check both themes at 100% and 200% text, then delete only the temporary dues and restore the reminder setting.
+
+## UX Wave 3 verification: export and import (UX05)
+
+Use [EX01–EX08](../../specs/f04-export-import/spec.md#acceptance-scenarios), [PRD UX05](../PRD.md#ux-review-decisions-2026-11-06), the [SDD contract](../SDD.md#ux05-export-and-import-contract) and [ADR 010](../adr/010-export-import-file.md). Automated: Core [ExportImportTests](../../tests/DueDateChecker.Core.Tests/ExportImportTests.cs) cover the format, round trip, every refusal, the empty rule with tombstone replacement and the single transaction. App [ExportImportTests](../../tests/DueDateChecker.App.Tests/ExportImportTests.cs) cover the Settings flow with a fake file service, messages, cancels, races and reminder refresh. The Android file dialogs exist only on a device. Executed 2026-11-06 on the emulator: [evidence](evidence/UX-WAVE3-2026-11-06.md).
+
+On the phone, after reinstalling from the laptop that holds its key:
+
+1. Export to Downloads and to a second location the phone offers (its own file manager, and Drive only if the user agrees to put financial data there), and confirm the file opens as text.
+2. Try Import while dues show and confirm it is refused before any dialog.
+3. In an authorized test only, with a fresh install or after exporting and deleting every due, import the file and compare the Dues, Dashboard and Calendar contents. Check Cancel in the dialog and in the confirmation.
+4. Check both themes at 100% and 200% text.
+5. Delete the exported test files.
+
+Never import over a personal phone's real data without a fresh export first.
+
+## UX Wave 4 verification: messages, Undo and polish (UX06–UX12)
+
+Use [CM01–CM08](../../specs/ux06-confirmations-undo/spec.md#acceptance-scenarios), [PRD UX06/UX07/UX12](../PRD.md#ux-review-decisions-2026-11-06), the [SDD contract](../SDD.md#ux06-confirmation-and-undo-contract) and the [DESIGN decisions](../DESIGN.md#ux-review-decisions-2026-11-06). Automated tests:
+
+- Core [RestoreTests](../../tests/DueDateChecker.Core.Tests/RestoreTests.cs): the guarded restore.
+- App [ConfirmationUndoTests](../../tests/DueDateChecker.App.Tests/ConfirmationUndoTests.cs): editor messages and deletion record, Undo once/latest/changed/failed, Details reload and Manila timestamps.
+- The updated [DueDetailTests](../../tests/DueDateChecker.App.Tests/DueDetailTests.cs) and [RecurrenceTests](../../tests/DueDateChecker.App.Tests/RecurrenceTests.cs).
+
+The snackbar, keyboard, date text and counter role exist only on a device. Executed 2026-11-06 on the emulator: [evidence](evidence/UX-WAVE4-2026-11-06.md).
+
+On the phone, with a uniquely named temporary due:
+
+1. Save and check "Due saved." above the bottom bar.
+2. Mark it paid on Details.
+3. Delete it and tap Undo within 5 seconds; check it returns with its fields. Delete it again and let the message expire; check it stays deleted.
+4. With TalkBack, confirm each message is read once, that Undo is reachable and that the time is extended when the phone's accessibility timeout is longer.
+5. Check the amount keyboard of the phone's own keyboard app and that a minus or comma cannot be entered.
+6. Check that the date field reads `06 Nov 2026`, that the Dashboard counters are announced as buttons and that Details timestamps say "Manila".
+7. Check both themes at 100% and 200%, then delete the temporary due.
+
+## UX Wave 5 verification: presentation (UX13–UX16)
+
+Use the [DESIGN decisions](../DESIGN.md#ux-review-decisions-2026-11-06). Automated tests: App [LayoutRulesTests](../../tests/DueDateChecker.App.Tests/LayoutRulesTests.cs) cover the caption scale, day cell width, landscape heading size and the amount flag. The rendered sizes exist only on a device. Executed 2026-11-07 on the emulator: [evidence](evidence/UX-WAVE5-2026-11-07.md).
+
+On the phone:
+
+1. At the phone's largest font and display size, confirm all five bar captions are whole and the bar does not crowd its icons.
+2. On Calendar, confirm the month shows seven columns without scrolling sideways and that every day can be tapped.
+3. Rotate to landscape on each root page and confirm the heading is smaller and more rows show; rotate back.
+4. Open a Task or Other without an amount and confirm "No amount" is quiet text.
+5. Check both themes, then restore the phone's display settings.
+
+## Prototype alignment verification (PA01–PA10)
+
+Use the [prototype alignment spec](../../specs/prototype-alignment/spec.md#page-targets-and-acceptance), the [PRD decisions](../PRD.md#prototype-alignment-decisions-2026-11-07) and the [SDD contract](../SDD.md). Automated tests: App [DuesFilterTests](../../tests/DueDateChecker.App.Tests/DuesFilterTests.cs) cover search and filters on Dues and how they meet the UX02 fold; [DashboardTests](../../tests/DueDateChecker.App.Tests/DashboardTests.cs) cover the summary and the two lists; [PrototypeAlignmentTests](../../tests/DueDateChecker.App.Tests/PrototypeAlignmentTests.cs) cover the editor's unsaved-changes check, editor rows, calendar count words and row projection; CategoryTests, OptionalAmountTests and RecurrenceTests carry the moved assertions. Layout, headers, glyphs and dialogs exist only on a device.
+
+On the emulator and then the phone, in light and dark, at 100% and 200% text, and on a narrow phone:
+
+1. Each root page shows the wordmark header; the bell opens Reminders (PA01).
+2. Details and Reminders show "‹ Back" and a centred title; Details' pencil opens the editor; the editor shows the bin only when editing (PA02).
+3. Dashboard shows the summary, counters, "Needs attention", "A little further ahead" and the footnote; a counter opens Dues with that status; "All dues" opens Dues unfiltered; a row opens Details (PA03).
+4. On Dues, search, chips, the Type filter and Reset filters work, and the earlier paid row appears only with no filter (PA04).
+5. Rows show the type icon, the repeat line for repeating dues and the plain status (PA05).
+6. Calendar shows "1 due" / "2 dues", the Today link and the footnote, seven columns on a narrow phone (PA06).
+7. In the editor, type something and press Cancel, then system Back (after the keyboard closes): both ask "Discard changes?"; Keep editing keeps the text; Discard leaves without saving; with no changes both leave at once. "Change" offers the four types (PA07).
+8. Settings shows the cards and the fixed "✓ Save"; Reminders shows the state footer and the readiness section, open by default when reminders are on and maker steps exist (PA09, PA10).
+9. On the phone only: the floating bar's gap above the system navigation in the phone's own navigation mode.
 
 ## F04 preference verification
 

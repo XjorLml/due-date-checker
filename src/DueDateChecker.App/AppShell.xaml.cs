@@ -8,12 +8,14 @@ public partial class AppShell : Shell
 	public const int AddSlot = 2;
 
 	private readonly Pages.DuesListPage _duesPage;
+	private readonly Services.DatabaseDispatcher _database;
 	private bool _openingAdd;
 
 	public AppShell(Pages.DuesListPage duesPage, IServiceProvider services)
 	{
 		InitializeComponent();
 		_duesPage = duesPage;
+		_database = services.GetRequiredService<Services.DatabaseDispatcher>();
 		DuesContent.Content = duesPage;
 		DashboardContent.ContentTemplate = new DataTemplate(() => services.GetRequiredService<Pages.DashboardPage>());
 		CalendarContent.ContentTemplate = new DataTemplate(() => services.GetRequiredService<Pages.CalendarPage>());
@@ -31,6 +33,15 @@ public partial class AppShell : Shell
         Loaded += async (_, _) => { taps.Queued -= OnQueued; taps.Queued += OnQueued; await taps.TryOpenAsync(this); };
         Unloaded += (_, _) => taps.Queued -= OnQueued;
         Navigated += async (_, _) => await taps.TryOpenAsync(this);
+        // UX06: a restored due must appear on the page already on screen; other pages reload when shown.
+        var undo = services.GetRequiredService<Services.DeletionUndo>();
+        void OnRestored(object? sender, Guid id) => MainThread.BeginInvokeOnMainThread(async () =>
+        {
+            try { await (CurrentPage is Pages.DueDetailPage details ? details.RefreshAfterRestoreAsync(id) : RefreshCurrentPageAsync()); }
+            catch (Exception) { } // each page reports its own load errors; a refresh failure must not crash the app
+        });
+        Loaded += (_, _) => { undo.Restored -= OnRestored; undo.Restored += OnRestored; };
+        Unloaded += (_, _) => undo.Restored -= OnRestored;
 	}
 
 	public Task RefreshCurrentPageAsync() => CurrentPage switch
@@ -44,6 +55,14 @@ public partial class AppShell : Shell
 		_ => Task.CompletedTask
 	};
 
+	/// <summary>Prototype alignment (PRD "UX09 (revised)"): Dashboard's counters and "All dues" open the
+	/// Dues tab with that status selected (null clears search and filters).</summary>
+	public void ShowDues(string? status)
+	{
+		_duesPage.ShowStatus(status);
+		MainTabs.CurrentItem = DuesTab;
+	}
+
 	/// <summary>Opens the editor on the current root's stack so Save/Cancel return to that root.</summary>
 	public async Task OpenAddAsync()
 	{
@@ -51,6 +70,15 @@ public partial class AppShell : Shell
 		_openingAdd = true;
 		try
 		{
+			// SDD startup contract: Add stays unavailable until the database has opened. The old
+			// in-page Add button checked CanAdd; the disc lives in the bar, so it asks directly.
+			// This also retries a failed startup, and opens the editor only if that succeeds.
+			if (!await _database.TryInitializeAsync())
+			{
+				await DisplayAlertAsync("Couldn't open your saved dues",
+					"Check available storage or update the app, then try again.", "OK");
+				return;
+			}
 			await GoToAsync(nameof(Pages.DueEditPage));
 		}
 		catch (Exception)

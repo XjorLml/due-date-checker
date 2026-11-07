@@ -11,5 +11,5 @@
 ## Remaining acceptance
 
 - [ ] Full TalkBack/keyboard/switch access, landscape/other widths/devices and full visual/maximum-value wrapping checks.
-- [ ] Controlled native initialization/read/navigation failures, globally empty database and actual clock-boundary run.
+- [ ] Controlled native initialization/read/navigation failures, globally empty database and actual clock-boundary run. Emulator 2026-11-06: empty database and a midnight crossing (today marker moved, selection kept; [record](../../docs/delivery/evidence/EMULATOR-HARDENING-2026-11-06.md#clock-boundary-manila-midnight)); Calendar-specific read failure and phone pending.
 - [ ] Intended-key final release acceptance. Release/signing and optional CI activation stay held.

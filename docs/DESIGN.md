@@ -1,6 +1,6 @@
 # Duewise — Product Design System
 
-**Version:** 2.0.0 · **Status:** Normative · **Platforms:** Android (v1) · **Baseline:** 2026-11-05 (Focus adoption; supersedes 1.0.0 indigo baseline of 2026-10-16)
+**Version:** 2.2.0 · **Status:** Normative · **Platforms:** Android (v1) · **Baseline:** 2026-11-05 (Focus adoption; supersedes 1.0.0 indigo baseline of 2026-10-16)
 
 All dimensions are logical **dp** (Android) unless marked `px` (asset pixels), `sp` (scalable type), or `ms`. At 1× density, 1 dp corresponds to one reference pixel. Never hardcode physical pixels for layouts. Token paths in prose use `colors.light.text`; generated implementation constants may use camelCase.
 
@@ -8,6 +8,8 @@ All dimensions are logical **dp** (Android) unless marked `px` (asset pixels), `
 
 | Version | Date | Change |
 |---|---|---|
+| 2.2.0 | 2026-11-07 | [Prototype alignment](#prototype-alignment-2026-11-07): every page takes the live prototype's look and layout (headers, rows, Dashboard sections, search on Dues, Calendar counts, Details, editor, Settings, Reminders); new prototype features stay deferred. |
+| 2.1.1 | 2026-11-07 | Bottom bar completed to the selected Focus look. The 2.0.0 adoption had left out the floating rounded card, the lime pill behind the selected icon, Jakarta captions and the prototype's Dashboard and Dues glyphs; found when the user compared the build with the prototype. §6 and §7 bottom bar updated. No behavior change. |
 | 2.1.0 | 2026-11-05 | Page content from the Focus mockup built on existing data ([focus-pages](../specs/focus-pages/spec.md)): ledger row, summary counters, filter chips, segmented control, icon/link buttons added to §7; as-built Dashboard, Calendar, Settings and Item detail sections in §8; Dashboard progress ring replaced by the Paid counter; Refresh/Retry only after an error. One product rule added: the PRD F02 upcoming total. |
 | 2.0.0 | 2026-11-05 | Focus baseline adopted for look and navigation: palette, type scale, radius, spacing, five-slot bottom bar with centred Add action, sticky editor actions, Essential-first field order, Delete in the editor header; Settings becomes a root tab. No product-feature change. |
 | 1.0.0 | 2026-10-16 | Original indigo/slate baseline. Superseded; retained in git history. |
@@ -22,7 +24,7 @@ The subsequent 2026-10-17 request authorizes [dashboard/calendar mock previews](
 
 The later [bottom-navigation request](../specs/future-pages/spec.md#bottom-navigation-acceptance) adopts a native Shell bar for the three implemented destinations: Dues, Dashboard and Calendar. Use 24-unit vector icons, visible native labels/selection semantics and semantic surface/primary/secondary colors. The bar has a 64-unit minimum, grows with system text to separate icons/captions, and retains Android's safe-area insets and native caption metrics. Three equal slots replace the future four-destination proposal below. Retain the sample headers, remove duplicate page switches/exits, and hide the bar in the editor. Verify light/dark, 200% text and Back/retained state at the device boundary; do not infer full accessibility acceptance from the native control. The 2026-11-05 Focus adoption supersedes that three-slot composition with the [five-slot bar with Add action](#bottom-bar-with-add-action) and makes Settings a root tab; the verification expectations still apply.
 
-Product-facing exceptions for v1 are governed by the [PRD rules](PRD.md#business-rules-and-validation) and [workflows](PRD.md#user-workflows): required PHP amounts, no approved title-length cap, Asia/Manila calendar dates, date-sorted active dues including paid rows, payment changes on Save, Back/Cancel without a write, and confirmed soft deletion without Undo/restore. The future optional-amount, 120-character title, completed-last, automatic-timezone/localization, immediate-toggle, unsaved-confirmation, and Undo descriptions below do not override those requirements.
+Product-facing exceptions for v1 are governed by the [PRD rules](PRD.md#business-rules-and-validation) and [workflows](PRD.md#user-workflows): PHP amounts required for Bill/Subscription and optional for Task/Other ([F07 optional amounts](#f07-optional-amount-adaptation), implemented 2026-11-06), no approved title-length cap, Asia/Manila calendar dates, date-sorted active dues including paid rows, payment changes on Save, Back/Cancel without a write, and confirmed soft deletion without Undo/restore. The broader optional-amount, 120-character title, completed-last, automatic-timezone/localization, immediate-toggle, unsaved-confirmation, and Undo descriptions below do not override those requirements.
 
 Design adoption for the existing MAUI list/editor was authorized on 2026-10-17 and is tracked in the [adoption spec](../specs/design-adoption/spec.md), [implementation plan](../specs/design-adoption/plan.md), and [tasks](../specs/design-adoption/tasks.md). Implementation and observed verification remain distinct; see STATUS for actual results. The earlier [audit](delivery/DOCS-REFACTOR.md#unresolved-decisions) preserves the pre-adoption findings.
 
@@ -41,8 +43,11 @@ HTML explorations under `prototypes/` are sample-data review artifacts. Browsing
 | 2026-11-04 | [Focus with Philippine catalog](../prototypes/design-exploration/index.html#a/dashboard) | Browser-local category/provider taxonomy with custom categories, optional providers and schedule controls | HTML only by explicit clarification; native F07 category and F05 reminder contracts unchanged | [PH01–PH09](../specs/ph-catalog-prototype/spec.md#observable-acceptance), [tasks](../specs/ph-catalog-prototype/tasks.md) |
 | 2026-11-04 | [Interaction lab](../prototypes/design-exploration/index.html#interaction-lab), [audit](../prototypes/design-exploration/INTERACTION-AUDIT.md) | Three Cancel/Save placements and three navbar behaviors with dirty-draft, busy-state and native-dialog simulation | Comparison. The user selected **Sticky bottom actions + Context-aware navigation** for the HTML mockup; previewing or storing a preference adopts nothing; sticky actions and context-aware navigation adopted natively 2026-11-05 | [IN01–IN10](../specs/interaction-lab/spec.md#acceptance-scenarios), [selection evidence](../specs/interaction-lab/tasks.md#selected-html-adoption--2026-11-04) |
 | 2026-11-04 | Essential-first Add/Edit, in the same mockup | Title, amount and date first; collapsed Repeat/Reminders; dirty-exit confirmation; PHP paste normalization | Approved Alternative A; field order adopted natively 2026-11-05; dirty-exit confirmation and PHP paste normalization remain HTML-only. The approximately 30-second entry target is unmeasured | [IN11–IN15](../specs/interaction-lab/spec.md#acceptance-scenarios), [evidence](../specs/interaction-lab/tasks.md#essential-first-alternative-a--2026-11-04) |
+| 2026-11-06 | [UX decision lab](../prototypes/design-exploration/index.html#ux-decisions), in the same mockup ("UX decisions" tab) | Drawings of the native app as built next to each option for UX01–UX16, browser-local choices and notes, copy/export for the chat | Decision aid; choosing there records a browser preference only. Round 1 was decided from it on 2026-11-06 (see the [decision log](../specs/ux-improvements/spec.md#decision-log)). Drawings use the native light tokens, not the Focus HTML concept | [DL01–DL08](../specs/ux-improvements/spec.md#html-decision-lab), [evidence](../specs/ux-improvements/tasks.md#html-decision-lab--2026-11-06) |
+| 2026-11-07 | Round 2 of the same [UX decision lab](../prototypes/design-exploration/index.html#ux-decisions) | UX17–UX27 drawn against the app as built after Waves 1–5, in light theme except the UX25 theme options; round 1 kept as a decided record | Decision aid; no option chosen | [DL09–DL13](../specs/ux-improvements-2/spec.md#html-decision-lab), [evidence](../specs/ux-improvements-2/tasks.md#html-decision-lab--2026-11-07) |
+| 2026-11-07 | [Notification lab](../prototypes/design-exploration/index.html#notifications), in the same mockup ("Notifications" tab) | Each sample due's reminder the day before and on the day, on the shade and lock screen, in three privacy modes; a Mark as paid action with Undo | Decision aid; nothing chosen. Today's F05 generic text stays in force | [NL01–NL10](../specs/notification-lab/spec.md#acceptance-lab), [tasks](../specs/notification-lab/tasks.md) |
 
-**Deviations from this baseline.** The exploration's [scope definitions](../prototypes/design-exploration/SYSTEM.md#calculation-and-scope-definitions) and [audit](../prototypes/design-exploration/AUDIT.md#scope-conflicts-resolved-for-this-artifact) list what differed from the 1.0.0 baseline and the PRD. After the 2026-11-05 adoption the following are still **not** adopted and remain proposals: Dashboard-first entry (Dues remains the start tab), the lowercase lockup and accent serif, amount totals and charts, the weekly Calendar, repeat controls, multiple reminder offsets, quick-paid confirmation and the Philippine catalog. Adopting any of them needs its own spec, PRD review for behavior changes and SDD review for navigation or data changes; the exploration itself does not pick or implement them.
+**Deviations from this baseline.** The exploration's [scope definitions](../prototypes/design-exploration/SYSTEM.md#calculation-and-scope-definitions) and [audit](../prototypes/design-exploration/AUDIT.md#scope-conflicts-resolved-for-this-artifact) list what differed from the 1.0.0 baseline and the PRD. After the 2026-11-05 adoption the following are still **not** adopted and remain proposals (the [2026-11-07 prototype alignment](#prototype-alignment-2026-11-07) later adopted the lowercase in-app lockup and the remaining page layouts, but none of the features below): Dashboard-first entry (Dues remains the start tab), the accent serif, amount totals and charts, the weekly Calendar, repeat controls, multiple reminder offsets, quick-paid confirmation and the Philippine catalog. Adopting any of them needs its own spec, PRD review for behavior changes and SDD review for navigation or data changes; the exploration itself does not pick or implement them.
 
 ## Table of Contents
 
@@ -68,7 +73,7 @@ HTML explorations under `prototypes/` are sample-data review artifacts. Browsing
 
 F02 adaptation, authorized 2026-10-18: [production Dashboard](../specs/f02-dashboard/spec.md) replaces its fixture preview. Use global paid progress/counts, labeled title search, All/Overdue/Due today/Upcoming/Paid filters with selected semantics, chronological saved-data cards and distinct empty/no-match/loading/stale-error states. [PRD rules](PRD.md#f02-dashboard-rules) supersede the future Home section's Completed/completed-last grouping for F02. Keep Dues initial; the later F03 adaptation below replaces Calendar samples. Add is a working existing-form action; rows open Details. Details' explicit return caption is Back to list for either parent. Use CollectionView as the only scroll owner so large-text headers/actions remain reachable. No settings/profile/category/reminder affordance ships in this slice.
 
-F01 adaptation, authorized 2026-10-18: [saved due details](../specs/f01-item-details/spec.md) uses read-only semantic cards for existing fields, explicit Paid/Unpaid and absent-notes text, and Created/Last updated timestamps labeled UTC. Retain the Asia/Manila DateOnly due date and PHP amount. Edit opens the existing editor; Back to dues returns to the list. Hide the bottom bar in Details as in the editor. Refresh on return/resume, with loading, retryable error and unavailable states. The future Item detail section's category/recurrence/reminder/Complete/Reopen/Undo actions remain outside F01. This scoped exception supersedes the future layout only for this slice; it does not approve those capabilities.
+F01 adaptation, authorized 2026-10-18: [saved due details](../specs/f01-item-details/spec.md) uses read-only semantic cards for existing fields, explicit Paid/Unpaid and absent-notes text, and Created/Last updated timestamps labeled UTC (Asia/Manila labelled "Manila" since UX12, 2026-11-06). Retain the Asia/Manila DateOnly due date and PHP amount. Edit opens the existing editor; Back to dues returns to the list. Hide the bottom bar in Details as in the editor. Refresh on return/resume, with loading, retryable error and unavailable states. The future Item detail section's category/recurrence/reminder/Complete/Reopen/Undo actions remain outside F01. This scoped exception supersedes the future layout only for this slice; it does not approve those capabilities.
 
 The existing list/editor map semantic colors to `Resources/Styles/Colors.xaml`, and type/component roles to `Styles.xaml`. Four unmodified, licensed static Plus Jakarta Sans weights are bundled and registered locally. Duewise display/icon/splash branding retains the existing Android package/data identity.
 
@@ -89,6 +94,27 @@ Duewise tracks bills, tasks, subscriptions, and deadlines with explicit due date
 
 **Principles:** (1) Show the next actionable date first. (2) One primary action per screen. (3) Status is readable without color. (4) Errors are recoverable without data loss. (5) Decoration never obscures information.
 
+The [2026-11-06 UI/UX review](delivery/UX-REVIEW-2026-11-06.md) assessed the as-built app against these principles: (3) and (4) are met; (1) is met on Dashboard but not on the Dues start page as paid history grows (UX02). The user decided all sixteen items the same day; presentation decisions are below. A [second review on 2026-11-07](delivery/UX-REVIEW-2026-11-07.md), after all sixteen shipped, found principle (2) unmet on the Reminders page (two primary buttons, UX19) and recorded UX17–UX27 as options in [UX improvements, round 2](../specs/ux-improvements-2/spec.md). None is decided, and the as-built sections below stay in force until one is.
+
+### UX review decisions (2026-11-06)
+
+**Status: UX01 and UX02 shipped 2026-11-06 (now in [Item detail](#item-detail-as-built-2026-11-05) and [Dues list](#dues-list-as-built)); UX03 and UX04 shipped 2026-11-06 (see [Add / edit due item](#add--edit-due-item), Item detail and the [F05 reminder adaptation](#f05-reminder-adaptation)); UX05 shipped 2026-11-06 (see [Settings](#settings-as-built-2026-11-05)); UX06, UX07, UX08, UX10, UX11 and UX12 shipped 2026-11-06 in Wave 4 (see [Toasts/snackbars](#toastssnackbars), the dashboard, Item detail and Add / edit due item), UX09 needing no change; UX13–UX16 shipped 2026-11-07 in Wave 5 (bottom bar, Item detail, Calendar and root headings), so every UX decision has shipped.** Each entry replaces the matching as-built description in this document when its item ships under the [UX improvements plan](../specs/ux-improvements/plan.md); product rules for UX01–UX07 and UX12 are in the [PRD](PRD.md#ux-review-decisions-2026-11-06). Source: the [decision log](../specs/ux-improvements/spec.md#decision-log).
+
+| ID | Presentation decision |
+|---|---|
+| UX01 | Item detail: "Mark as paid" / "Mark as unpaid" is the primary button; Edit due becomes secondary; Back to list stays a quiet action. |
+| UX02 | Dues list: a muted full-width "Show N earlier paid dues" row with a chevron sits above the ledger rows; expanded, it reads "Hide earlier paid dues". |
+| UX06 | Confirmation uses the [toast/snackbar](#toastssnackbars) component above the bottom bar (3,000 ms informational; 5,000 ms with an Undo button after Delete), announced through a polite live region. **Shipped 2026-11-06** as a Material snackbar; see the as-built note under [Toasts/snackbars](#toastssnackbars). |
+| UX08 | Amount entry requests a decimal-number keyboard without the sign key. **Shipped 2026-11-06**; the stock emulator keyboard still draws its minus and comma keys but the field rejects them, phone keyboard unchecked. |
+| UX10 | Summary counters become native buttons with the same appearance, so assistive technology announces the button role. **Shipped 2026-11-06** as a transparent native button over each unchanged counter card. |
+| UX11 | Editor order becomes Title → Type → Amount (PHP) → Due date → Notes; the caption changes to match. This revises the Essential-first order adopted in the [Focus adoption](../specs/focus-adoption/spec.md). **Shipped 2026-11-06**; Repeat sits after Due date because its anchor follows the date. |
+| UX13 | Bottom-bar captions stop scaling past a fixed maximum; icons and TalkBack names are unchanged. **Shipped 2026-11-07:** captions use the 12 sp caption size for active and inactive slots, follow the system text size up to 130% and shrink to no less than 85% when the longest caption would not fit its slot. The bar grows with the capped size only. |
+| UX14 | Item detail shows "No amount" in `textSecondary` at body size instead of HeroAmount. **Shipped 2026-11-07.** |
+| UX15 | **Exception to the 44 dp target:** when seven 44 dp columns plus their 2 dp gaps do not fit the content width (screens narrower than about 350 dp with the 14 dp compact margins), the day columns shrink to fit (about 40 dp each at 320 dp) instead of scrolling sideways. Cells stay above WCAG 2.2 AA's 24 px minimum; the 44 × 48 dp cell remains the rule wherever it fits. **Shipped 2026-11-07;** the month grid no longer scrolls sideways. |
+| UX16 | Root pages use a compact heading when the window is wider than it is tall. **Shipped 2026-11-07:** the four root headings drop from 26 to 20 (the Heading2 size) while width exceeds height. |
+
+UX03 (shipped) adds a Repeat picker to the editor, a "Repeats" fact row and a "Next one added for …" line on Item detail, and the repeat in row meta text. UX04 (shipped) adds the maker-specific steps inside the existing Reminders status card. UX05 (shipped) adds a "Your data" surface card to Settings with two secondary buttons and Android's own file dialogs. UX09 keeps both pages as they are.
+
 | Voice | Do | Don’t |
 |---|---|---|
 | Calm | “Electric bill is due tomorrow.” | “PANIC! You’re running out of time!” |
@@ -96,9 +122,26 @@ Duewise tracks bills, tasks, subscriptions, and deadlines with explicit due date
 | Supportive | “Marked complete.” | “Finally, you did it!” |
 | Specific | “Couldn’t save. Try again.” | “Something went wrong.” |
 
+### Prototype alignment (2026-11-07)
+
+On 2026-11-07 the user asked to bring every page in line with the live HTML prototype (the default Focus view of the [design exploration](../prototypes/design-exploration/index.html#a/dashboard)). Scope, the six decisions behind it and acceptance scenarios PA01–PA10 are in the [prototype alignment spec](../specs/prototype-alignment/spec.md); product rule changes (search on Dues, the unsaved-changes prompt) are in the [PRD](PRD.md#prototype-alignment-decisions-2026-11-07). **Status: shipped 2026-11-07, emulator-observed ([evidence](delivery/evidence/PROTOTYPE-ALIGNMENT-2026-11-07.md)); phone check pending.** The older as-built sections below carry a note where this supersedes them.
+
+| Area | Presentation decision |
+|---|---|
+| Root header | Brand mark plus lowercase "duewise" wordmark on the left, a bell icon button ("Reminders") on the right, on Dashboard, Calendar, Dues and Settings. Replaces the Dues-only Reminders chip and brand lockup. |
+| Pushed header | Drawn by the page instead of Android's title bar: "‹ Back" (Details, Reminders), centred title, one trailing icon action (pencil on Details, bin on the editor in Edit mode). |
+| Due row | Type icon in a tinted 40 dp circle, title, "dd MMM · Type", a "⟲ Every month" line for repeating dues; amount over the status shown as glyph and word in the status colour, without a fill. Details keeps the filled status pill. |
+| Dashboard | Summary, next-date row with an arrow, three inline outlined counters, "Needs attention" and "A little further ahead" sections, global footnote; no search. |
+| Dues | Search, status chips, Type filter, matching count and Reset filters above the list; UX02 fold while no filter is active. |
+| Calendar | Count as "1 due" / "2 dues" under the day number (settles round 2 UX24); "Monday first · includes paid" with a Today link under the grid; agenda heading and footnote. |
+| Details | Icon, title, amount, status pill, facts list (Due date, Due type, Repeats, Currency / timezone), primary "✓ Mark as paid", Notes card, Manila timestamps; edit from the header pencil. |
+| Editor | "Required fields are marked."; required/optional labels; compact "Type: Bill · Change" row (still before Amount, UX11); "Will save as ₱…" preview; date hint with "Manila. Past dates are allowed."; collapsible Repeat and Notes rows; "Paid · applies on Save" check row; footer Cancel / ✓ Save; "Discard changes?" prompt (UX22). |
+| Settings | Preference cards, Reminders row with bell, Your data card, privacy note, draft line, "✓ Save" fixed bottom right above the bar (UX25 keeps Save). |
+| Reminders | "A gentle nudge." page: status card, "Your schedule" and "Quiet hours" cards, a collapsed "Notification readiness & privacy" section for Android status and tools, state-dependent footer (settles round 2 UX19). |
+
 ## 2. Brand Identity
 
-**Wordmark:** `Duewise` in Plus Jakarta Sans Bold 700, title case; use `colors.light.text` on light and `colors.dark.text` on dark. Icon is a `colors.brand.ink` rounded square carrying a white calendar-check glyph and one small `colors.accent.coral` dot (`Resources/Images/brand_mark.svg`); maximum three principal shapes. No words or numbers inside the app icon.
+**Wordmark:** `Duewise` in Plus Jakarta Sans Bold 700, title case; use `colors.light.text` on light and `colors.dark.text` on dark. Since 2026-11-07 the in-app root header uses the prototype's lowercase `duewise` beside the brand mark ([prototype alignment](#prototype-alignment-2026-11-07)); the launcher label, notifications and store name stay `Duewise`. Icon is a `colors.brand.ink` rounded square carrying a white calendar-check glyph and one small `colors.accent.coral` dot (`Resources/Images/brand_mark.svg`); maximum three principal shapes. No words or numbers inside the app icon.
 
 | Rule | Specification |
 |---|---|
@@ -198,9 +241,11 @@ If any combination is marked Fail, it is prohibited for that use. `border` is be
 | `typography.caption` | 12 | 500 | 16 | 0 | Captions, bar labels |
 | `typography.button` | 16 | 600 | 24 | 0 | Button labels |
 
-**Scaling:** honor system text scale up to 200% minimum; allow vertical reflow and multi-line labels. At 130% and above, keep a single column, permit button text to wrap to two lines, and let button height grow to fit content (minimum 48). Never truncate due date, amount, error, or primary action. Use baseline alignment rather than fixed text containers. Use `sp` and do not disable font scaling; the bottom bar grows with its captions.
+**Scaling:** honor system text scale up to 200% minimum; allow vertical reflow and multi-line labels. At 130% and above, keep a single column, permit button text to wrap to two lines, and let button height grow to fit content (minimum 48). Never truncate due date, amount, error, or primary action. Use baseline alignment rather than fixed text containers. Use `sp` and do not disable font scaling; the bottom bar grows with its captions. Exception (UX13, 2026-11-07): bottom-bar captions stop growing at 130%, because each slot has a fixed width and its icon and TalkBack name still identify it.
 
 ## 5. Layout and Spacing
+
+Scroll bars: none. Pages and lists scroll without a visible scroll bar or scroll indicator (user request, 2026-11-07; implicit ScrollView and CollectionView styles). Long pages rely on content cut off at the bottom edge to show there is more.
 
 | Token | dp |
 |---|---:|
@@ -233,7 +278,7 @@ If any combination is marked Fail, it is prohibited for that use. `border` is be
 
 ## 6. Iconography and Illustration
 
-Bar and action glyphs are app-owned 24-unit outline SVGs under `Resources/Images` (`nav_dashboard`, `nav_calendar`, `nav_add`, `nav_dues`, `nav_settings`), Lucide-style with 2 dp stroke and round caps/joins (the plus glyph uses 2.2 for optical weight on the lime disc). They are tinted by the bar: `primary` active, `textSecondary` inactive, `onAccent` on the disc. Standard size 24, compact 20, large 32; a glyph sits within a 44×44 minimum hit box. Optical adjustment ≤1 dp. Mirror directional arrows in RTL; never mirror calendar numerals or checkmarks.
+Bar and action glyphs are app-owned 24-unit outline SVGs under `Resources/Images` (`nav_dashboard`, `nav_calendar`, `nav_add`, `nav_dues`, `nav_settings`), Lucide-style with 2 dp stroke and round caps/joins (the plus glyph uses 2.2 for optical weight on the lime disc). Since 2026-11-07, Dashboard (two tiles, a tall tile and a short bar) and Dues (a sheet with three lines) use the Focus prototype's shapes. They are tinted by the bar: `onAccent` on the selected tab's lime pill, `textSecondary` inactive, `onAccent` on the disc. Standard size 24, compact 20, large 32; a glyph sits within a 44×44 minimum hit box. Optical adjustment ≤1 dp. Mirror directional arrows in RTL; never mirror calendar numerals or checkmarks.
 
 **Brand mark:** a `colors.brand.ink` rounded square carrying a white calendar-check glyph and one `colors.accent.coral` dot (`Resources/Images/brand_mark.svg`). Launcher, splash and the monochrome notification icon derive from it.
 
@@ -297,6 +342,8 @@ Bar and action glyphs are app-owned 24-unit outline SVGs under `Resources/Images
 
 ### Status badges
 
+> **Since 2026-11-07:** superseded in part by the [prototype alignment](#prototype-alignment-2026-11-07): rows show the status as glyph and word in the status colour without the pill (`StatusLine`); Details keeps the pill.
+
 | Property | Specification |
 |---|---|
 | Anatomy | Status icon 14, short label |
@@ -309,6 +356,8 @@ Bar and action glyphs are app-owned 24-unit outline SVGs under `Resources/Images
 
 ### Ledger row (as built, 2026-11-05)
 
+> **Since 2026-11-07:** superseded in part by the [prototype alignment](#prototype-alignment-2026-11-07): a type icon in a tinted 40 dp circle leads the row, the repeat has its own "⟲ Every month" line, and the status has no fill (PA05).
+
 | Property | Specification |
 |---|---|
 | Anatomy | `DueRow` control: title and "dd MMM · Category" on the left; amount and status badge on the right; 1 dp `border` hairline below. No card box. |
@@ -318,6 +367,8 @@ Bar and action glyphs are app-owned 24-unit outline SVGs under `Resources/Images
 | Behavior | Whole row opens Details; the row's accessible description is the projection's `AccessibilityText`. Shared by Dues, Dashboard and Calendar through `IDueRow`; supersedes the due-item card above for those lists. |
 
 ### Summary counters (as built, 2026-11-05)
+
+> **Since 2026-11-07:** superseded in part by the [prototype alignment](#prototype-alignment-2026-11-07): counters are outlined cards with the count and word on one line, and they open Dues filtered to that status (PA03).
 
 | Property | Specification |
 |---|---|
@@ -362,13 +413,15 @@ Bar and action glyphs are app-owned 24-unit outline SVGs under `Resources/Images
 
 | Property | Specification |
 |---|---|
-| Anatomy | Dashboard, Calendar, Add, Dues, Settings; icon and caption per slot. The third slot is a disabled placeholder captioned "Add" that reserves space beneath the Add action disc |
-| Dimensions | Height 64 plus safe bottom inset, grows with font scale to keep icons and captions apart; icon 24, caption `typography.caption`; five equal slots; slot actions ≥44 |
-| Colors | `surface` with 1 dp `border` top edge; active `primary`, inactive `textSecondary`; the placeholder slot is tinted `disabled` and never reads as selected |
+| Anatomy | A floating card holding Dashboard, Calendar, Add, Dues, Settings; icon and caption per slot. The selected slot's icon sits on a lime pill. The third slot is a disabled placeholder captioned "Add" that reserves space beneath the Add action disc and serves as the disc's label |
+| Dimensions | Card height 64, grows with font scale (up to the 130% caption cap, UX13) to keep icons and captions apart; radius 22; 10 dp margin left, right and below, plus the system navigation inset below it, so the inset never pads the inside of the card; 4 dp inner side padding; elevation 6 with the soft `shadow` colour; icon 24, caption `typography.caption`; five equal slots; slot actions ≥44; selected pill 36 × 32, radius 11 |
+| Colors | Card `surface` with a 1 dp `border` all round, on the page `background`; selected: pill `accent`, icon `onAccent` (in dark theme `primary` is lime too, so the icon must not use it), caption `primary` in Plus Jakarta Sans Bold; unselected: icon and caption `textSecondary`, caption Medium; the Add caption `text` in SemiBold. Only the pill and the bold `primary` caption mark the selected tab |
 | States | Universal state contract applies; for non-input components error shows adjacent inline error, and loading only if action awaits completion. |
 | Behavior | Preserve navigation state per root; Dues is the start tab; the bar shows on the four roots and is hidden on pushed Details, editor and Reminders pages; the placeholder slot never navigates; badge counts remain a future concept |
 
 ### App bar
+
+> **Since 2026-11-07:** superseded in part by the [prototype alignment](#prototype-alignment-2026-11-07): pushed pages draw the prototype header (‹ Back, centred title, one icon action) instead of Android's title bar; root pages show the wordmark header with a bell (PA01, PA02).
 
 | Property | Specification |
 |---|---|
@@ -379,6 +432,8 @@ Bar and action glyphs are app-owned 24-unit outline SVGs under `Resources/Images
 | Behavior | Back respects navigation stack; never hide unsaved edits without confirmation |
 
 ### Calendar grid
+
+> **Since 2026-11-07:** superseded in part by the [prototype alignment](#prototype-alignment-2026-11-07): the count reads "1 due" / "2 dues" under the number (round 2 UX24), and Today moves under the grid (PA06).
 
 | Property | Specification |
 |---|---|
@@ -417,6 +472,7 @@ Bar and action glyphs are app-owned 24-unit outline SVGs under `Resources/Images
 | Colors | Dark surface with light text in light mode; inverted in dark mode |
 | States | Universal state contract applies; for non-input components error shows adjacent inline error, and loading only if action awaits completion. |
 | Behavior | Toast 3,000 ms informational; undo snackbar 5,000 ms; screen reader live region polite |
+| As built (UX06, 2026-11-06) | Material snackbar on the activity, so it survives page changes. It sits above the bottom bar and Add disc on root pages and at the bottom edge on pages without the bar, with an 8 dp side margin (Material default). TextLight fill, SurfaceLight text and PrimaryDark Undo in light mode, inverted in dark. Radius 14, Jakarta Medium without Material letter spacing, up to 4 lines. Texts: "Due saved.", "Changes saved.", "Saved. Next one added for …", "Marked paid.", "Marked unpaid.", "Due deleted." + Undo, "Due restored.", "Nothing to undo.", "Couldn't undo. The due stays deleted." No titles or amounts. |
 
 ### Empty states
 
@@ -524,51 +580,63 @@ App bar Duewise → summary ring + counts → segmented All / Upcoming / Overdue
 
 ### Dues list (as built)
 
+> **Since 2026-11-07:** superseded in part by the [prototype alignment](#prototype-alignment-2026-11-07): search, status chips, a Type filter, the matching count and Reset filters sit above the list; the header bell replaces the Reminders chip (PA04).
+
 ```text
-Brand lockup → "Your dues." heading + caption → Reminders chip → error card with Refresh/Retry (only after a failed load) → hairline → date-sorted ledger rows → Add disc over the bottom bar.
+Brand lockup → "Your dues." heading + caption → Reminders chip → error card with Refresh/Retry (only after a failed load) → hairline → "Show N earlier paid dues ›" row (only when there are some) → date-sorted ledger rows → Add disc over the bottom bar.
 ```
 
-**Behavior:** no app bar; the heading is the page title. Rows open Details. Status is the computed F02 state for the current Manila date; paid rows stay in date order. Since the [Focus page content](../specs/focus-pages/spec.md) slice (2026-11-05) the list uses the ledger row and Refresh/Retry appears only with an error.
+**Behavior:** no app bar; the heading is the page title. Rows open Details. Status is the computed F02 state for the current Manila date. Since the [Focus page content](../specs/focus-pages/spec.md) slice (2026-11-05) the list uses the ledger row and Refresh/Retry appears only with an error. Since UX02 (2026-11-06) paid dues dated before today fold into a muted full-width row (`SurfaceMuted` fill, `primary` semibold text, radius 12, 48 dp minimum, chevron when folded); tapping it shows them in place in date order and the row reads "Hide earlier paid dues". When every active due is folded, a supporting line says so instead of the first-run card. Since UX03 (2026-11-06) a repeating due's meta line adds its repeat ("06 Nov · Bill · Monthly") and its row description adds "repeats monthly"; Dashboard and Calendar rows share this.
 
 ### Home / dashboard (as built, 2026-11-05)
+
+> **Since 2026-11-07:** superseded in part by the [prototype alignment](#prototype-alignment-2026-11-07): no search or results list; "Needs attention" and "A little further ahead" lists follow the counters (PA03).
 
 ```text
 "A clear plan for today." + date → "Upcoming · Month" caption → month total (HeroAmount) → "n unpaid · today to dd MMM" → hairline → "Next date · dd MMM" + next-due link → three summary counters → Find a due (search, category, status chips, Clear filters) → "Filter · n" heading → ledger rows → Add disc.
 ```
-
+ Since UX10 (2026-11-06) each counter is announced as a button; its look is unchanged.
 **Behavior:** the total and next due follow the [PRD F02 upcoming-total rule](PRD.md#f02-dashboard-rules); counters and chips select the same filter; the next-due link opens Details. There is no progress ring; the Paid counter carries the progress description. Refresh/Retry shows only inside the error card. Priority grouping from the mockup is not adopted (the single ordered F02 result list stands).
 
 ### Calendar (as built, 2026-11-05)
 
+> **Since 2026-11-07:** superseded in part by the [prototype alignment](#prototype-alignment-2026-11-07): see PA06.
+
 ```text
-"A date for everything." + caption → month name with ‹ › icon buttons and a Today chip on one line → week-start caption → weekday row → 7-column grid of 44 × 48 day cells (number over count; selected `primary` fill, today 2 dp `primary` outline) → selected date heading with "n saved dues" caption → ledger rows → Add disc.
+"A date for everything." + caption → month name with ‹ › icon buttons and a Today chip on one line → week-start caption → weekday row → 7-column grid of 44 × 48 day cells (narrower cells on rows too narrow for seven, UX15; no sideways scroll) (number over count; selected `primary` fill, today 2 dp `primary` outline) → selected date heading with "n saved dues" caption → ledger rows → Add disc.
 ```
 
-**Behavior:** F03 rules unchanged; weekly view, swipe and overflow counts remain future.
+**Behavior:** F03 rules unchanged; weekly view, swipe and overflow counts remain future. Since UX15 (2026-11-07) the month always shows seven columns without scrolling: about 40 dp cells at 320 dp, 44 dp from 360 dp up.
 
 ### Settings (as built, 2026-11-05)
 
+> **Since 2026-11-07:** superseded in part by the [prototype alignment](#prototype-alignment-2026-11-07): cards with a fixed bottom-right "✓ Save" and a privacy note with a shield (PA09).
+
 ```text
-"Make it feel like you." + caption → Appearance card with System/Light/Dark segmented control → Start of week card with Monday/Sunday segmented control → Reminders row (title, saved state "On · HH:mm Manila · day before" or "Off", chevron) → local-data notice → Save caption → Save preferences → message → Refresh/Retry (only after a load error) → bottom bar.
+"Make it feel like you." + caption → Appearance card with System/Light/Dark segmented control → Start of week card with Monday/Sunday segmented control → Reminders row (title, saved state "On · HH:mm Manila · day before" or "Off", chevron) → "Your data" card (heading, what export and import do, not-encrypted caption, Export dues and Import dues secondary buttons, busy indicator, result line only when there is one) → local-data notice → Save caption → Save preferences → message → Refresh/Retry (only after a load error) → bottom bar.
 ```
 
-**Behavior:** F04 rules unchanged; the Reminders row is navigation and its subtitle is read-only.
+**Behavior:** F04 rules unchanged; the Reminders row is navigation and its subtitle is read-only. UX05 (2026-11-06): both data actions are secondary so they do not compete with Save preferences, and they never touch the preference draft. Export opens Android's save dialog with the suggested name; Import opens Android's file picker, then a native alert "Import dues?" with the counts, Cancel and Import. Each result (counts, cancel, refusal with its reason) appears in the card and is announced. Import is refused before the picker while dues show.
 
 ### Item detail (as built, 2026-11-05)
 
+> **Since 2026-11-07:** superseded in part by the [prototype alignment](#prototype-alignment-2026-11-07): the header pencil replaces Edit due, Back to list shows only for an unavailable due, and the page adds the type icon, a Currency / timezone fact and a Notes card (PA08).
+
 ```text
-Shell title "Due details" + Back → caption → category eyebrow → title → amount (HeroAmount) → status badge → hairline → Due date row → Type row → Notes block → hairline → Created / Last updated captions → Retry (error only) → Edit due → Back to list.
+Shell title "Due details" + Back → caption → category eyebrow → title → amount (HeroAmount) → status badge → hairline → Due date row → Type row → Repeats row (repeating dues only) → Notes block → hairline → Created / Last updated captions → Retry (error only) → Mark as paid / Mark as unpaid (primary) → payment error (only after a failed save) → "Next one added for dd MMM yyyy." (supporting text, centered, only right after it happened) → Edit due (secondary) → Back to list (link).
 ```
 
-**Behavior:** F01 rules unchanged; timestamps remain UTC (open finding); provider, repeat and quick actions remain future.
+**Behavior:** F01 rules plus UX01 (2026-11-06): the primary action saves the payment status at once and the badge updates; since UX06 the "Marked paid." or "Marked unpaid." confirmation appears as a snackbar at the bottom edge and announces itself. UX03 (2026-11-06): the Repeats row reads "Every week", "Every month on day N" or "Every year on DD Mon" (the anchor day, which can differ from this occurrence's date); paying a repeating due shows "Marked paid. Next one added for dd MMM yyyy." in the snackbar and as a line under the button, and its button hint says it adds the next one. Since UX12 the timestamps read "Created 06 Nov 2026, 17:27 Manila". After Delete from the editor, Details shows the unavailable card with the "Due deleted." snackbar; Undo reloads the due in place. Provider and other quick actions remain future.
 
 ### Add / edit due item
 
+> **Since 2026-11-07:** superseded in part by the [prototype alignment](#prototype-alignment-2026-11-07): required/optional labels, a "Type: Bill · Change" row, collapsible Repeat and Notes, a Paid check row, the bin in the header and "Discard changes?" (PA07, UX22).
+
 ```text
-App bar title + Delete (loaded existing due only) → What is due? (title) → Amount (PHP) → Due date → Type (category picker) → Notes → Payment status (edit only) → sticky Cancel / Save footer.
+App bar title + Delete (loaded existing due only) → What is due? (title) → Type (category picker) → Amount (PHP) → Due date (`dd MMM yyyy`) → Repeat (Bill/Subscription only) → Notes → Payment status (edit only) → sticky Cancel / Save footer.
 ```
 
-**Behavior:** Essential-first order: title, amount and date come first; Type, Notes and Payment status follow. Required fields follow the [PRD rules](PRD.md#business-rules-and-validation) and the F07 adaptations below; prevent duplicate save; Cancel and Back return to the originating root without a write; Save commits and returns to that root; Delete confirms, then soft-deletes. The HTML mockup's dirty-exit confirmation and PHP paste normalization are not adopted natively.
+**Behavior:** Essential-first order, revised by UX11 (2026-11-06): title, type, amount and date come first, so the amount requirement is already right when the user reaches Amount; Repeat, Notes and Payment status follow. The caption reads "Title, type, amount and date first. Everything else is optional." The date shows `dd MMM yyyy` with English month abbreviations (UX07), and the amount keyboard is requested without a minus key (UX08). Repeat (UX03, 2026-11-06) is a native Picker in the same outlined field as Type (Never, Weekly, Monthly, Yearly; default Never) with a caption explaining when the next one is added; it is hidden for Task/Other, and switching to those types resets it to Never. After Save the parent page shows "Due saved.", "Changes saved." or "Saved. Next one added for dd MMM yyyy."; after Delete it shows "Due deleted." with Undo (UX06). Required fields follow the [PRD rules](PRD.md#business-rules-and-validation) and the F07 adaptations below; prevent duplicate save; Cancel and Back return to the originating root without a write; Save commits and returns to that root; Delete confirms, then soft-deletes. The HTML mockup's dirty-exit confirmation and PHP paste normalization are not adopted natively.
 
 ### Calendar
 
@@ -588,6 +656,8 @@ App bar back/edit/overflow → category/title/status → due date/time and timez
 
 ### Notification settings
 
+> **Since 2026-11-07:** superseded in part by the [prototype alignment](#prototype-alignment-2026-11-07): the native Reminders page follows the prototype layout (PA10, round 2 UX19).
+
 ```text
 App bar → reminders master switch → preset reminder chips → quiet hours start/end → notification permission state → Test notification.
 ```
@@ -600,7 +670,7 @@ App bar → reminders master switch → preset reminder chips → quiet hours st
 App bar → appearance System/Light/Dark → start of week System → timezone Automatic → notifications → export data → about/privacy.
 ```
 
-**Behavior:** Appearance updates instantly; export uses system share sheet; deletion requires confirmation. Since 2026-11-05 Settings is a root tab reached from the bottom bar and shows the bar; Reminders pushed from it hides the bar. The F04 adaptation below governs the shipped content.
+**Behavior:** Appearance updates instantly; export uses system share sheet (superseded by UX05: Android's save dialog, not the share sheet); deletion requires confirmation. Since 2026-11-05 Settings is a root tab reached from the bottom bar and shows the bar; Reminders pushed from it hides the bar. The F04 adaptation below governs the shipped content.
 
 ### F04 settings adaptation
 
@@ -631,6 +701,8 @@ Centered icon/illustration → short heading → one explanatory sentence → pr
 V1 adds no custom motion library or dependency. When the system reduced-motion setting is on, transitions are removed or cut; nothing loops. Use platform haptics only when supported and user-enabled; no vibration for passive reminders inside the app. Never animate background indefinitely. The 1.0.0 push/pop/spring motion table is withdrawn.
 
 ## 10. Notifications and Status Logic
+
+**Decided 2026-11-07, not implemented:** reminders will name their due when the phone is unlocked and show a generic public version on the lock screen (N1), and carry a Mark as paid action with Undo (N2). Wording and drawings: the [notification lab](../specs/notification-lab/spec.md#what-the-lab-proposes); rules: [PRD notification decisions](PRD.md#notification-decisions-2026-11-07). Until they ship, F05's generic text stands.
 
 The original broader design proposal below is not the current scheduler/status contract. F05 now resolves current date-only reminder policy in [PRD](PRD.md#f05-reminder-rules) and presentation in the [F05 adaptation](#f05-reminder-adaptation). Timed/recurring/per-due variants remain deferred. The word "canonical" below applies within this future concept only.
 
@@ -801,7 +873,7 @@ The native .NET MAUI Android app is the only consumer of these tokens; the [SDD]
 | Type roles | `Resources/Styles/Styles.xaml`: `Heading1` (h1), `Heading2` (h2), `Heading3` (h3), `BodyLabel` (bodyM), `SupportingLabel` (bodyS), `CaptionLabel` (caption), `FieldLabel` (semibold field label), `ErrorLabel` (bodyS in `overdue`); fonts registered as `JakartaRegular`, `JakartaMedium`, `JakartaSemibold`, `JakartaBold` |
 | Components | `SurfaceCard` (card), `FieldBorder` (text-input outline, `textSecondary` stroke), `DueCard` (due-item card with Selected state), `BaseButton` (primary; implicit `Button` style), `SecondaryButton`, `DestructiveButton` |
 | Bottom bar and Add disc | `AppShell.xaml` `TabBar` with five `Tab`s (`AppShell.AddSlot = 2`) plus `Platforms/Android/DuewiseShellRenderer.cs`, which disables slot 2, keeps the 64 dp bar growing with text, and floats the 56 dp disc with its ring and 6 dp elevation; `AppShell.OpenAddAsync` pushes the editor on the current root |
-| Sticky form actions | `Pages/DueEditPage.xaml` outer `Grid` rows `*,Auto` (scrolling fields, footer) with footer rows `1,Auto` (divider, Cancel/Save); Delete `ToolbarItem` managed in `DueEditPage.xaml.cs` |
+| Sticky form actions | `Pages/DueEditPage.xaml` outer `Grid` rows `*,Auto` (scrolling fields, footer) with footer rows `1,Auto` (divider, Cancel/Save); Delete `ToolbarItem` managed in `DueEditPage.xaml.cs`. Since 2026-11-06 the footer stays above the on-screen keyboard (the interaction lab's reserved-space choice): `Resize` soft-input mode while the editor is visible plus a bottom `SoftInput` safe-area edge; emulator-verified, phone pending |
 | Insets and readable width | `Pages/PageLayout.cs` |
 
 **Naming:** design tokens `colors.light.primary`, `typography.bodyM`, `space-4`, `radius-md`, `shadow-1`, `motion.duration-standard`; XAML resource keys are PascalCase with a `Light`/`Dark` suffix for themed colors; pages PascalCase (`CalendarPage`), assets snake_case (`nav_add.svg`).
@@ -844,10 +916,12 @@ The authorized [category slice](../specs/f07-categories/spec.md) uses a labeled 
 
 The authorized [optional-amount slice](../specs/f07-optional-amounts/spec.md) keeps the existing outlined native amount Entry and persistent “Amount (PHP)” label. Add category-aware requirement text and semantics: Bill/Subscription announce a required amount; Task/Other announce an optional amount that may be left blank. A blank optional amount previews “No amount”; saving a blank required amount focuses the field and announces its error. Preserve numeric keyboard, invariant decimal hint, centavo preview, focus/error outlines, busy/completed disabled state and the existing screen-reader announcement pattern.
 
-Saved Dues/Dashboard cards, Details and Calendar agenda show the formatted amount when present and literal “No amount” when absent; row semantics include the literal. Do not infer zero, hide the amount line, add amount totals or alter status/count/layout behavior for absent amounts. Zero remains a visible `₱0.00` amount. Verify category switching, clearing an optional amount, required blank rejection, large text and both themes at the device boundary; full accessibility/other-width acceptance remains separate.
+Implemented 2026-11-06: the requirement caption reads “Required for {Type}.” or “Optional for {Type}. Blank means no amount; zero is a recorded amount.”; the optional placeholder is the single word “Optional” because a one-line Entry cannot wrap and a longer hint was cut off at 200% text; the preview announces “Will be saved with no amount”.
+
+Saved Dues/Dashboard cards, Details and Calendar agenda show the formatted amount when present and literal “No amount” when absent; row semantics include the literal. Since UX14 (2026-11-07) Details shows the literal in `textSecondary` at body size instead of HeroAmount, so it never reads like a peso figure. Do not infer zero, hide the amount line, add amount totals or alter status/count/layout behavior for absent amounts. Zero remains a visible `₱0.00` amount. Verify category switching, clearing an optional amount, required blank rejection, large text and both themes at the device boundary; full accessibility/other-width acceptance remains separate.
 
 ## F05 reminder adaptation
 
 F05 is a separately authorized exception to the original deferred reminder concept. [PRD reminder rules](PRD.md#f05-reminder-rules) replace the conflicting historical/future schedule proposals for current date-only dues. The pushed Reminders page uses PageLayout, one vertical scroll owner, semantic cards/labels, full-width wrapping actions and outlined native TimePickers. Dues exposes a labeled Reminders entry; the pushed page hides tabs and uses native Back.
 
-Show app opt-in separately from Android permission/channel state and a literal Android-reported battery/background status. Provide a working Android app / battery settings action for late-reminder recovery. Returning refreshes status and retains schedule drafts; no automatic power-policy change or exemption request. Use an explicit Save and enable action, a day-before switch, editable Manila time and quiet-hour labels, Save schedule, Disable, Refresh/Retry, Android settings and static Test notification. Do not show per-due presets, timed/recurring controls or general Settings destinations. Schedule controls are drafts; status refresh retains them. State/error text is literal, with busy/not-loaded actions disabled. Explain inexact delivery and force-stop/battery limits in the page. Generic notifications omit financial details and use the app-owned monochrome calendar/check icon. Test actions require opt-in and Android access. Verify themes, large text, native time dialogs, focus, permission flow and tap draft preservation at the device boundary; implementation alone does not establish full accessibility acceptance.
+Show app opt-in separately from Android permission/channel state and a literal Android-reported battery/background status. Provide a working Android app / battery settings action for late-reminder recovery. Returning refreshes status and retains schedule drafts; no automatic power-policy change or exemption request. Use an explicit Save and enable action, a day-before switch, editable Manila time and quiet-hour labels, Save schedule, Disable, Refresh/Retry, Android settings and static Test notification. Do not show per-due presets, timed/recurring controls or general Settings destinations. Schedule controls are drafts; status refresh retains them. State/error text is literal, with busy/not-loaded actions disabled. Explain inexact delivery and force-stop/battery limits in the page. UX04 (2026-11-06): while reminders are on and the phone reports Xiaomi, Redmi or POCO, the status card adds one plain paragraph under the battery status: tap "Android app / battery settings", turn on Autostart, then set Battery saver to "No restrictions". It is body text in the existing card, not a new component or deep link. Generic notifications omit financial details and use the app-owned monochrome calendar/check icon. Test actions require opt-in and Android access. Verify themes, large text, native time dialogs, focus, permission flow and tap draft preservation at the device boundary; implementation alone does not establish full accessibility acceptance.

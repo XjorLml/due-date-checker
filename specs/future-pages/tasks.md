@@ -44,7 +44,7 @@ Use the [P0–P4 priority order](plan.md#priority-order-after-prototype-review);
 - [x] F04 preference implementation: System/Light/Dark and Monday/Sunday, explicit Save, startup persistence and existing Reminders access; historical 216 tests and clean Android build. Targeted native checks and final-APK cleanup are recorded. [Dedicated tasks](../f04-preferences/tasks.md) and [2026-11-03 closeout](../../docs/delivery/evidence/F04-CLOSEOUT-2026-11-03.md) track the remaining independent restoration audit and broader acceptance. Export and remaining general Settings concepts stay deferred.
 - [x] F05: authorized date-only reminders complete; **186 tests**, clean final Android build, natural offline/screen-off delivery and targeted Doze/reboot/lifecycle/failure/tap/cancellation/layout checks with cleanup. [Dedicated tasks](../f05-reminders/tasks.md) retain broad assistive/OEM/intended-key release acceptance separately.
 - [ ] F06: implement onboarding for shipped capabilities.
-- [ ] F07 umbrella: [categories](../f07-categories/tasks.md) are implemented with schema 2; recurrence, timing and optional-amount changes remain separate unimplemented extensions.
+- [ ] F07 umbrella: [categories](../f07-categories/tasks.md) are implemented with schema 2 and [optional amounts](../f07-optional-amounts/tasks.md) with schema 4 (2026-11-06); recurrence and timing remain separate unimplemented extensions.
 - [ ] F08: extend shared states/navigation as each destination ships.
 - [ ] F09: discover/specify account/auth/sync behavior and page design.
 - [ ] F10: discover/specify budget and savings behavior and page designs.

@@ -20,6 +20,9 @@
     <Compile Include="../../src/DueDateChecker.App/Services/ReminderCoordinator.cs" Link="App/ReminderCoordinator.cs" />
     <Compile Include="../../src/DueDateChecker.App/Services/ReminderJobDispatch.cs" Link="App/ReminderJobDispatch.cs" />
     <Compile Include="../../src/DueDateChecker.App/Services/ReminderAwareDueRepository.cs" Link="App/ReminderAwareDueRepository.cs" />
+    <Compile Include="../../src/DueDateChecker.App/Services/IDueFileService.cs" Link="App/IDueFileService.cs" />
+    <Compile Include="../../src/DueDateChecker.App/Services/IMessageHost.cs" Link="App/IMessageHost.cs" />
+    <Compile Include="../../src/DueDateChecker.App/Services/DeletionUndo.cs" Link="App/DeletionUndo.cs" />
     <Compile Include="../../src/DueDateChecker.App/ViewModels/*.cs" Link="App/%(Filename)%(Extension)" />
   </ItemGroup>
 </Project>

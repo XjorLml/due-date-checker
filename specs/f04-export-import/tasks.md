@@ -1,5 +1,7 @@
 # Export and import task tracking
 
+The 2026-11-08 category-aware backup extension is tracked in [native Philippine preset tasks](../ph-categories-native/tasks.md), with [separate format-1/2 native evidence](../../docs/delivery/evidence/PH-CATEGORIES-2026-11-08.md). Results below remain attributed to the original format-1 implementation.
+
 See the [spec](spec.md), [plan](plan.md) and [ADR 010](../../docs/adr/010-export-import-file.md).
 
 - [x] Decisions recorded: user-chosen file, JSON with a version number, import only while no dues show, hidden deleted dues replaced by the file's copy (2026-11-06).

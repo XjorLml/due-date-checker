@@ -54,7 +54,7 @@ public sealed class CategoryTests : IDisposable
         }
         var before=Snapshot();
         new DatabaseInitializer(_path).Initialize();new DatabaseInitializer(_path).Initialize();
-        Assert.Equal(5,Version());Assert.Equal(before,Snapshot());
+        Assert.Equal(6,Version());Assert.Equal(before,Snapshot());
         var repository=new SqliteDueRepository(_path);
         foreach(var id in ids) Assert.Equal(DueCategory.Other,(await repository.GetAsync(id))!.Category);
         Assert.Equal(2,(await repository.ListActiveAsync()).Count);

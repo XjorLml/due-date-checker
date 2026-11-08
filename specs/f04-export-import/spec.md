@@ -7,7 +7,7 @@ Status: authorized 2026-11-06 ("start wave 3") under the decided [PRD UX05 rule]
 | ID | Outcome |
 |---|---|
 | EX01 | Settings → "Export dues" opens Android's own save dialog with the suggested name `duewise-dues-YYYY-MM-DD.json` (Manila date). The saved file holds every stored due, including deleted ones, with all stored fields: no amount stays absent and zero stays 0. Success says how many dues (and how many deleted) were exported. Cancelling saves nothing and says so. With no stored dues, nothing is exported and the page says there is nothing to export. |
-| EX02 | The file is UTF-8 JSON: `format` `"duewise.dues"`, `version` 1, `exportedAt`, and `dues`, one object per row with its fifteen stored columns in camelCase. Dates and timestamps are the stored strings, so a round trip is exact. |
+| EX02 | The file is UTF-8 JSON: `format` `"duewise.dues"`, `version` 2, `exportedAt`, and `dues`, one object per row with its sixteen stored columns in camelCase, including `categoryId`. Dates and timestamps are the stored strings, so a round trip is exact. The original version-1/fifteen-column shape remains readable with Other as the detailed category; this extension is governed by [PC07](../ph-categories-native/spec.md#acceptance). |
 | EX03 | Import reads and validates the whole file before writing anything. A file that is not JSON, has another `format`, lacks a field or has an unknown one, or a version below 1 is "not a Duewise export". A higher version asks the user to update the app. A file over 5 MB is refused. A due with a bad or repeated ID, blank title, negative amount, missing amount for Bill/Subscription, unknown type or repeat, wrong anchor day, or a malformed date or timestamp is refused with its position in the file. A file with no dues is refused. Nothing is written in any of these cases. |
 | EX04 | Import runs only while the app shows no dues. Otherwise it is refused before the file picker opens, and again inside the write transaction. Hidden deleted dues stay; a file due whose ID matches one of them replaces it. |
 | EX05 | Before writing, a confirmation shows how many dues the file holds, how many will show and when it was exported. Cancel writes nothing. |
@@ -19,5 +19,5 @@ Status: authorized 2026-11-06 ("start wave 3") under the decided [PRD UX05 rule]
 
 - Dues only. Reminder settings and appearance preferences are left out: reminders need the user's explicit opt-in on each installation (F05), and both take seconds to set again.
 - No merge, partial import, per-due choice, encryption, automatic or scheduled backup, cloud upload or share sheet. Android Auto Backup stays off.
-- Import does not upgrade or downgrade files: version 1 only. A future format change needs a new version number and an ADR update.
+- Original 2026-11-06 decision: version 1 only. The authorized 2026-11-08 preset-category extension writes version 2 and reads versions 1/2, as recorded in [ADR 010](../../docs/adr/010-export-import-file.md) and the [SDD format contract](../../docs/SDD.md#ux05-export-and-import-contract). Historical version-1 evidence does not verify the extended format.
 - Release, signing and pushing to `main` remain held.

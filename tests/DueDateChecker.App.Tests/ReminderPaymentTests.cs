@@ -80,6 +80,7 @@ public sealed class ReminderPaymentTests : IDisposable
     [InlineData("title")]
     [InlineData("notes")]
     [InlineData("amount")]
+    [InlineData("detail-category")]
     [InlineData("date")]
     [InlineData("paid")]
     [InlineData("deleted")]
@@ -95,6 +96,7 @@ public sealed class ReminderPaymentTests : IDisposable
         {
             "title" => due with { Title = "Edited" }, "notes" => due with { Notes = "Edited" },
             "amount" => due with { Amount = Money.FromCentavos(0) }, "date" => due with { DueDate = due.DueDate.AddDays(1) },
+            "detail-category" => due with { CategoryId = "ph.utilities.water" },
             "paid" => due with { IsPaid = true }, _ => due
         };
         if (altered != due) await _database.RunAsync(() => _writes.UpdateAsync(altered));

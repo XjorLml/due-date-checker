@@ -30,6 +30,7 @@ public sealed record ReminderText(string Title, string Body, string PublicBody, 
             writer.Write(due.IsPaid); writer.Write(due.CreatedAt.UtcTicks); writer.Write(due.UpdatedAt.UtcTicks);
             writer.Write(due.DeletedAt?.UtcTicks ?? 0); writer.Write((int)due.Category); writer.Write((int)due.Repeat);
             writer.Write(due.RepeatDay ?? 0); writer.Write(due.RepeatSourceId?.ToString("N") ?? "");
+            writer.Write(due.CategoryId);
         }
         return Convert.ToHexString(SHA256.HashData(stream.ToArray()));
     }

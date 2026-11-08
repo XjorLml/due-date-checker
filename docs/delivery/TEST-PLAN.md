@@ -25,6 +25,8 @@ Core checks do not require restoring the MAUI App. Android builds are separate f
 
 These are inspected test definitions, not new execution results. Historical runs are linked from STATUS.
 
+The native Philippine preset extension adds Core/App `PhilippineCategoryTests` and a category-only stale-action case in `ReminderPaymentTests`. They cover catalog IDs/search, type independence, schema-5 upgrade/preservation/failure, CRUD/recurrence/restore, version-1/2 archives, draft/dirty handling and saved projections. Initial 2026-11-08 execution was blocked by Windows Application Control. In the later CI assertion follow-up, 185 Core + 313 App tests passed locally; a hosted CI pass for the corrected revision remains pending. See [evidence](evidence/PH-CATEGORIES-2026-11-08.md).
+
 | Requirements / contract | Sources and coverage | Remaining limits |
 |---|---|---|
 | R02, R03, R07 | [CreateAndListTests](../../tests/DueDateChecker.App.Tests/CreateAndListTests.cs): Manila date boundary; reopened-file persistence/order; PHP/timezone defaults; required fields; amount limits/overflow; retries; duplicate Save; startup/read failures | Android lifecycle, input controls, and airplane-mode acceptance require a phone. |
@@ -58,6 +60,24 @@ Unknown/deleted targets must not become a new due. Process termination before a 
 Mandatory v1 acceptance requires passing relevant automated checks, a Release build, TP01 with the intended signing identity, and completion of the CRUD/restart/offline/native checks. Keep failures and unchecked items visible in STATUS. User acceptance of V1.2 does not close V1.1 or V1.3 gates.
 
 Optional CI gate (R08): a push triggers `.github/workflows/ci.yml`, which runs the Core and App test projects on a GitHub-hosted Linux runner and reports the result on the commit. The gate passes on an observed passing run; see the [V1.4 spec](../../specs/v1.4-ci/spec.md#acceptance-scenarios). A passing run is not device or release acceptance. Notification, Doze, boot-receiver, sync, and notification deep-link checks are excluded from v1.
+
+## Native Philippine preset verification
+
+Scope: [PC01–PC08](../../specs/ph-categories-native/spec.md#acceptance). Run the Core/App suites above once the environment permits assembly execution; do not disable application-control policy to obtain a pass. Compare the 53 IDs/names/groups/icons with the prototype catalog. Use schema-5 fixtures containing explicit zero, absent amounts, tombstones and repeat values to verify schema 6 preserves prior stored fields and adds Other without guessing. Exercise idempotence, failed migration and newer-schema refusal with isolated files.
+
+On the task-owned emulator, [ph_categories.py](../../tools/verification/ph_categories.py) guards the profile/empty database before its controlled migration fixture. Check search by label/group/Filipino aliases, current-selection feedback, selection/Cancel/header Back/system Back, draft retention, category-only dirty exits, Save/edit/restart and detailed labels across Dues/Dashboard/Calendar/Details. Confirm all four due types retain their amount and repeat policies. Mark a repeating categorized due paid and verify its one next occurrence retains the category; repeat through the notification payment/Undo path on a suitable device. Verify stale actions after category-only edits are refused.
+
+Export via Android's file dialog, inspect format 2/categoryId and stored NULL/zero/tombstone values. With only controlled test data and no active dues, import a genuine format-1 fixture (Other fallback), then format 2 (detailed selection restored). Missing/null/unknown version-2 IDs must fail before writes. Preserve the user's data and reminder choices; never clear a phone to simplify testing.
+
+Inspect the picker/editor in light/dark, 320–430dp widths, 100%/200% text and with the keyboard open. Search, wrapping rows, Back and Cancel must remain operable; the picker must scroll without adding root navigation. Restore settings/remove task fixtures after checks. Emulator/build evidence is separate from intended-key phone acceptance, TalkBack and timed-user observation. Record exact checks and unperformed cases in the evidence; do not infer process-recreation draft recovery from theme switching.
+
+## GitHub draft release verification
+
+Scenarios [GR01–GR07](../../specs/github-release/spec.md#acceptance), [setup](GITHUB-RELEASE.md). Run `python -m unittest discover -s tools/release/tests -v` and actionlint against both workflow files. Local helper tests cover version/path/injection rejection, missing/malformed secrets without logging values, package/version/debug/certificate validation, archive selection, explicit public deliverables, checksum/source-marker tampering, annotated tags, published/tag/draft conflicts and same-source retry policy. These tests fake GitHub/tool responses and do not use repository signing credentials.
+
+For the first hosted run, record selected branch and exact SHA, version/code, runner/.NET/workload/JDK versions, Core/App/tool test outcomes, signed build, public certificate fingerprint and resulting draft URL. Confirm downloaded APK signature, version, checksum and notes against the run. Confirm only APK/checksum assets are attached, draft remains unpublished, no credential appears in logs/artifacts, and cleanup ran. Exercise missing-secret and conflicting-version failures with controlled versions; do not overwrite a published release for testing. Test a same-source rerun against its own draft before publication. Secrets/default-branch setup and workflow availability must be verified, not inferred from local lint.
+
+The intended-key APK still requires relevant phone acceptance. A hosted build, a draft release and local verifier success are distinct outcomes. Publishing remains a maintainer action; finish known exposed-secret/history cleanup first.
 
 ## Design-adoption verification
 

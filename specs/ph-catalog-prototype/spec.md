@@ -47,3 +47,5 @@ Support None, weekly, monthly, quarterly, annually and a custom positive interva
 | PH09 | Original HTML and production source remain unchanged; source hashes, links, limits and observed evidence are recorded. | Scoped diff/documentation review. |
 
 No Android implementation, schema migration, app deployment, release/signing action or real reminder-delivery claim is authorized. Browser storage may be unavailable or cleared; failures are explicit. Cross-tab sync, catalog import/export, real payment integrations and native acceptance are outside this HTML task.
+
+Native follow-up, 2026-11-08: the user separately authorized [preset Philippine categories on Android](../ph-categories-native/spec.md), without custom categories or billers. The original HTML-only scope and browser evidence above remain historical and do not establish native acceptance.

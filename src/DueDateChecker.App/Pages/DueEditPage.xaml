@@ -127,6 +127,18 @@
                     <Label Text="{Binding DateError}" IsVisible="{Binding HasDateError}" Style="{StaticResource ErrorLabel}" />
                 </VerticalStackLayout>
 
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="Category · optional" Style="{StaticResource FieldLabel}" />
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" MinimumHeightRequest="48">
+                        <Label Text="{Binding DetailedCategoryText}" Style="{StaticResource SupportingLabel}"
+                               VerticalOptions="Center" AutomationId="DetailedCategoryValue" />
+                        <Button Grid.Column="1" x:Name="ChangeCategoryButton" Text="Choose" Style="{StaticResource LinkButton}"
+                                MinimumHeightRequest="48" Clicked="OnChangeCategoryClicked" IsEnabled="{Binding CanEdit}"
+                                AutomationId="ChoosePHCategory" SemanticProperties.Description="{Binding DetailedCategoryText, StringFormat='Category, {0}. Choose Philippine category'}" />
+                    </Grid>
+                    <Label Text="{Binding DetailedCategoryError}" IsVisible="{Binding HasDetailedCategoryError}" Style="{StaticResource ErrorLabel}" />
+                </VerticalStackLayout>
+
                 <!-- F07 recurrence (UX03, RC06): only Bill and Subscription repeat, so the row is hidden otherwise. -->
                 <Border Style="{StaticResource SurfaceCard}" Padding="0" IsVisible="{Binding CanChooseRepeat}">
                     <VerticalStackLayout>

@@ -491,3 +491,11 @@ local.signing.props
 
 # Keep machine-local VS Code settings out of history (overrides the global VS Code exceptions above).
 .vscode/settings.json
+
+# Source for release automation; the general Release/ build-output rule also matches this folder.
+!tools/release/
+!tools/release/*.py
+!tools/release/tests/
+!tools/release/tests/*.py
+tools/release/**/__pycache__/
+tools/release/**/*.pyc

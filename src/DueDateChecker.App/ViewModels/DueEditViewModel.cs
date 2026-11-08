@@ -28,15 +28,26 @@ public partial class DueEditViewModel : ObservableObject
 
     // UX22 (decided 2026-11-07 with the prototype alignment): the form as it opened, so leaving can
     // tell whether it would discard anything. Text compares trimmed, so whitespace alone is no change.
-    private readonly record struct FormSnapshot(string Title, DueCategory? Category, string Amount, DateTime? Date, RepeatRule? Repeat, string Notes, bool IsPaid);
+    private readonly record struct FormSnapshot(string Title, DueCategory? Category, string Amount, DateTime? Date, RepeatRule? Repeat, string Notes, bool IsPaid, string CategoryId);
     private FormSnapshot _baseline;
-    private FormSnapshot Snapshot() => new((Title ?? "").Trim(), SelectedCategory, (AmountText ?? "").Trim(), SelectedDate?.Date, SelectedRepeat, (Notes ?? "").Trim(), IsPaid);
+    private FormSnapshot Snapshot() => new((Title ?? "").Trim(), SelectedCategory, (AmountText ?? "").Trim(), SelectedDate?.Date, SelectedRepeat, (Notes ?? "").Trim(), IsPaid, SelectedCategoryId);
     /// <summary>True when leaving now would discard typed input: the form differs from how it opened.
     /// False while loading, after Save or Delete, and for an unavailable due.</summary>
     public bool HasChanges => CanEdit && Snapshot() != _baseline;
 
     // Prototype editor rows (PA07).
     public string TypeRowText => $"Type: {(SelectedCategory is { } type && Enum.IsDefined(type) ? type.ToString() : "choose one")}";
+    public string DetailedCategoryText => PhilippineCategories.Find(SelectedCategoryId)?.Name ?? "Choose a category";
+    public bool HasDetailedCategoryError => DetailedCategoryError.Length > 0;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DetailedCategoryText))]
+    private string _selectedCategoryId = PhilippineCategories.OtherId;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasDetailedCategoryError))]
+    private string _detailedCategoryError = "";
+    public void ValidateDetailedCategory() => DetailedCategoryError = PhilippineCategories.IsKnown(SelectedCategoryId)
+        ? "" : "Choose a category from the list.";
+    public void ReportCategoryPickerError() => ErrorMessage = "Couldn't open the category list. Your entries are still here. Try again.";
     public string RepeatSummary => (SelectedRepeat ?? RepeatRule.Never) switch
     {
         RepeatRule.Weekly => "Every week",
@@ -280,6 +291,7 @@ public partial class DueEditViewModel : ObservableObject
             Notes = due.Notes ?? "";
             IsPaid = due.IsPaid;
             SelectedCategory = due.Category;
+            SelectedCategoryId = due.CategoryId;
             SelectedRepeat = due.Repeat;
             IsLoaded = true;
             _baseline = Snapshot();
@@ -304,7 +316,8 @@ public partial class DueEditViewModel : ObservableObject
         ValidateAmount(out var amount);
         ValidateDate();
         ValidateCategory();
-        if (HasTitleError || HasAmountError || HasDateError || HasCategoryError) return;
+        ValidateDetailedCategory();
+        if (HasTitleError || HasAmountError || HasDateError || HasCategoryError || HasDetailedCategoryError) return;
 
         IsBusy = true;
         CompletionMessage = "";
@@ -315,6 +328,7 @@ public partial class DueEditViewModel : ObservableObject
             var notes = string.IsNullOrWhiteSpace(Notes) ? null : Notes;
             var isPaid = IsPaid;
             var category = SelectedCategory!.Value;
+            var categoryId = SelectedCategoryId;
             // The picker is hidden for Task/Other and reset on a type change; this also covers a stale value.
             var repeat = Due.CanRepeat(category) ? SelectedRepeat ?? RepeatRule.Never : RepeatRule.Never;
             var now = _clock.GetUtcNow();
@@ -332,7 +346,7 @@ public partial class DueEditViewModel : ObservableObject
                     var edited = current with
                     {
                         Title = title, Amount = amount, DueDate = dueDate, Notes = notes,
-                        IsPaid = isPaid, UpdatedAt = now, Category = category,
+                        IsPaid = isPaid, UpdatedAt = now, Category = category, CategoryId = categoryId,
                         Repeat = repeat, RepeatDay = Recurrence.AnchorAfterEdit(current, repeat, dueDate)
                     };
                     // RC04: switching an unpaid repeating due to paid here adds its next one too.
@@ -354,7 +368,7 @@ public partial class DueEditViewModel : ObservableObject
             }
             else
             {
-                due = Due.Create(title, amount, dueDate, now, notes, category, repeat);
+                due = Due.Create(title, amount, dueDate, now, notes, category, repeat, categoryId);
                 await _database.RunAsync(() => _repository.AddAsync(due));
                 CompletionMessage = "Due saved.";
             }

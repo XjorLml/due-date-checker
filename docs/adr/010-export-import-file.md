@@ -32,6 +32,8 @@ The user authorized implementation with "start wave 3". The technical choices be
 
 ## Alternatives considered
 
+2026-11-08 format extension: [native Philippine preset categories](../../specs/ph-categories-native/spec.md) add `categoryId` to each exported due. The current writer is version 2; the reader retains strict version-1 compatibility with Other as the fallback. Version-2 records require a valid preset ID. The original version-1 decision above is retained as historical rationale; [SDD's archive contract](../SDD.md#ux05-export-and-import-contract) owns the current technical format.
+
 - **Android Auto Backup** (the user's option B): automatic, but sends financial data to cloud backup and reverses `allowBackup=false`.
 - **Share sheet:** one tap to Drive or chat apps; rejected because the decision was a file the user chooses, and sharing to a chat app is easy to do by mistake.
 - **CSV:** opens in spreadsheets, but has no version field, loses null-versus-zero without conventions, and is easy to damage by editing; the user chose JSON.

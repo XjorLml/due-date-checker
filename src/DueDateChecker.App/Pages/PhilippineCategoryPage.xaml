@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:DueDateChecker.App.ViewModels"
+             xmlns:pages="clr-namespace:DueDateChecker.App.Pages"
+             x:Class="DueDateChecker.App.Pages.PhilippineCategoryPage"
+             x:DataType="vm:PhilippineCategoryPickerViewModel"
+             Title="Choose category" Shell.NavBarIsVisible="False" Shell.TabBarIsVisible="False">
+    <Grid RowDefinitions="Auto,*,Auto" SafeAreaEdges="All">
+        <Grid ColumnDefinitions="48,*" ColumnSpacing="8" Padding="8,4" MinimumHeightRequest="56">
+            <Grid>
+                <pages:Glyph Kind="back" HorizontalOptions="Center" VerticalOptions="Center"
+                             Color="{AppThemeBinding Light={StaticResource TextLight}, Dark={StaticResource TextDark}}" />
+                <Button Clicked="OnCancelClicked" Style="{StaticResource OverlayButton}" MinimumHeightRequest="48"
+                        AutomationId="PHCategoryBack" SemanticProperties.Description="Back to due without changing category" />
+            </Grid>
+            <Label Grid.Column="1" Text="Choose category" Style="{StaticResource Heading3}" VerticalOptions="Center"
+                   LineBreakMode="WordWrap" SemanticProperties.HeadingLevel="Level1" />
+        </Grid>
+        <Grid Grid.Row="1" x:Name="PickerContent" RowDefinitions="Auto,*" RowSpacing="8">
+            <VerticalStackLayout Spacing="4">
+                <SearchBar x:Name="CategorySearch" Text="{Binding Query}" Placeholder="Electricity, SSS, rent…"
+                           SearchButtonPressed="OnSearchPressed" AutomationId="PHCategorySearch"
+                           SemanticProperties.Description="Search Philippine categories" />
+                <Label Text="{Binding ResultText}" Style="{StaticResource CaptionLabel}" AutomationId="PHCategoryResults" />
+                <Label x:Name="NavigationError" IsVisible="False" Style="{StaticResource ErrorLabel}" />
+            </VerticalStackLayout>
+            <CollectionView Grid.Row="1" ItemsSource="{Binding Groups}" IsGrouped="True" SelectionMode="None" AutomationId="PHCategoryList">
+                <CollectionView.GroupHeaderTemplate>
+                    <DataTemplate x:DataType="vm:PhilippineCategoryGroup">
+                        <Label Text="{Binding Name}" Style="{StaticResource FieldLabel}" Margin="0,16,0,6" SemanticProperties.HeadingLevel="Level2" />
+                    </DataTemplate>
+                </CollectionView.GroupHeaderTemplate>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="vm:PhilippineCategoryOption">
+                        <Border Style="{StaticResource SurfaceCard}" Padding="0" Margin="0,2">
+                            <Grid ColumnDefinitions="44,*" MinimumHeightRequest="56">
+                                <pages:Glyph Kind="{Binding Icon}" HorizontalOptions="Center" VerticalOptions="Center"
+                                             Color="{AppThemeBinding Light={StaticResource PrimaryLight}, Dark={StaticResource PrimaryDark}}" />
+                                <Label Grid.Column="1" Text="{Binding Label}" Padding="0,12,12,12" VerticalOptions="Center"
+                                       Style="{StaticResource SupportingLabel}" AutomationProperties.IsInAccessibleTree="False" />
+                                <Button Grid.ColumnSpan="2" CommandParameter="{Binding Id}" Clicked="OnCategoryClicked"
+                                        Style="{StaticResource OverlayButton}" MinimumHeightRequest="56"
+                                        SemanticProperties.Description="{Binding AccessibilityText}" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+                <CollectionView.EmptyView>
+                    <Label Text="No matching categories. Try another word or clear the search." Style="{StaticResource SupportingLabel}" Padding="0,20" />
+                </CollectionView.EmptyView>
+                <CollectionView.Footer><BoxView HeightRequest="16" Opacity="0" /></CollectionView.Footer>
+            </CollectionView>
+        </Grid>
+        <Grid Grid.Row="2" x:Name="PickerFooter">
+            <Button Text="Cancel" Clicked="OnCancelClicked" Style="{StaticResource SecondaryButton}" MinimumHeightRequest="48"
+                    AutomationId="PHCategoryCancel" SemanticProperties.Description="Cancel category selection" />
+        </Grid>
+    </Grid>
+</ContentPage>

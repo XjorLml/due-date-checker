@@ -55,6 +55,12 @@
                         <BoxView Style="{StaticResource Divider}" />
                     </VerticalStackLayout>
                     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16" Padding="0,10">
+                        <Label Text="Category" Style="{StaticResource SupportingLabel}" VerticalOptions="Center" />
+                        <Label Grid.Column="1" Text="{Binding Item.DetailedCategoryText}" Style="{StaticResource FactValue}"
+                               VerticalOptions="Center" AutomationId="DetailsPHCategory" />
+                    </Grid>
+                    <BoxView Style="{StaticResource Divider}" />
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16" Padding="0,10">
                         <Label Text="Currency / timezone" Style="{StaticResource SupportingLabel}" VerticalOptions="Center" />
                         <Label Grid.Column="1" Text="PHP / Asia/Manila" Style="{StaticResource FactValue}" VerticalOptions="Center" />
                     </Grid>

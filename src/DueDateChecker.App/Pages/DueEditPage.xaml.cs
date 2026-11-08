@@ -129,6 +129,24 @@ public partial class DueEditPage : ContentPage, IQueryAttributable
     }
 
     private void OnRepeatToggled(object? sender, EventArgs e) => Toggle(RepeatBody, RepeatGlyph);
+
+    private async void OnChangeCategoryClicked(object? sender, EventArgs e)
+    {
+        if (_handlingAction || !_viewModel.CanEdit) return;
+        _handlingAction = true;
+        try
+        {
+            var picker = new PhilippineCategoryPage(_viewModel.SelectedCategoryId);
+            await Navigation.PushModalAsync(picker);
+            if (await picker.Selection is { } id && _viewModel.CanEdit)
+            {
+                _viewModel.SelectedCategoryId = id;
+                _viewModel.ValidateDetailedCategory();
+            }
+        }
+        catch (Exception) { _viewModel.ReportCategoryPickerError(); }
+        finally { _handlingAction = false; }
+    }
     private void OnNotesToggled(object? sender, EventArgs e) => Toggle(NotesBody, NotesGlyph);
 
     // A collapsible editor row (prototype disclosure): the summary row stays; the field shows below it.
@@ -172,6 +190,7 @@ public partial class DueEditPage : ContentPage, IQueryAttributable
         else if (_viewModel.HasCategoryError) { ChangeTypeButton.Focus(); SemanticScreenReader.Default.Announce(_viewModel.CategoryError); }
         else if (_viewModel.HasAmountError) { AmountEntry.Focus(); SemanticScreenReader.Default.Announce(_viewModel.AmountError); }
         else if (_viewModel.HasDateError) { DueDatePicker.Focus(); SemanticScreenReader.Default.Announce(_viewModel.DateError); }
+        else if (_viewModel.HasDetailedCategoryError) { ChangeCategoryButton.Focus(); SemanticScreenReader.Default.Announce(_viewModel.DetailedCategoryError); }
     }
 
     // System Back: blocked while busy; with changes it asks first (UX22), otherwise Shell pops the page.

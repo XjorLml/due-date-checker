@@ -53,3 +53,5 @@ Light and dark themes, 100% and 200% text and 320 dp phones apply to every scena
 ## Shared acceptance rules
 
 Every existing behavior not named above stays: R01–R08, F01–F07, the UX01–UX16 decisions as kept above, reminders reconciliation and the editor's storage-failure paths. Tests that assert moved behavior move with it (Dashboard search and filters to Dues). Each page is checked on the emulator in light and dark, at 200% text and at 320 dp, then on the phone.
+
+Preset-category follow-up, 2026-11-08: [native Philippine categories](../ph-categories-native/spec.md) now separately authorizes the fixed catalog and category icons/picker. Custom categories and billers are still deferred. Earlier alignment evidence does not verify this extension.

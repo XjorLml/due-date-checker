@@ -1,5 +1,13 @@
 # Android native verification helpers
 
+## Philippine preset category checks
+
+`ph_categories.py` is restricted to `DuewiseNotificationsCheck` at `emulator-5580`, using the Java helper and rooted task emulator described below. Start with an empty task database on schema 6 and no `artifacts/ph-categories-check/state.json` checkpoint. Do not use a phone or an AVD containing unrelated dues. This task reused the previously cleaned notification-check profile; it did not wipe any other profile.
+
+Run `python tools/verification/ph_categories.py migration`, then `picker`. The first command deliberately reconstructs a schema-5 fixture only after checking the database is empty; it saves old stored fields to an ignored checkpoint and verifies the actual app's migration to schema 6/Other. The second uses real search/selection, category-only dirty-exit protection, picker Cancel, Save and restart. Run these modes sequentially and inspect every exit code. The current migration comparison includes every prior dues column and rowid; the initial dated run compared a smaller field set, as recorded in the evidence.
+
+`policies` checks all four due types in the native editor with Electricity selected: Bill/Subscription still reject blank amounts; Task/Other save absent amounts. It expects normal text/display settings. Backup import/export, themes/large text and recurrence remain separate procedures in [TEST-PLAN](../../docs/delivery/TEST-PLAN.md#native-philippine-preset-verification). `cleanup` refuses non-`NPH ` rows, removes only task dues/reminder journal fixtures, restores font/size/night defaults and verifies emptiness. Remove only the task-created backup documents from Downloads, then shut down the verified task emulator. Keep ignored checkpoints/logs separate from tracked evidence.
+
 ## N1/N2 notification action checks
 
 `notification_actions.py` is restricted to `DuewiseNotificationsCheck` at `emulator-5580`. Create a **fresh** API-36 Google APIs AVD with its data under ignored `artifacts/notification-check/avd`; do not reuse or wipe another profile. Install the Release APK, grant notification permission, launch once to initialize SQLite, and compile/push `F05Database.java` using the commands below (output may instead live under `artifacts/notification-check/java`). Use `adb -s emulator-5580 root` only on this task-owned emulator, then push the dex to `/data/local/tmp/f05-database.dex`.

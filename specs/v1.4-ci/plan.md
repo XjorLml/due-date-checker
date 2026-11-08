@@ -5,7 +5,7 @@
 ## Governing contracts
 
 - [SDD verification strategy](../../docs/SDD.md#verification-strategy) and [project table](../../docs/SDD.md#4-architecture): both test projects target `net10.0` and need no MAUI runtime.
-- [TEST-PLAN automated execution](../../docs/delivery/TEST-PLAN.md#automated-execution): CI reuses the same two `dotnet test` commands. The Android Release build stays local.
+- [TEST-PLAN automated execution](../../docs/delivery/TEST-PLAN.md#automated-execution): push CI reuses the same two `dotnet test` commands. Android building/signing stays outside that workflow; the separate [manual release plan](../github-release/plan.md) was authorized 2026-11-08.
 
 ## Approach
 

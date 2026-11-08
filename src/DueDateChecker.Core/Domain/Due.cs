@@ -27,11 +27,20 @@ public sealed record Due(
     DueCategory Category = DueCategory.Other,
     RepeatRule Repeat = RepeatRule.Never,
     int? RepeatDay = null,
-    Guid? RepeatSourceId = null)
+    Guid? RepeatSourceId = null,
+    string CategoryId = PhilippineCategories.OtherId)
 {
     private readonly string _title = ValidateTitle(Title);
     private readonly DueCategory _category = ValidateCategory(Category);
     private readonly RepeatRule _repeat = ValidateRepeat(Repeat);
+    private readonly string _categoryId = ValidateCategoryId(CategoryId);
+
+    /// <summary>Optional Philippine preset; Other is the fallback. Independent of due type.</summary>
+    public string CategoryId
+    {
+        get => _categoryId;
+        init => _categoryId = ValidateCategoryId(value);
+    }
 
     public DueCategory Category
     {
@@ -53,10 +62,11 @@ public sealed record Due(
     }
 
     public static Due Create(string title, Money? amount, DateOnly dueDate, DateTimeOffset now, string? notes = null,
-        DueCategory category = DueCategory.Other, RepeatRule repeat = RepeatRule.Never)
+        DueCategory category = DueCategory.Other, RepeatRule repeat = RepeatRule.Never,
+        string categoryId = PhilippineCategories.OtherId)
     {
         var due = new Due(Guid.NewGuid(), title, amount, dueDate, notes, IsPaid: false, CreatedAt: now, UpdatedAt: now, DeletedAt: null,
-            Category: category, Repeat: repeat, RepeatDay: Recurrence.AnchorFor(repeat, dueDate));
+            Category: category, Repeat: repeat, RepeatDay: Recurrence.AnchorFor(repeat, dueDate), CategoryId: categoryId);
         due.Validate();
         return due;
     }
@@ -94,6 +104,9 @@ public sealed record Due(
 
     private static RepeatRule ValidateRepeat(RepeatRule repeat) => Enum.IsDefined(repeat)
         ? repeat : throw new ArgumentOutOfRangeException(nameof(repeat), "Choose a supported repeat.");
+
+    private static string ValidateCategoryId(string id) => PhilippineCategories.IsKnown(id)
+        ? id : throw new ArgumentException("Choose a supported Philippine category.", nameof(CategoryId));
 
     private static DueCategory ValidateCategory(DueCategory category) => Enum.IsDefined(category)
         ? category : throw new ArgumentOutOfRangeException(nameof(category), "Choose a supported category.");

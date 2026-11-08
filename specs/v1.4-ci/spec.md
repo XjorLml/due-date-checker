@@ -1,6 +1,6 @@
 # V1.4 — Continuous integration (optional)
 
-Status: Workflow implemented and its commands verified locally on 2026-10-17. The workflow is present on `origin/develop` and `origin/test_branch` (not `origin/main`); no passing GitHub run is recorded, so R08 remains open. Task tracking is in [tasks](tasks.md). \
+Status: push-test workflow implemented; local evidence dates to 2026-10-17, and passing GitHub runs were recorded 2026-11-06 in [tasks](tasks.md). Earlier default-branch placement observations remain historical. The separate [GitHub draft release extension](../github-release/spec.md) was authorized 2026-11-08; it does not replace this workflow. \
 Governing requirement: [PRD R08](../../docs/PRD.md#approved-requirements), an optional delivery requirement that does not block mandatory v1 acceptance.  
 Verification gate: [optional CI gate](../../docs/delivery/TEST-PLAN.md#acceptance-gates). Implementation approach: [plan](plan.md).
 
@@ -14,7 +14,7 @@ Decisions confirmed by the user on 2026-10-17:
 - Use a Linux runner (`ubuntu-latest`). The repository is public, so hosted-runner minutes are free.
 - Keep phone acceptance manual ([TP01–TP07](../../docs/delivery/TEST-PLAN.md#device-procedures)). GitHub's runners cannot reach a USB-attached phone.
 
-Excluded: building, signing, or publishing the Android APK in CI; repository secrets; self-hosted runners; automated on-device tests; branch protection; deployment.
+Excluded from this push-test workflow: Android building/signing/publication, repository secrets, self-hosted runners, automated on-device tests, branch protection and deployment. Manually building/signing a draft release is now separately authorized in the [release spec](../github-release/spec.md).
 
 ## Acceptance scenarios
 
@@ -27,5 +27,5 @@ Excluded: building, signing, or publishing the Android APK in CI; repository sec
 
 ## Unresolved questions
 
-- Whether to add an APK build on tag or manual trigger (suggested in the historical [PLAN](../../docs/PLAN.md#gaps-found-in-the-original-plan-what-to-keep-in-mind)). It needs its own decision, and signing in CI would need a secrets design.
+- Manual signed APK/draft automation was decided 2026-11-08; its secrets design and verification are owned by the [release spec](../github-release/spec.md). Automatic tag-triggered builds/publication remain outside that manual workflow.
 - Whether to require the check before merging to `main` (a GitHub branch-protection setting, which is the user's choice).

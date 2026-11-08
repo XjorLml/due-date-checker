@@ -1,5 +1,7 @@
 # Export and import implementation plan
 
+The original version-1 implementation plan below is historical. The 2026-11-08 format-2/categoryId extension and version-1 compatibility are implemented under the [native Philippine preset plan](../ph-categories-native/plan.md); the SDD owns the current format contract.
+
 1. Write failing Core tests: file format and round trip (EX01, EX02, EX07), every refusal in EX03, the empty rule and tombstone replacement (EX04), and the single transaction (EX06).
 2. Core (`Data/`): `DueRecord` (one row's fifteen stored columns, with `ToDue()` reusing the domain rules), `DueArchive` (write and strict two-step read: format and version first, then the version-1 shape with unknown fields refused), `DueArchiveException` with a problem code so the App owns the wording, `IDueArchiveStore` and `SqliteDueArchive` (read every row; count active rows; import inside one transaction with the active check and an upsert that may only replace a deleted row).
 3. Write failing App tests with a fake file service: export success, cancel, nothing to export and write failure; import refused when dues show, cancel at the picker and at the confirmation, every refusal message, success counts, reminder refresh, write failure, repeated taps.

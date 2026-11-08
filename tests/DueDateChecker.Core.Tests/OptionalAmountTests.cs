@@ -84,7 +84,7 @@ public sealed class OptionalAmountTests : IDisposable
     {
         new DatabaseInitializer(_path).Initialize();
 
-        Assert.Equal(5L, Scalar("PRAGMA user_version"));
+        Assert.Equal(6L, Scalar("PRAGMA user_version"));
         Assert.Equal(0L, Scalar("SELECT \"notnull\" FROM pragma_table_info('dues') WHERE name = 'amount_centavos'"));
     }
 
@@ -110,7 +110,7 @@ public sealed class OptionalAmountTests : IDisposable
         new DatabaseInitializer(_path).Initialize();
         new DatabaseInitializer(_path).Initialize();
 
-        Assert.Equal(5L, Scalar("PRAGMA user_version")); // 004, then 005 (recurrence columns, checked in RecurrenceTests)
+        Assert.Equal(6L, Scalar("PRAGMA user_version")); // 004, then 005 (recurrence columns, checked in RecurrenceTests)
         Assert.Equal(rowsBefore, Snapshot(OriginalRows));
         Assert.Equal(indexBefore, Scalar("SELECT sql FROM sqlite_master WHERE name = 'ix_dues_active_due_date'"));
         Assert.Equal(columnsBefore, Snapshot("SELECT cid, name, type, dflt_value, pk FROM pragma_table_info('dues') WHERE cid < 12"));

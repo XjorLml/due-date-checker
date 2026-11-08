@@ -53,7 +53,8 @@ public static class Recurrence
     {
         if (NextDate(due.DueDate, due.Repeat, due.RepeatDay) is not { } date) return null;
         var next = new Due(Guid.NewGuid(), due.Title, due.Amount, date, due.Notes, IsPaid: false,
-            CreatedAt: now, UpdatedAt: now, DeletedAt: null, due.Category, due.Repeat, due.RepeatDay, RepeatSourceId: due.Id);
+            CreatedAt: now, UpdatedAt: now, DeletedAt: null, due.Category, due.Repeat, due.RepeatDay, RepeatSourceId: due.Id,
+            CategoryId: due.CategoryId);
         next.Validate();
         return next;
     }

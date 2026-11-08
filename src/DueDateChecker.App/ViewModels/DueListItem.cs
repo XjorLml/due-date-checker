@@ -14,6 +14,8 @@ public sealed record DueListItem(Due Due, DueStatus Status) : IDueRow
     public Guid Id => Due.Id;
     public string Title => Due.Title;
     public string CategoryText => Due.Category.ToString();
+    public string DetailedCategoryText => PhilippineCategories.Get(Due.CategoryId).Name;
+    public bool HasDetailedCategory => Due.CategoryId != PhilippineCategories.OtherId;
     /// <summary>Shown wherever a due has no amount (F07). Zero is never shown this way; it stays ₱0.00.</summary>
     public const string NoAmountText = "No amount";
 
@@ -25,7 +27,7 @@ public sealed record DueListItem(Due Due, DueStatus Status) : IDueRow
     // F07 recurrence (RC07): the repeat is part of the spoken text; Never adds nothing. Since the
     // prototype alignment (2026-11-07) rows show it on its own "⟲ Every month" line, not in the meta line.
     public bool IsRepeating => Due.Repeat != RepeatRule.Never;
-    public string MetaText => $"{ShortDateText} · {CategoryText}";
+    public string MetaText => $"{ShortDateText} · {(HasDetailedCategory ? DetailedCategoryText : CategoryText)}";
     /// <summary>The row's repeat line (prototype "⟲ Every month"); empty for a due that does not repeat.</summary>
     public string RepeatLineText => Due.Repeat switch
     {
@@ -35,7 +37,7 @@ public sealed record DueListItem(Due Due, DueStatus Status) : IDueRow
         _ => ""
     };
     /// <summary>The row and Details icon for the due type (prototype type glyphs).</summary>
-    public string TypeGlyph => Due.Category switch
+    public string TypeGlyph => HasDetailedCategory ? PhilippineCategories.Get(Due.CategoryId).Icon : Due.Category switch
     {
         DueCategory.Bill => "bill",
         DueCategory.Task => "task",
@@ -55,9 +57,13 @@ public sealed record DueListItem(Due Due, DueStatus Status) : IDueRow
     public string AccessibilityText => Spoken(Due.DueDate.ToString("dd MMMM yyyy", CultureInfo.InvariantCulture));
 
     /// <summary>Spoken row text with the date in the caller's format; Dashboard keeps its shorter date.</summary>
-    internal string Spoken(string dueDate) => IsRepeating
-        ? $"{Title}, {CategoryText}, repeats {Due.Repeat.ToString().ToLowerInvariant()}, {StatusText}, due {dueDate}, {AmountText}. Opens due details."
-        : $"{Title}, {CategoryText}, {StatusText}, due {dueDate}, {AmountText}. Opens due details.";
+    internal string Spoken(string dueDate)
+    {
+        var category = HasDetailedCategory ? $"{CategoryText}, {DetailedCategoryText}" : CategoryText;
+        return IsRepeating
+            ? $"{Title}, {category}, repeats {Due.Repeat.ToString().ToLowerInvariant()}, {StatusText}, due {dueDate}, {AmountText}. Opens due details."
+            : $"{Title}, {category}, {StatusText}, due {dueDate}, {AmountText}. Opens due details.";
+    }
 
     public static string StatusLabel(DueStatus status) => status switch
     {

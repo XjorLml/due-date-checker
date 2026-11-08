@@ -185,7 +185,7 @@ public sealed class ExportImportTests : IDisposable
     public static TheoryData<string, string> RefusedFiles => new()
     {
         { "not json", "This file isn't a Duewise export. Nothing was imported." },
-        { """{ "format": "duewise.dues", "version": 2 }""", "This file comes from a newer version of Duewise. Update the app, then import it. Nothing was imported." },
+        { """{ "format": "duewise.dues", "version": 3 }""", "This file comes from a newer version of Duewise. Update the app, then import it. Nothing was imported." },
         { """{ "format": "duewise.dues", "version": 1, "exportedAt": "2026-11-06T01:00:00.0000000+00:00", "dues": [] }""", "This file has no dues in it. Nothing was imported." },
         { "DUE2:dueDate", "Due 2 in this file has an invalid due date. Nothing was imported." },
         { "DUE2:amountCentavos", "Due 2 in this file has an invalid amount. Nothing was imported." },

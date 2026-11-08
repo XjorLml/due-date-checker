@@ -117,7 +117,7 @@ public sealed class ReminderTests : IDisposable
         Assert.Equal(due, await repository.GetAsync(due.Id));
         var store = new SqliteReminderStore(_path); Assert.Equal(new(), await store.ReadSettingsAsync()); Assert.Empty(await store.ReadOccurrencesAsync());
         using var check = new SqliteConnection($"Data Source={_path}"); check.Open(); using var commandCheck = check.CreateCommand();
-        commandCheck.CommandText = "PRAGMA user_version"; Assert.Equal(5L, commandCheck.ExecuteScalar());
+        commandCheck.CommandText = "PRAGMA user_version"; Assert.Equal(6L, commandCheck.ExecuteScalar());
     }
 
     [Fact]

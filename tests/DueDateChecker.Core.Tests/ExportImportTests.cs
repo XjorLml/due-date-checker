@@ -104,12 +104,12 @@ public sealed class ExportImportTests : IDisposable
         var root = json.RootElement;
         Assert.Equal(new[] { "format", "version", "exportedAt", "dues" }, root.EnumerateObject().Select(p => p.Name));
         Assert.Equal("duewise.dues", root.GetProperty("format").GetString());
-        Assert.Equal(1, root.GetProperty("version").GetInt32());
+        Assert.Equal(2, root.GetProperty("version").GetInt32());
         Assert.Equal("2026-11-06T01:00:00.0000000+00:00", root.GetProperty("exportedAt").GetString());
         var dues = root.GetProperty("dues").EnumerateArray().ToArray();
         Assert.Equal(5, dues.Length);
         Assert.Equal(new[] { "id", "title", "amountCentavos", "currency", "dueDate", "notes", "isPaid", "timezone", "createdAt",
-            "updatedAt", "deletedAt", "category", "repeatRule", "repeatDay", "repeatSourceId" }, dues[0].EnumerateObject().Select(p => p.Name));
+            "updatedAt", "deletedAt", "category", "repeatRule", "repeatDay", "repeatSourceId", "categoryId" }, dues[0].EnumerateObject().Select(p => p.Name));
         var task = dues.Single(d => d.GetProperty("title").GetString() == "Renew ID");
         Assert.Equal(JsonValueKind.Null, task.GetProperty("amountCentavos").ValueKind); // no amount stays absent
         Assert.Equal(0, dues.Single(d => d.GetProperty("title").GetString() == "Streaming").GetProperty("amountCentavos").GetInt64());
@@ -165,7 +165,7 @@ public sealed class ExportImportTests : IDisposable
     [Fact]
     public void A_newer_version_is_refused_before_its_contents_are_read()
     {
-        var text = """{ "format": "duewise.dues", "version": 2, "somethingNew": [1, 2, 3] }""";
+        var text = """{ "format": "duewise.dues", "version": 3, "somethingNew": [1, 2, 3] }""";
         Assert.Equal(DueArchiveProblem.NewerVersion, Assert.Throws<DueArchiveException>(() => DueArchive.Read(Encoding.UTF8.GetBytes(text))).Problem);
     }
 

@@ -22,10 +22,10 @@ public interface IDueArchiveStore
 public sealed class SqliteDueArchive(string databasePath) : IDueArchiveStore
 {
     private const string Columns =
-        "id, title, amount_centavos, currency, due_date, notes, is_paid, timezone, created_at, updated_at, deleted_at, category, repeat_rule, repeat_day, repeat_source_id";
+        "id, title, amount_centavos, currency, due_date, notes, is_paid, timezone, created_at, updated_at, deleted_at, category, repeat_rule, repeat_day, repeat_source_id, category_id";
 
     private const string Values =
-        "@id, @title, @amount, @currency, @due_date, @notes, @is_paid, @timezone, @created_at, @updated_at, @deleted_at, @category, @repeat_rule, @repeat_day, @repeat_source_id";
+        "@id, @title, @amount, @currency, @due_date, @notes, @is_paid, @timezone, @created_at, @updated_at, @deleted_at, @category, @repeat_rule, @repeat_day, @repeat_source_id, @category_id";
 
     // The WHERE lets a conflicting id replace only a deleted row; an active one leaves 0 rows changed.
     private const string UpsertSql =
@@ -36,7 +36,7 @@ public sealed class SqliteDueArchive(string databasePath) : IDueArchiveStore
             due_date = excluded.due_date, notes = excluded.notes, is_paid = excluded.is_paid, timezone = excluded.timezone,
             created_at = excluded.created_at, updated_at = excluded.updated_at, deleted_at = excluded.deleted_at,
             category = excluded.category, repeat_rule = excluded.repeat_rule, repeat_day = excluded.repeat_day,
-            repeat_source_id = excluded.repeat_source_id
+            repeat_source_id = excluded.repeat_source_id, category_id = excluded.category_id
         WHERE dues.deleted_at IS NOT NULL
         """;
 
@@ -64,7 +64,8 @@ public sealed class SqliteDueArchive(string databasePath) : IDueArchiveStore
                 Category: checked((int)reader.GetInt64(11)),
                 RepeatRule: checked((int)reader.GetInt64(12)),
                 RepeatDay: reader.IsDBNull(13) ? null : checked((int)reader.GetInt64(13)),
-                RepeatSourceId: reader.IsDBNull(14) ? null : reader.GetString(14)));
+                RepeatSourceId: reader.IsDBNull(14) ? null : reader.GetString(14),
+                CategoryId: reader.GetString(15)));
         }
         return records;
     }
@@ -105,6 +106,7 @@ public sealed class SqliteDueArchive(string databasePath) : IDueArchiveStore
             Set(insert, "@updated_at", due.UpdatedAt);
             Set(insert, "@deleted_at", due.DeletedAt);
             Set(insert, "@category", due.Category);
+            Set(insert, "@category_id", due.CategoryId);
             Set(insert, "@repeat_rule", due.RepeatRule);
             Set(insert, "@repeat_day", due.RepeatDay);
             Set(insert, "@repeat_source_id", due.RepeatSourceId);

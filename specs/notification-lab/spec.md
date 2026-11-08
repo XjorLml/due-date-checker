@@ -1,8 +1,8 @@
 # Notification lab
 
-Status: **HTML proposal added 2026-11-07; N1 A and N2 A decided the same day ([decision log](#decision-log)); not implemented, so the app still sends the generic text.** The user asked on 2026-11-07: "what are the expected notification samples specifically for each dues and also a way to mark a due as paid via the push notifications. show it via the index html". The lab is the **Notifications** tab of the [design exploration](../../prototypes/design-exploration/index.html#notifications) (`notification-lab.js`, `notification-lab.css`, small hooks in `index.html` and `app.js`). Like the [UX decision lab](../ux-improvements/spec.md#html-decision-lab), it is a non-normative decision aid: choosing there records a browser-local preference, not a decision. Progress: [tasks](tasks.md).
+Status: **HTML proposal added 2026-11-07; N1 A and N2 A decided the same day ([decision log](#decision-log)); native implementation authorized and added 2026-11-08; see [evidence](../../docs/delivery/evidence/NOTIFICATIONS-2026-11-08.md) for verification and remaining device acceptance.** The user asked on 2026-11-07: "what are the expected notification samples specifically for each dues and also a way to mark a due as paid via the push notifications. show it via the index html". The lab is the **Notifications** tab of the [design exploration](../../prototypes/design-exploration/index.html#notifications) (`notification-lab.js`, `notification-lab.css`, small hooks in `index.html` and `app.js`). Like the [UX decision lab](../ux-improvements/spec.md#html-decision-lab), it is a non-normative decision aid: choosing there records a browser-local preference, not a decision. Progress: [tasks](tasks.md).
 
-## What the app does today
+## Baseline before this implementation
 
 Duewise schedules **local** notifications on the phone; there is no server, so these are not push notifications, though they look the same. Per the [PRD F05 rules](../../docs/PRD.md#f05-reminder-rules), every reminder reads "Duewise reminder · Open Duewise to review an unpaid due date." with private visibility (Android hides it on the lock screen as "Contents hidden"). Tapping it opens that due's Details. There is no action button. Reminders come at the reminder time on the due date, and the day before if that setting is on; quiet hours move them, and nothing is sent once the date has passed.
 
@@ -38,6 +38,8 @@ Source: the lab export pasted by the user on 2026-11-07, with no notes.
 
 ## Implementation plan (not started)
 
+**2026-11-08:** the user authorized native implementation. The following sequence is retained as the original plan; the current execution plan is [plan.md](plan.md), with [tasks](tasks.md) and native acceptance below.
+
 1. **Text, tested first.** A pure `ReminderText` (title, text, public text) built from the due and the occurrence. It covers the day before and the day itself, no amount, repeats, and two or more dues together. It never includes notes.
 2. **Posting.** `ReminderCoordinator` already holds each due when it posts; it passes the text to `IReminderPlatform.Post`. Android builds the private notification with a public version, a group with a summary for two or more, and a **Mark as paid** action. The action is an explicit, immutable `PendingIntent` to a new non-exported receiver, with `setAuthenticationRequired(true)` on Android 12 and later.
 3. **Paying.** A testable `ReminderPaymentService` behind the receiver (`goAsync`). It runs the Details save through `DatabaseDispatcher` and the reminder-aware repository: it checks the due is active, unpaid and on the occurrence date, then calls `UpdateWithNextAsync`. A stale due writes nothing and gets the "Open Duewise to check this due." text.
@@ -62,6 +64,21 @@ Source: the lab export pasted by the user on 2026-11-07, with no notes.
 
 The phone drawings are a light Android 13-style illustration, not captures of the app or of a specific phone maker's skin.
 
+## Native acceptance — N1 A / N2 A
+
+| ID | Scenario | Expected result |
+|---|---|---|
+| NA01 | Due today/tomorrow, zero/absent amount, each repeat | Correct shade text; no notes; generic public version without actions. |
+| NA02 | Multiple reminders | Group summary counts distinct dues and stays generic. Test notification remains independent. |
+| NA03 | Mark as paid, including duplicate/concurrent taps | Delivered current unpaid snapshot only; one atomic next occurrence; reminders reconciled. No main-app navigation. |
+| NA04 | Edited, deleted, paid, overdue, disabled, wrong/undelivered key | No write; generic recovery text where a card can still be posted. |
+| NA05 | Locked or relocked action, cancelled unlock | No write before unlocking; API 31+ authentication-required receiver, API 26–30 dedicated system-unlock activity. |
+| NA06 | Undo within/beyond 10 seconds, edited/deleted/changed paid state | Guarded unpaid write within window only; generated next due remains; repeated Undo does nothing. |
+| NA07 | Original or confirmation body tap, cold start, active editor | Validated Details destination; draft navigation deferred. Editor cannot overwrite a payment changed by a notification. |
+| NA08 | Disable/block, refresh, empty queue | Existing scheduling/test behavior retained; feedback survives reconciliation only for its short lifetime. |
+
+Automated service checks do not establish Android lock-screen/unlock, natural delivery, or MIUI acceptance. See [test plan](../../docs/delivery/TEST-PLAN.md#f05-reminder-verification) and delivery evidence.
+
 ## Out of scope
 
-Snooze, "remind me later", per-due reminder times and reminders after the due date (overdue nudges) are not proposed here. Implementing either decision needs a PRD and SDD update, tests and a phone check, and stays held until the user decides.
+Snooze, "remind me later", per-due reminder times and reminders after the due date (overdue nudges) are not proposed here. The user authorized N1 A / N2 A implementation on 2026-11-08; other notification variants remain deferred. Actual-phone acceptance is separate from automated/build verification.

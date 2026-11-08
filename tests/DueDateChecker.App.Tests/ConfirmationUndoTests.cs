@@ -259,7 +259,7 @@ public sealed class ConfirmationUndoTests : IDisposable
         public void RequestReconciliation() => Requests++;
         public void CleanNotifications(IReadOnlySet<string> validKeys, bool keepTestNotification) { }
         public void CancelDue(Guid id) { }
-        public void Post(ReminderOccurrence occurrence) { }
+        public void Post(ReminderOccurrence occurrence, ReminderText text) { }
         public void PostTest() { }
     }
 }

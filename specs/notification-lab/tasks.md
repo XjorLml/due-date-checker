@@ -14,4 +14,12 @@ Limits: drawings are light-theme illustrations; the lab changes no app behavior 
 
 ## Implementation
 
-- [ ] Not started; see the [implementation plan](spec.md#implementation-plan-not-started). It starts when the user gives the go-ahead.
+- [x] Native implementation authorized by the user, 2026-11-08; execution [plan](plan.md), scenarios NA01–NA08 in the [spec](spec.md#native-acceptance--n1-a--n2-a).
+- [x] Privacy-aware text, generic public versions, distinct-due grouping and immutable payment actions.
+- [x] Serialized delivered-receipt/snapshot guards, existing atomic recurrence write, guarded 10-second Undo and reminder reconciliation. Editor payment conflict retains the draft.
+- [x] Android 12+ authentication-required receiver and Android 8–11 dedicated unlock activity; lock state rechecked before writing.
+- [x] Automated verification: 170 Core + 304 App tests passed on Windows/.NET 10.0.400, 2026-11-08, agent-observed. Existing xUnit1031 and unavailable NuGet advisory metadata warnings recorded separately.
+- [x] Android Release package build: 0 warnings/errors, agent-observed. Artifact/source and native checks: [evidence](../../docs/delivery/evidence/NOTIFICATIONS-2026-11-08.md).
+- [x] Update PRD, SDD, DESIGN, documentation index and TEST-PLAN.
+- [x] API-36 emulator: real sample shade cards, no notes, grouped summary, private/public/authentication metadata, actual payment action with one next occurrence, and final-build actual Undo tap restoring unpaid while retaining that next due. [Evidence](../../docs/delivery/evidence/NOTIFICATIONS-2026-11-08.md) retains earlier failed attempts and the visible-window fix.
+- [ ] Actual-phone acceptance: MIUI privacy/unlock/actions, grouping, Undo, cold-start taps and natural background delivery. API 26–30 unlock UI also needs runtime acceptance.

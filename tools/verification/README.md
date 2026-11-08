@@ -1,5 +1,13 @@
 # Android native verification helpers
 
+## N1/N2 notification action checks
+
+`notification_actions.py` is restricted to `DuewiseNotificationsCheck` at `emulator-5580`. Create a **fresh** API-36 Google APIs AVD with its data under ignored `artifacts/notification-check/avd`; do not reuse or wipe another profile. Install the Release APK, grant notification permission, launch once to initialize SQLite, and compile/push `F05Database.java` using the commands below (output may instead live under `artifacts/notification-check/java`). Use `adb -s emulator-5580 root` only on this task-owned emulator, then push the dex to `/data/local/tmp/f05-database.dex`.
+
+Run `python tools/verification/notification_actions.py seed`, then `observe`. The seed refuses any pre-existing due or prior state checkpoint. It creates two clearly labeled sample dues and queued elapsed occurrences for controlled catch-up; this is **not natural alarm-delivery evidence**. `observe` checks receipts, native content, grouping, no notes and real shade controls. Expand the rent child as needed before `pay-undo`; that case taps the real action and Undo, then checks SQLite for unpaid state plus one retained next occurrence. `cleanup` verifies task-only membership before removing fixtures and disabling reminders. The private local checkpoint stays ignored; shut down the emulator afterwards. Runtime failures must be recorded separately from unit/build results.
+
+PIN/biometric cancellation, lock-screen privacy settings, cold-start body taps and API 26–30 unlock UI remain separate device procedures in TEST-PLAN. Never run this helper on a phone.
+
 ## F04 preference checks
 
 [F04 runner](f04_preferences.py) uses the shared explicit-device UI helper and a reviewed ignored `artifacts/f04-preferences/phone-state.json` checkpoint containing original font/theme/connectivity, reminder field values and a private summary hash. Capture that checkpoint before the first F04 upgrade; do not invent/overwrite it. This fixture assumes the pre-F04 default System/Monday preference state. Run `initial`, `calendar-restart`, `themes`, then `cleanup`, each with explicit `--serial`. Check each exit code. Only Settings screenshots are persisted; raw UI/financial data remain in memory. No due is created or edited. Theme canvas checking decodes adb RGB/RGBA PNG with the Python standard library. Cleanup restores default preferences and original device settings; independently verify restoration. [F04 evidence](../../docs/delivery/evidence/F04-PREFERENCES-2026-10-18.md) owns observed results, not this procedure.

@@ -4,6 +4,8 @@ Authorized by "implement next f05" on 2026-10-18. [PRD](../../docs/PRD.md#f05-re
 
 ## Acceptance scenarios
 
+**2026-11-08 extension:** [N1 A / N2 A](../notification-lab/spec.md#native-acceptance--n1-a--n2-a) supersedes RM06's original generic-content/no-payment baseline. The scheduler and other RM scenarios remain in force; current notification rules stay authoritative in the linked PRD. Historical RM06 verification is not acceptance of the new actions.
+
 | ID | Observable outcome |
 |---|---|
 | RM01 | Upgrade schema 2 to 3 preserves dues/categories/timestamps/tombstones and starts reminders disabled. No launch permission prompt or implicit opt-in. Opening Reminders does not enable delivery. |

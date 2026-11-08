@@ -400,7 +400,7 @@ public sealed class ReminderTests : IDisposable
             if (!keepTestNotification) TestVisible = false;
         }
         public void CancelDue(Guid id) => Visible.RemoveWhere(key => key.StartsWith(id.ToString("N") + "/", StringComparison.Ordinal));
-        public void Post(ReminderOccurrence item) { if (FailPost) throw new IOException("Controlled post failure"); Posted.Add(item); Visible.Add(item.Key); AfterPost?.Invoke(); }
+        public void Post(ReminderOccurrence item, ReminderText text) { if (FailPost) throw new IOException("Controlled post failure"); Posted.Add(item); Visible.Add(item.Key); AfterPost?.Invoke(); }
         public void PostTest() { Tests++; TestVisible = true; }
     }
     public void Dispose() { TestDatabase.ClearPool(_path); File.Delete(_path); }

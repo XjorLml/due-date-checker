@@ -64,7 +64,9 @@ public sealed class ReminderCoordinator(DatabaseDispatcher database, IDueReposit
                     var deliveryNow = clock.GetUtcNow();
                     var deliveryAt = ReminderPlanner.DeliveryTime(item, deliveryNow, settings, Zone);
                     if (deliveryAt is null || deliveryAt > deliveryNow) continue;
-                    platform.Post(item); // Stable OS tag + OnlyAlertOnce makes normal retry idempotent.
+                    var due = dues.First(due => due.Id == item.DueId);
+                    platform.Post(item, ReminderText.Create(due,
+                        DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(deliveryNow, Zone).DateTime)));
                     await store.MarkDeliveredAsync(item.Key, deliveryNow);
                 }
                 var remaining = (await store.ReadOccurrencesAsync()).Where(item => item.DeliveredAt is null).ToArray();
@@ -88,12 +90,16 @@ public sealed class ReminderCoordinator(DatabaseDispatcher database, IDueReposit
         }
     }
 
-    public Task<bool> CanOpenAsync(Guid id, string key) => database.RunAsync(async () =>
+    public Task<bool> CanOpenAsync(Guid id, string key, string? confirmationVersion = null) => database.RunAsync(async () =>
     {
         var settings = await store.ReadSettingsAsync();
         if (!settings.Enabled) return false;
         var due = await repository.GetAsync(id);
-        if (due is null || due.IsPaid || due.DeletedAt is not null) return false;
+        if (due is null || due.DeletedAt is not null) return false;
+        if (confirmationVersion is not null)
+            return ReminderText.Fingerprint(due) == confirmationVersion &&
+                (await store.ReadOccurrencesAsync()).Any(item => item.Key == key && item.DueId == id && item.DeliveredAt.HasValue);
+        if (due.IsPaid) return false;
         var today = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(clock.GetUtcNow(), Zone).DateTime);
         return due.DueDate >= today && (await store.ReadOccurrencesAsync()).Any(item => item.Key == key && item.DueId == id && item.DeliveredAt.HasValue)
             && ReminderPlanner.Plan([due], settings, Zone).Any(item => item.Key == key);

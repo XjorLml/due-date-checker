@@ -15,6 +15,7 @@ public partial class DueEditViewModel : ObservableObject
     private readonly TimeProvider _clock;
     private Guid? _editingId;
     private string _loadedTitle = "";
+    private sealed class PaymentChangedException : Exception;
 
     public DueEditViewModel(DatabaseDispatcher database, IDueRepository repository, TimeProvider clock)
     {
@@ -326,6 +327,8 @@ public partial class DueEditViewModel : ObservableObject
                     // Read/check/write share the dispatcher gate so App operations cannot interleave.
                     var current = await _repository.GetAsync(_editingId!.Value);
                     if (current is null || current.DeletedAt.HasValue) return (null, null);
+                    if (current.IsPaid != _baseline.IsPaid)
+                        throw new PaymentChangedException();
                     var edited = current with
                     {
                         Title = title, Amount = amount, DueDate = dueDate, Notes = notes,
@@ -356,6 +359,10 @@ public partial class DueEditViewModel : ObservableObject
                 CompletionMessage = "Due saved.";
             }
             SavedDueId = due.Id;
+        }
+        catch (PaymentChangedException)
+        {
+            ErrorMessage = "This due changed while you were editing, possibly from a reminder. Your entries are still here. Cancel and reopen it to review the latest version before saving.";
         }
         catch (KeyNotFoundException) when (IsEditMode)
         {

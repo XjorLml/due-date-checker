@@ -18,6 +18,7 @@
     <Compile Include="../../src/DueDateChecker.App/Services/AppPreferencesService.cs" Link="App/AppPreferencesService.cs" />
     <Compile Include="../../src/DueDateChecker.App/Services/IReminderPlatform.cs" Link="App/IReminderPlatform.cs" />
     <Compile Include="../../src/DueDateChecker.App/Services/ReminderCoordinator.cs" Link="App/ReminderCoordinator.cs" />
+    <Compile Include="../../src/DueDateChecker.App/Services/ReminderPaymentService.cs" Link="App/ReminderPaymentService.cs" />
     <Compile Include="../../src/DueDateChecker.App/Services/ReminderJobDispatch.cs" Link="App/ReminderJobDispatch.cs" />
     <Compile Include="../../src/DueDateChecker.App/Services/ReminderAwareDueRepository.cs" Link="App/ReminderAwareDueRepository.cs" />
     <Compile Include="../../src/DueDateChecker.App/Services/IDueFileService.cs" Link="App/IDueFileService.cs" />

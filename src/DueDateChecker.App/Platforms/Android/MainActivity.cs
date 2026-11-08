@@ -17,8 +17,10 @@ public class MainActivity : MauiAppCompatActivity
     {
         if (intent?.Action != Platforms.Android.AndroidReminderPlatform.TapAction) return;
         var id = intent.GetStringExtra("due_id"); var key = intent.GetStringExtra("occurrence_key");
+        var version = intent.GetStringExtra("confirmation_version");
         intent.RemoveExtra("due_id"); intent.RemoveExtra("occurrence_key");
+        intent.RemoveExtra("confirmation_version");
         MainThread.BeginInvokeOnMainThread(() => MainApplication.ReminderServices?
-            .GetRequiredService<Services.ReminderTapRouter>().Enqueue(id, key));
+            .GetRequiredService<Services.ReminderTapRouter>().Enqueue(id, key, version));
     }
 }

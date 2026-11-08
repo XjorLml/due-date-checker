@@ -36,6 +36,16 @@ On 2026-11-07 the user compared the build with the selected Focus prototype ("th
 - [x] Emulator, agent-observed (Android 35 AOSP image, 411 dp): Dues and Dashboard selected; dark theme (icon readable on the pill); 200% text and 320 dp (captions fit inside the card, clear of the corners); Add disc opens the editor with bar and disc hidden; Cancel brings the bar back. Two early captures were taken before the first frame settled (one black, one without the pill); they are not evidence.
 - [ ] Phone check, including the bottom inset with the phone's own navigation mode. The emulator image has no system navigation bar, so the inset path is unobserved.
 
+## Launcher palette correction — 2026-11-08
+
+Small fix under R01 / FA01 and DESIGN §2/§3, requested after the user observed a purple launcher despite the adopted green theme. Source inspection found `Resources/AppIcon/appicon.svg` still filled `#4338CA`; project icon/splash metadata and the in-app mark already used the prescribed ink `#253C20`.
+
+- [x] Change only the launcher background SVG fill to the existing brand ink; retain the white calendar-check glyph and coral dot.
+- [x] Agent-observed: Release APK rebuilt with 0 warnings/errors. Visually inspected before/after generated icons; all 15 packaged legacy, round and adaptive backgrounds sampled the expected ink across mdpi–xxxhdpi. Source foreground/splash unchanged. [Evidence](../../docs/delivery/evidence/ICON-PALETTE-2026-11-08.md).
+- [ ] Confirm the updated launcher on the user's phone after installing an update signed with their existing key. No phone installation is part of this fix.
+
+Unit tests are not needed for this asset-only recolor; build/resource inspection verifies the affected boundary. Other feature work and historical test evidence remain untouched.
+
 ## Remaining acceptance
 
 - [ ] Phone verification on the project's device (M2101K6G, API 33): status-bar colour and icon contrast in both themes, bar height with system text scaling, gesture-navigation insets under the footer and disc, Back behaviour from Settings, reminder tap while on Settings. Keyboard overlap: the editor footer was hidden by the keyboard; fixed and emulator-verified on 2026-11-06 ([record](../../docs/delivery/evidence/EMULATOR-HARDENING-2026-11-06.md#defects-found-and-fixed)), phone check pending (Android 13 may resize differently).

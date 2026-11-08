@@ -29,4 +29,6 @@ Later change, 2026-11-06: [UX11](../ux-improvements/spec.md#decision-log) revise
 
 ## Evidence limits
 
+Launcher follow-up, 2026-11-08 (R01 / FA01): the user reported the launcher still purple after the Focus theme change. Correct the full-bleed launcher SVG to DESIGN's existing brand ink, retaining the glyph and coral dot. Verify the generated/packaged legacy, round and adaptive backgrounds; installed-phone appearance remains a separate check. [Tasks and results](tasks.md#launcher-palette-correction--2026-11-08).
+
 An emulator run is agent-observed evidence on a virtual device, not phone acceptance. The project's phone acceptance, intended-key signing and TalkBack gates remain separate and are tracked in [STATUS](../../docs/delivery/STATUS.md). Browser evidence from the prototype does not transfer to the native app.

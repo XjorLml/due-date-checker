@@ -42,6 +42,13 @@ public partial class AppShell : Shell
         });
         Loaded += (_, _) => { undo.Restored -= OnRestored; undo.Restored += OnRestored; };
         Unloaded += (_, _) => undo.Restored -= OnRestored;
+        var payments = services.GetRequiredService<Services.ReminderPaymentService>();
+        void OnPayment(object? sender, Guid id) => MainThread.BeginInvokeOnMainThread(async () =>
+        {
+            try { await RefreshCurrentPageAsync(); } catch (Exception) { }
+        });
+        Loaded += (_, _) => { payments.Changed -= OnPayment; payments.Changed += OnPayment; };
+        Unloaded += (_, _) => payments.Changed -= OnPayment;
 	}
 
 	public Task RefreshCurrentPageAsync() => CurrentPage switch

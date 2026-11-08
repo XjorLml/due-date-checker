@@ -52,6 +52,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<IDueRepository>(services => new ReminderAwareDueRepository(
             services.GetRequiredService<SqliteDueRepository>(), services.GetRequiredService<ReminderCoordinator>()));
         builder.Services.AddSingleton<ReminderTapRouter>();
+        builder.Services.AddSingleton<ReminderPaymentService>();
         builder.Services.AddSingleton<IDueArchiveStore>(new SqliteDueArchive(databasePath));
         builder.Services.AddSingleton<IDueFileService, Platforms.Android.AndroidDueFileService>();
         builder.Services.AddTransient<DataTransferViewModel>();

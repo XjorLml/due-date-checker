@@ -45,6 +45,6 @@ public interface IReminderPlatform
     void RequestReconciliation();
     void CleanNotifications(IReadOnlySet<string> validKeys, bool keepTestNotification);
     void CancelDue(Guid id);
-    void Post(ReminderOccurrence occurrence);
+    void Post(ReminderOccurrence occurrence, ReminderText text);
     void PostTest();
 }

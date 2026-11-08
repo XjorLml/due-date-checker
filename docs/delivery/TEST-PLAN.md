@@ -25,7 +25,7 @@ Core checks do not require restoring the MAUI App. Android builds are separate f
 
 These are inspected test definitions, not new execution results. Historical runs are linked from STATUS.
 
-The native Philippine preset extension adds Core/App `PhilippineCategoryTests` and a category-only stale-action case in `ReminderPaymentTests`. They cover catalog IDs/search, type independence, schema-5 upgrade/preservation/failure, CRUD/recurrence/restore, version-1/2 archives, draft/dirty handling and saved projections. On 2026-11-08 both projects compiled, but Windows Application Control blocked test-assembly loading (`0x800711C7`); no current regression-suite pass is established. See [evidence](evidence/PH-CATEGORIES-2026-11-08.md).
+The native Philippine preset extension adds Core/App `PhilippineCategoryTests` and a category-only stale-action case in `ReminderPaymentTests`. They cover catalog IDs/search, type independence, schema-5 upgrade/preservation/failure, CRUD/recurrence/restore, version-1/2 archives, draft/dirty handling and saved projections. Initial 2026-11-08 execution was blocked by Windows Application Control. In the later CI assertion follow-up, 185 Core + 313 App tests passed locally; a hosted CI pass for the corrected revision remains pending. See [evidence](evidence/PH-CATEGORIES-2026-11-08.md).
 
 | Requirements / contract | Sources and coverage | Remaining limits |
 |---|---|---|

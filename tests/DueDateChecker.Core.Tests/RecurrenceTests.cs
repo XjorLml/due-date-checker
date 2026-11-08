@@ -159,18 +159,18 @@ public sealed class RecurrenceTests : IDisposable
     // ---- RC01: migration 005 ----
 
     [Fact]
-    public void Fresh_database_reaches_schema_five_with_the_recurrence_columns()
+    public void Fresh_database_contains_the_recurrence_columns_and_index()
     {
         new DatabaseInitializer(_path).Initialize();
 
         Assert.Equal(6L, Scalar("PRAGMA user_version"));
         Assert.Equal("repeat_rule|INTEGER|1|0\nrepeat_day|INTEGER|0|NULL\nrepeat_source_id|TEXT|0|NULL",
-            Snapshot("SELECT name, type, \"notnull\", dflt_value FROM pragma_table_info('dues') WHERE cid >= 12 ORDER BY cid"));
+            Snapshot("SELECT name, type, \"notnull\", dflt_value FROM pragma_table_info('dues') WHERE name IN ('repeat_rule', 'repeat_day', 'repeat_source_id') ORDER BY cid"));
         Assert.Equal(1L, Scalar("SELECT COUNT(*) FROM sqlite_master WHERE type = 'index' AND name = 'ix_dues_repeat_source'"));
     }
 
     [Fact]
-    public void Upgrade_from_schema_four_keeps_rows_and_reads_them_as_never()
+    public async Task Upgrade_from_schema_four_keeps_rows_and_reads_them_as_never()
     {
         CreateSchema(4);
         Execute("""
@@ -187,7 +187,7 @@ public sealed class RecurrenceTests : IDisposable
         Assert.Equal(6L, Scalar("PRAGMA user_version"));
         Assert.Equal(before, Snapshot(Original));
         Assert.Equal("0|NULL|NULL\n0|NULL|NULL", Snapshot("SELECT repeat_rule, repeat_day, repeat_source_id FROM dues ORDER BY rowid"));
-        var due = new SqliteDueRepository(_path).GetAsync(Guid.Parse("00000000-0000-0000-0000-000000000001")).Result!;
+        var due = (await new SqliteDueRepository(_path).GetAsync(Guid.Parse("00000000-0000-0000-0000-000000000001")))!;
         Assert.Equal(RepeatRule.Never, due.Repeat);
         Assert.Throws<SqliteException>(() => Execute("UPDATE dues SET repeat_rule = 9"));
         Assert.Throws<SqliteException>(() => Execute("UPDATE dues SET repeat_day = 32"));

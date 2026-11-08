@@ -2,6 +2,8 @@
 
 Authority: audit findings, migration mapping, unresolved documentation decisions, and validation for the 2026-10-17 refactor. Current requirements, contracts, design, and status are owned by the documents in the [index](../README.md).
 
+This is a dated historical record. The [2026-11-08 consolidation audit](DOCS-AUDIT-2026-11-08.md) owns the later navigation/toolkit changes and migration map; unresolved items below describe their original baseline unless a dated follow-up explicitly resolves them. Do not apply old deferral lists or test counts as current state.
+
 ## Discovery and audit
 
 Discovery covered the complete original SDD, PLAN, DESIGN, V1.1/V1.2 records and the subsequently added V1.3 record, learning notes, project files, Core domain/data/migration code, App startup/navigation/pages/view models/dispatcher, and relevant tests. No applicable AGENTS.md was found before the refactor. The initial working tree already contained substantial modified and untracked application/test/documentation work; it was preserved. A concurrent feature task subsequently updated SDD/PLAN/learning notes and added V1.3 phase/execution evidence, then reconciled STATUS/specs. Those updates were read and retained. The archived SDD is the 2026-10-17 version available immediately before extraction, rather than the earlier discovery version.

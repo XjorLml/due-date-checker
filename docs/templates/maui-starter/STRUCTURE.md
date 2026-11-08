@@ -44,6 +44,8 @@
     feature-template/spec.md + plan.md + tasks.md
   tools/
     README.md
+    check_docs.py              # included read-only documentation checker
+    tests/test_check_docs.py   # included checker behavior tests
     verification/              # add reproducible device/link-check helpers here
   artifacts/                   # ignored local logs, builds, controlled fixtures
 ```

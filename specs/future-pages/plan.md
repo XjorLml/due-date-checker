@@ -1,6 +1,6 @@
 # Future-page implementation roadmap
 
-Status: F01 Details and F02 saved-data Dashboard were authorized on 2026-10-18 and have dedicated feature specs/tasks. [F02](../f02-dashboard/spec.md) replaces its earlier mock; [F03 Calendar](../f03-calendar/spec.md) is now separately authorized and replaces the final mock. The later [F07 categories](../f07-categories/spec.md) slice is authorized/implemented with schema 2; [F07 optional amounts](../f07-optional-amounts/spec.md) is the separately authorized amount slice with schema 4; F05 local reminders are subsequently authorized under their dedicated spec; remaining F07 recurrence/timing and other production slices are proposed. F02 adds a derived status policy but no persisted schema/payment, permission or network change. R01–R08 identities remain stable; the PRD owns the authorized extensions.
+Current scope is owned by the [PRD](../../docs/PRD.md), with implementation and attributed results in [STATUS](../../docs/delivery/STATUS.md). F01–F05 and the independently specified F07 type, optional-amount, recurrence and Philippine-preset slices have later approvals recorded in their specs. Export/import is separately specified under F04. See the [feature catalog](../../docs/FEATURES.md) for those scopes; remaining roadmap ideas are proposals, not implementation authorization. R01–R08 retain their identities.
 
 ## Authorized dashboard/calendar mock milestone
 
@@ -48,6 +48,8 @@ A [second review on 2026-11-07](../../docs/delivery/UX-REVIEW-2026-11-07.md) add
 
 ## Page mapping and acceptance
 
+**Historical planning map:** the table retains the original page responsibilities and proposed outcomes. Later scoped approvals supersede its older recurrence/export/navigation deferrals; follow the feature catalog and current PRD/SDD contracts for as-built behavior. These rows are not evidence of implementation or acceptance.
+
 | Slice / page | DESIGN mapping | Proposed modules and dependencies | Observable acceptance before completion |
 |---|---|---|---|
 | F01 Item detail | [Item detail](../../docs/DESIGN.md#item-detail) | New DueDetailPage/ViewModel; ID-only route, repository GetAsync, existing edit route. Initially use current fields; define which actions exist before wiring Complete/Reopen/Undo. | Open the selected ID, show saved fields; missing/deleted targets cannot become inserts. Edit/return refreshes details; Back preserves the list. Test lookup failures/retry and restart/offline. |
@@ -93,5 +95,7 @@ Current [PRD exclusions](../../docs/PRD.md#exclusions-and-deferred-capabilities)
 F05 local date-only reminders are complete for the authorized feature scope under their [dedicated plan](../f05-reminders/plan.md), with **186 tests**, clean final Android build and artifact-attributed native completion checks in [STATUS](../../docs/delivery/STATUS.md). Natural offline/screen-off delivery passed on the phone under temporary No restrictions and on the isolated API-36 emulator; Doze/reboot recovery and targeted lifecycle/failure/cancellation/layout checks passed. The original phone policy was restored. Android power/force-stop/inexact-delivery limits remain; [remaining acceptance](../f05-reminders/tasks.md#remaining-acceptance) tracks broader assistive/OEM/intended-key release work separately. **F04 preferences is now authorized under its [dedicated spec](../f04-preferences/spec.md)**, with export separately specified after its format/privacy decisions. The reminder page does not implement general settings or recurrence; release remains held.
 
 ## F04 authorized preference slice
+
+This checkpoint describes the original preferences delivery. Later [export/import](../f04-export-import/spec.md) and [Focus navigation](../focus-adoption/spec.md) supersede its export deferral and Settings placement; original observations remain artifact-specific.
 
 The later "implement f04" request authorizes [System/Light/Dark and Monday/Sunday preferences](../f04-preferences/spec.md), draft Save, local persistence and existing Reminders access. This extends F03's fixed-Monday default without changing dues or reminder timing. Implementation and targeted native checks are recorded. The 2026-11-03 "finish f04" follow-up reconciles the original final-APK cleanup checkpoint and remaining independent restoration audit in [closeout evidence](../../docs/delivery/evidence/F04-CLOSEOUT-2026-11-03.md). [Dedicated tasks](../f04-preferences/tasks.md) track completion and separate broader acceptance; export/restore and the remaining broader Settings concept stay deferred. Current results belong in STATUS.

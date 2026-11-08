@@ -2,6 +2,13 @@
 
 **Template:** this index owns document navigation and authority. Replace placeholders and link new feature/decision/evidence records as they are created. Keep the root README short so it does not become a second status or requirements document.
 
+## Start here
+
+- First checkout: [SETUP](SETUP.md). Start with its prerequisite record, not unfinished build examples.
+- First product decisions: [PRD](PRD.md), then the [feature template](../specs/feature-template/spec.md).
+- Current progress and blockers: [STATUS](delivery/STATUS.md).
+- Documentation check or an error to fix: [tools guide](../tools/README.md).
+
 ## Document ownership
 
 | Document | Owns | Update when |
@@ -19,6 +26,7 @@
 | [ADRs](adr/README.md) | Significant decisions and rationale | A consequential choice is made or superseded |
 | [REFERENCES](REFERENCES.md) | External technical guidance and review dates | Guidance is revalidated |
 | [AGENTS](../AGENTS.md) | Agent workflow | Workflow changes |
+| [Tools guide](../tools/README.md) | Safe automation entry points, documentation checker and exit meanings | A helper or its prerequisites change |
 
 ## Task routes
 

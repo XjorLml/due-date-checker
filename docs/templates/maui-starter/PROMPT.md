@@ -40,7 +40,11 @@ implementation, automated verification, platform builds, device verification,
 and acceptance independently visible. Do not mark unrun checks as passed.
 
 If documentation-only scope was selected, validate links, consistency, and the
-diff. If scaffolding/implementation was selected, create the selected solution
+diff. Use the copied toolkit's `python tools/check_docs.py`; after customization,
+also run `python tools/check_docs.py --ready`. Resolve placeholders honestly or
+remove inapplicable examples; a structural pass is not product approval. Do not
+generate an application merely to validate the documentation toolkit.
+If scaffolding/implementation was selected, create the selected solution
 structure, pin the toolchain, implement the authorized slice, and run meaningful
 checks on available hosts. Record unavailable platform checks as pending.
 Prepare distribution instructions without publishing unless authorized.

@@ -31,6 +31,8 @@ The prototype predates these choices; the app keeps them and draws them in the p
 
 ## Out of scope
 
+**Subsequent authorization, 2026-11-08:** the [native Philippine preset slice](../ph-categories-native/spec.md) implements detailed preset categories only. Its PC scenarios and evidence own that extension. The following exclusions describe the November 7 alignment decision; they do not defer the later preset-only approval. Custom category/biller management and the other unapproved concepts remain separate.
+
 Deferred to a later round, each needing its own spec, PRD review and, for data, a migration: detailed categories with their own icons (Internet, Electricity…), billers/providers, the My Categories & Billers manager, per-due reminder offsets, the Calendar Week view, the Details Reschedule button, the Dashboard "Concept" extras of other refinements, and quick-paid confirmation. The prototype's sample-data bar ("Sample · 04 Nov 2026") is studio chrome, not app UI. Round 2 items UX17, UX18, UX20, UX21, UX23, UX26 and UX27 stay open.
 
 ## Page targets and acceptance

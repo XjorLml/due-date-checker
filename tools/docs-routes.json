@@ -1,0 +1,9 @@
+{
+  "prototypes/design-exploration/index.html": [
+    "a/dashboard",
+    "interaction-lab",
+    "ux-decisions",
+    "notifications"
+  ],
+  "prototypes/mobile-review/index.html": ["dashboard"]
+}

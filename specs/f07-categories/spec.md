@@ -4,6 +4,8 @@ Authorized by "implement f07" on 2026-10-18 following the next-phase discussion 
 
 ## Acceptance scenarios
 
+**Original schema-2 scope:** CT01–CT06 retain their original artifact context. Later [optional amounts](../f07-optional-amounts/spec.md) supersede CT02's all-types-required amount rule, [prototype alignment](../prototype-alignment/spec.md) moves CT05's filter to Dues, and [preset categories](../ph-categories-native/spec.md) add a separate detailed category without renumbering due types. Fresh databases now apply all released migrations; CT01's schema-2 outcome is the original migration boundary. Current contracts belong to PRD/SDD and these linked slices, not the historical deferral wording below.
+
 | ID | Outcome |
 |---|---|
 | CT01 | Upgrade schema 1 to 2 without changing existing IDs, values, timestamps, payment, currency/timezone or tombstones. All legacy rows become Other. Fresh databases reach schema 2; initialization is idempotent and newer versions remain rejected. |

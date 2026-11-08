@@ -32,4 +32,5 @@ PLAN.md, phase records, the archived SDD, and `.vibe-wise` project/progress note
 - Deferred design concepts do not authorize new features. Record unresolved decisions in the relevant spec or existing conflict record and continue unaffected work.
 - Track implementation, automated verification, device verification, and acceptance separately. Record date, environment/artifact, and whether evidence was agent-observed, user-reported, or historical.
 - Update local links and section references when moving content. For documentation-only changes, validate links, traceability, preservation, and the diff; do not run builds or application tests merely to validate Markdown.
+- Run `python tools/check_docs.py` for supported local links/anchors; see [tools](tools/README.md#documentation-checks) for limits and recovery. Keep template readiness, runtime routes and external verification separate from a structural pass.
 - Keep signing keys/passwords out of version control. Do not log user financial details. Preserve the existing scope and security constraints in the PRD/SDD.

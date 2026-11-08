@@ -1,18 +1,34 @@
 # Reusable .NET MAUI starter kit
 
-**Templates for future projects.** Reviewed on 2026-10-21 against Duewise; this kit does not change its approved requirements or implementation. It provides documentation and a proposed source layout, not a generated or build-tested application.
+**Documentation templates and a local checker for future projects.** The original source review is dated 2026-10-21; the [November 8 usability audit](../../delivery/DOCS-AUDIT-2026-11-08.md) records the later toolkit changes. This kit supplies a proposed source layout, not a generated or build-tested application.
 
 ## Start here
 
-1. Read the [repository review](REVIEW.md) for patterns, limitations, and prioritized improvements.
-2. Choose the small-app layout in [STRUCTURE](STRUCTURE.md). Add projects only for the listed reasons.
-3. Copy the **contents** of [project](project/README.md) into a new repository, preserving relative paths. Merge deliberately when destination files exist; do not overwrite existing instructions or evidence.
-4. Replace `{{...}}` placeholders. Decide the product scope, platforms, identifier, storage, language, timezone, and distribution channel before choosing dependencies. Do not transfer Duewise's requirements, test counts, release approvals, or signing identity.
-5. Fill [PRD](project/docs/PRD.md), then [SDD](project/docs/SDD.md), [SETUP](project/docs/SETUP.md), and [DESIGN](project/docs/DESIGN.md). Each template states its authority and provides writing guidance. Remove inapplicable sections with a short reason.
-6. Generate the application with the selected supported MAUI toolchain and map it to the proposed layout. Create actual SDK/configuration files only after resolving the version placeholders. The kit intentionally contains no runnable workflow or project file with pretend versions.
-7. Start the first feature from [feature-template](project/specs/feature-template/spec.md), update its three files together, and keep all evidence pending until observed. Validate links again after renaming it.
+1. Copy the **contents** of [project/](project/README.md) into a new, empty repository. For an existing project, merge deliberately and keep its established instructions, requirements and evidence.
+2. From that destination's root, run the command below. It needs Python 3.10+ and no packages; `py -3` may be available on Windows if `python` is not.
+3. Follow the customization order below, or use the [reusable prompt](PROMPT.md). Start with a documentation-only scope if product/toolchain decisions are unresolved.
+4. After customization, run the readiness check. A successful check proves local documentation structure, not an application build or approval.
 
-Use [PROMPT](PROMPT.md) to ask a coding assistant to perform these steps in the next repository. It requests missing product decisions while continuing independent setup work.
+```powershell
+python tools/check_docs.py
+python tools/check_docs.py --ready
+```
+
+The first command should report PASS for the untouched copy, with placeholders explicitly allowed. The second intentionally fails until all `{{...}}` fields and inapplicable examples have been resolved. Errors show the file, line and next action; [checker help and recovery](project/tools/README.md) explain exits and limits. Commands do not generate an application, fetch external sites, change files or touch devices.
+
+## Customize a new project
+
+| Step | Decide or fill | Ready to continue when |
+|---|---|---|
+| 1. Product | [PRD](project/docs/PRD.md): users, first workflows, platforms, data/privacy, locale and distribution | Approved scope and unresolved owners are explicit; no copied reference-app rules |
+| 2. Technical shape | [STRUCTURE](STRUCTURE.md) and [SDD](project/docs/SDD.md) | A small layout and actual platform boundaries fit the approved workflows |
+| 3. Development environment | [SETUP](project/docs/SETUP.md) | Compatible versions/hosts are selected from revalidated official guidance; command placeholders are resolved |
+| 4. Interface and work | [DESIGN](project/docs/DESIGN.md) and [feature template](project/specs/feature-template/spec.md) | First feature has observable scenarios, plan/tasks and explicit verification boundaries |
+| 5. Evidence and delivery | [STATUS](project/docs/delivery/STATUS.md), [TEST-PLAN](project/docs/delivery/TEST-PLAN.md), [RELEASE](project/docs/RELEASE.md) | Unrun checks remain pending and actual results identify their source/artifact and observer |
+
+Generate solution/project/workflow files only within the chosen implementation scope, after toolchain decisions. Rename feature-template deliberately, update inbound links and rerun the checker. Keep the [historical repository review](REVIEW.md) as background for pattern selection; its old findings are not a fresh audit of a new project.
+
+Use [PROMPT](PROMPT.md) to ask a coding assistant to perform these steps in the next repository. It requests missing product decisions while continuing independent setup work. Do not transfer Duewise's identifiers, signing identity, branding, test counts or release approvals.
 
 ## Contents and ownership
 
@@ -29,7 +45,7 @@ Use [PROMPT](PROMPT.md) to ask a coding assistant to perform these steps in the 
 | [Test plan](project/docs/delivery/TEST-PLAN.md), [STATUS](project/docs/delivery/STATUS.md), [evidence template](project/docs/delivery/evidence/TEMPLATE.md) | Verification procedures, current state, and observed results | Yes; start with no results |
 | [ADR index](project/docs/adr/README.md), [ADR template](project/docs/adr/TEMPLATE.md) | Significant decision rationale | Yes; start with no decisions |
 | [Feature spec](project/specs/feature-template/spec.md), [plan](project/specs/feature-template/plan.md), [tasks](project/specs/feature-template/tasks.md) | Observable scenarios and bounded implementation | Yes; retain the example or duplicate it per feature |
-| [Tools guide](project/tools/README.md) | Automation responsibilities and safe fixture handling | Yes, add actual scripts when needed |
+| [Tools guide and checker](project/tools/README.md), [checker source](project/tools/check_docs.py) | Read-only local documentation checks, reusable tests and safe automation guidance | Yes; no external packages required |
 
 ## Adoption checklist
 
@@ -37,8 +53,9 @@ Use [PROMPT](PROMPT.md) to ask a coding assistant to perform these steps in the 
 - [ ] Only intended platforms are targeted; required build hosts and test devices are available.
 - [ ] SDK, workload set, platform tools, and dependencies are recorded and reproducible.
 - [ ] Documentation links resolve independently of the Duewise repository.
+- [ ] The normal checker passes; `--ready` passes after placeholder/example cleanup.
 - [ ] Placeholder/example scenario IDs have been adapted; none are marked accepted.
 - [ ] A first vertical slice has meaningful automated coverage and an actual platform build.
 - [ ] Required native checks and signing/distribution acceptance are tracked separately.
 
-The minimum structure is two production projects and two test projects, following the repository's practical split. A one-screen app may start smaller; the responsibility boundaries still apply. Persistence, reminders, authentication, sync, analytics, and a particular currency are product choices, not starter-kit requirements.
+The suggested baseline is two production projects and two test projects. A one-screen app may start smaller; the responsibility boundaries still apply. Persistence, reminders, authentication, sync, analytics, and a particular currency are product choices, not starter-kit requirements.

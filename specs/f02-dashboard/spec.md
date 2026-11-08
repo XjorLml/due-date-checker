@@ -4,6 +4,8 @@ Authorized by the user's “Implement f02” request on 2026-10-18, following F0
 
 ## Scope
 
+**Original milestone, with later scoped changes:** the outcomes below describe the F02 artifact. [Prototype alignment](../prototype-alignment/spec.md) later moved DB03 search/filter presentation and the corresponding DB04/DB05/DB07 controls/state to Dues. The Dashboard is now a summary; current placement is owned by [PRD F02](../../docs/PRD.md#f02-dashboard-rules) and the alignment spec. DB IDs and historical evidence remain valid for their recorded artifacts; this note does not claim a fresh pass.
+
 Replace the Dashboard sample page with real local dues, summary counts/paid progress, title search, All/Overdue/Due today/Upcoming/Paid filters, Add and selected-ID Details navigation. Dues stays the initial tab and keeps R03 ordering. Calendar was an explicitly labeled sample in the F02 artifact; the later [F03 slice](../f03-calendar/spec.md) replaces it. Existing payment-on-Save and deletion rules remain. No categories, recurring items, reminders, statistics totals, migration, network service, release or CI activation.
 
 The implementation resolves F02's open rules through the linked PRD policy: mutually exclusive date statuses using Asia/Manila, Paid precedence, global summaries and query-plus-status results. Filter/query persist within the cached Dashboard session, including editor/details return; process restart resets them. They are not stored preferences.

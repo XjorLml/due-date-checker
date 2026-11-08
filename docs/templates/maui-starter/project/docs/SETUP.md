@@ -65,6 +65,14 @@ These commands have not been executed for a new project. Adjust App.Tests if pre
 
 ## Troubleshooting and maintenance
 
-{{Document known setup failures, safe recovery, artifact locations, and ownership of servicing updates. Avoid a blanket reinstall/update instruction that silently changes the toolchain.}}
+| Situation | Recovery |
+|---|---|
+| Build command still contains a placeholder | Complete the reproducibility record and replace the example before executing it. A documentation-only copy has no App project to build yet. |
+| Documentation path/anchor error | Run `python tools/check_docs.py` from the repository root; use its file/line to correct the link or restore the target. Rerun after renaming a feature. |
+| Readiness check reports placeholders | Decide each value or remove the inapplicable example with a reason. Keep unknown product decisions explicit; do not invent approvals or passes to clear the check. |
+| Required SDK/workload/native host unavailable | Compare the selected versions with installed tools, then use an authorized compatible host or record the check blocked. Avoid reinstalling/updating everything without reviewing compatibility. |
+| A test/build could not execute | Record the concrete failure and next step in STATUS. A successful compile, restored package or another machine's historical pass does not replace that execution. |
+
+Project-specific failures, artifact locations and servicing owner: {{KnownFailuresOutputLocationsAndOwner}}. The [tools guide](../tools/README.md) owns checker commands, exit meanings and parser limits.
 
 After a toolchain change, record exact versions and relevant test/build/native results in [STATUS](delivery/STATUS.md). Do not inherit earlier artifact acceptance automatically.

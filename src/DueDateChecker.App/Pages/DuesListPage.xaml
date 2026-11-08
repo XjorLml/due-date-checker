@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:DueDateChecker.App.ViewModels"
+             x:Class="DueDateChecker.App.Pages.DuesListPage"
+             xmlns:pages="clr-namespace:DueDateChecker.App.Pages"
+             x:DataType="vm:DuesListViewModel" Title="Duewise" Shell.NavBarIsVisible="False">
+    <Grid x:Name="PageContent">
+        <!-- The header scrolls with the list, so large text never consumes a fixed viewport. Empty, folded and
+             no-match states stay in the header too: Android swaps the adapter for EmptyView, which would
+             destroy a focused search field. -->
+        <CollectionView x:Name="DuesCollection" ItemsSource="{Binding Dues}"
+                        SelectionMode="Single" SelectionChanged="OnDueSelected"
+                        SemanticProperties.Description="Your saved dues; select a due to view its details">
+            <CollectionView.Header>
+                <VerticalStackLayout Spacing="16" Padding="0,8,0,0">
+                    <pages:RootHeader RemindersClicked="OnRemindersClicked" />
+                    <VerticalStackLayout Spacing="6">
+                        <Label x:Name="Heading" Text="Your dues." Style="{StaticResource Heading1}" />
+                        <Label Text="Date order · all active saved dues" Style="{StaticResource CaptionLabel}" />
+                    </VerticalStackLayout>
+
+                    <!-- Prototype alignment (PA04): search and filters, moved here from Dashboard. -->
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="Find by title" Style="{StaticResource CaptionLabel}" />
+                        <Border Style="{StaticResource FieldBorder}">
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                                <pages:Glyph Kind="search" Size="20" VerticalOptions="Center" Margin="4,0,0,0"
+                                             Color="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" />
+                                <Entry Grid.Column="1" x:Name="SearchEntry" Text="{Binding Query}" Placeholder="Search a bill or task"
+                                       ReturnType="Search" ClearButtonVisibility="WhileEditing" AutomationId="DuesSearch"
+                                       SemanticProperties.Description="Search saved due titles" />
+                            </Grid>
+                        </Border>
+                    </VerticalStackLayout>
+                    <FlexLayout Wrap="Wrap" AlignItems="Start" SemanticProperties.Description="Status filter">
+                        <Button x:Name="AllFilter" Text="All" CommandParameter="All" Clicked="OnFilterClicked" Margin="0,0,8,8" />
+                        <Button x:Name="OverdueFilter" Text="Overdue" CommandParameter="Overdue" Clicked="OnFilterClicked" Margin="0,0,8,8" />
+                        <Button x:Name="TodayFilter" Text="Due today" CommandParameter="Due today" Clicked="OnFilterClicked" Margin="0,0,8,8" />
+                        <Button x:Name="UpcomingFilter" Text="Upcoming" CommandParameter="Upcoming" Clicked="OnFilterClicked" Margin="0,0,8,8" />
+                        <Button x:Name="PaidFilter" Text="Paid" CommandParameter="Paid" Clicked="OnFilterClicked" Margin="0,0,8,8" />
+                    </FlexLayout>
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                        <Label Text="Type" Style="{StaticResource CaptionLabel}" VerticalOptions="Center" />
+                        <Border Grid.Column="1" Style="{StaticResource FieldBorder}">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Picker Title="Type" ItemsSource="{Binding TypeFilters}" SelectedItem="{Binding TypeFilter}"
+                                        AutomationId="DuesType" SemanticProperties.Description="Filter saved dues by type" />
+                                <pages:Glyph Grid.Column="1" Kind="next" Size="20" VerticalOptions="Center" Margin="0,0,4,0"
+                                             Color="{AppThemeBinding Light={StaticResource TextLight}, Dark={StaticResource TextDark}}" />
+                            </Grid>
+                        </Border>
+                    </Grid>
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                        <Label Text="{Binding MatchCountText}" Style="{StaticResource Heading3}" VerticalOptions="Center"
+                               AutomationId="DuesMatchCount" SemanticProperties.HeadingLevel="Level2" />
+                        <Button Grid.Column="1" Text="Reset filters" Command="{Binding ClearFiltersCommand}" IsEnabled="{Binding HasFilters}"
+                                Style="{StaticResource LinkButton}" AutomationId="DuesReset" />
+                    </Grid>
+
+                    <Border Style="{StaticResource SurfaceCard}" IsVisible="{Binding HasError}">
+                        <VerticalStackLayout Spacing="12">
+                            <Label Text="{Binding ErrorMessage}" Style="{StaticResource ErrorLabel}" />
+                            <Button Text="Refresh / Retry" Command="{Binding LoadCommand}" Style="{StaticResource SecondaryButton}" HorizontalOptions="Start" />
+                        </VerticalStackLayout>
+                    </Border>
+                    <VerticalStackLayout Spacing="8" IsVisible="{Binding IsBusy}">
+                        <ActivityIndicator IsRunning="{Binding IsBusy}" SemanticProperties.Description="Loading your dues" />
+                        <Label Text="Loading your dues…" Style="{StaticResource SupportingLabel}" HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                    <Border Style="{StaticResource SurfaceCard}" IsVisible="{Binding IsEmpty}">
+                        <VerticalStackLayout Spacing="16" Padding="8,16">
+                            <Image Source="brand_mark.png" WidthRequest="56" HeightRequest="56" HorizontalOptions="Start"
+                                   AutomationProperties.IsInAccessibleTree="False" />
+                            <Label Text="Room for your first due." Style="{StaticResource Heading2}" />
+                            <Label Text="No dues yet. Tap Add in the bottom bar to add a bill, subscription or task."
+                                   Style="{StaticResource SupportingLabel}" />
+                        </VerticalStackLayout>
+                    </Border>
+                    <Border Style="{StaticResource SurfaceCard}" IsVisible="{Binding IsNoMatches}">
+                        <VerticalStackLayout Spacing="12">
+                            <Label Text="Nothing matches just yet." Style="{StaticResource Heading2}" />
+                            <Label Text="Try another title, type or status." />
+                            <Button Text="Reset filters" Command="{Binding ClearFiltersCommand}" HorizontalOptions="Start" />
+                        </VerticalStackLayout>
+                    </Border>
+                    <BoxView Style="{StaticResource Divider}" />
+                    <!-- UX02 (decided 2026-11-06): paid dues dated before today fold into this row while no filter is active. -->
+                    <Button Text="{Binding EarlierPaidLabel}" Command="{Binding ToggleEarlierPaidCommand}"
+                            IsVisible="{Binding HasEarlierPaid}" AutomationId="DuesEarlierPaid"
+                            SemanticProperties.Description="{Binding EarlierPaidDescription}"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource SurfaceMutedLight}, Dark={StaticResource SurfaceMutedDark}}"
+                            TextColor="{AppThemeBinding Light={StaticResource PrimaryLight}, Dark={StaticResource PrimaryDark}}"
+                            FontFamily="JakartaSemibold" FontSize="14" CornerRadius="12" MinimumHeightRequest="48"
+                            BorderWidth="0" Padding="16,0" HorizontalOptions="Fill" />
+                    <!-- Every active due is an earlier paid one, folded above: not the first-run state. -->
+                    <Label Text="Nothing unpaid right now. Your earlier paid dues are folded above."
+                           IsVisible="{Binding IsAllFolded}" Style="{StaticResource SupportingLabel}" />
+                </VerticalStackLayout>
+            </CollectionView.Header>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="vm:DueListItem">
+                    <pages:DueRow />
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+            <CollectionView.Footer>
+                <BoxView HeightRequest="24" Color="Transparent" />
+            </CollectionView.Footer>
+        </CollectionView>
+    </Grid>
+</ContentPage>

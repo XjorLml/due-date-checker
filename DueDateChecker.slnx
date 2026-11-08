@@ -4,6 +4,7 @@
     <Project Path="src/DueDateChecker.Core/DueDateChecker.Core.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/DueDateChecker.App.Tests/DueDateChecker.App.Tests.csproj" />
     <Project Path="tests/DueDateChecker.Core.Tests/DueDateChecker.Core.Tests.csproj" />
   </Folder>
 </Solution>

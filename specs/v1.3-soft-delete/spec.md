@@ -1,0 +1,34 @@
+# V1.3 — Confirmed soft deletion
+
+Status: Implemented and verified at automated/basic phone boundaries on 2026-10-17; remaining acceptance is tracked in [tasks](tasks.md).  
+Governing requirements: [PRD R06, R07](../../docs/PRD.md#approved-requirements); list integration also exercises R03.  
+Technical contracts: [SDD repository contracts](../../docs/SDD.md#53-repository-contracts) and [delete flow](../../docs/SDD.md#6-ui-and-navigation).  
+Implementation approach: [plan](plan.md). Evidence: [V1.3 record](../../docs/phases/V1.3.md).
+
+## Scope
+
+Expose the existing soft-delete contract through an editor-only Delete action and explicit native confirmation. The PRD owns the product rule: hide the due while retaining its database row. No Undo, restore, hard delete, schema migration, dependency addition, or notification work is included.
+
+Later change, 2026-11-06: [UX06](../ux06-confirmations-undo/spec.md) adds a 5-second Undo right after a confirmed Delete. It restores only that exact deletion through the guarded `RestoreAsync` ([SDD](../../docs/SDD.md#ux06-confirmation-and-undo-contract)). Everything else in this spec (no hard delete, no recycle bin, tombstones kept) still holds.
+
+## Acceptance scenarios
+
+| ID | Scenario | Expected observable result | Verification |
+|---|---|---|---|
+| SD01 | Open a new form, an unavailable target, or an unloaded editor. | Delete cannot be invoked; a new form has no Delete action. | App tests; native new-form check. |
+| SD02 | Request Delete on a loaded existing due. | A dialog names the stored due and offers Cancel/Delete. Unsaved form changes do not change its target. | App message-target check; native dialog check. |
+| SD03 | Cancel or dismiss confirmation. | No storage call; editor/input and stored row remain unchanged. | False-result App test; native Cancel button check; native Back/dismissal verified in [core-flow follow-up](../../docs/delivery/evidence/CORE-FLOWS-2026-10-17.md#native-checks). |
+| SD04 | Confirm Delete. | One SoftDeleteAsync call with the due id and one injected clock instant; no unfinished form edit is saved. | App/SQLite tests. |
+| SD05 | Deletion succeeds. | Due is hidden from the reloaded list; reopening/restart keeps it hidden while its row/other fields remain stored. The later [F01 navigation extension](../f01-item-details/spec.md) returns editor deletion to unavailable Details, then Back to dues reloads the list. Earlier direct-return evidence remains historical. | Reopened-file App/Core tests; native list/process-restart visibility and F01 parent-return checks. |
+| SD06 | Repeat Delete, including after another writer deleted the same row. | No resurrection or changed original tombstone timestamps. Pending/completed operations prevent duplicate mutation. | App/Core tests. |
+| SD07 | Storage fails or return navigation fails. | Storage failure keeps input and allows a newly confirmed retry. Successful deletion followed by failed navigation offers return without another mutation. | App tests; native controlled-failure coverage remains pending. |
+| SD08 | Execute delete/cancel/restart in airplane mode. | Same functional behavior with no network dependency. | Agent-observed on the existing V1.3 artifact in [core-flow follow-up](../../docs/delivery/evidence/CORE-FLOWS-2026-10-17.md#native-checks); final intended-key artifact pass remains pending. |
+| SD09 | Confirmation display fails. | Report the error and perform no storage call; allow a new confirmation attempt. | Page error handler present; controlled native confirmation-display failure remains pending under TP05. |
+
+## State and concurrency
+
+The page action guard spans confirmation, command execution, and return navigation. The view model independently checks the Boolean response and eligibility before storage. Busy state disables Save/Delete; successful deletion marks HasDeleted/HasCompleted so a navigation retry cannot save or delete again. There is no product state that restores a tombstone.
+
+## Evidence limits
+
+Automated/build results and artifact/source hashes are recorded in the [execution evidence](../../docs/delivery/evidence/V1.3-2026-10-17.md), separately from the documentation refactor. Those phone checks used only agent-created zero-amount dues. The subsequent [core-flow follow-up](../../docs/delivery/evidence/CORE-FLOWS-2026-10-17.md) verified offline cancel/confirm/restart and Back/dismissal using task-created dues, including a rounded amount. Existing user dues were not edited/deleted. Row retention was verified through SQLite tests, not by reading the phone's private database. Remaining native hardening/accessibility and intended-key signing checks are listed in the tasks. These are observed results, not inferred acceptance of unchecked cases.

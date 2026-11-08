@@ -1,0 +1,8 @@
+# F07 recurring dues implementation plan
+
+1. Write failing Core tests: migration 005 (RC01), domain validation (RC02), next-date arithmetic (RC03), repository transaction and guard (RC04, RC05, RC08).
+2. Core: `RepeatRule` enum (persisted codes), `Due` gains `Repeat`, `RepeatDay`, `RepeatSourceId` with defaults and `Validate()` rules; `Recurrence.NextDate` and `Recurrence.NextOccurrence`; migration `005_recurrence.sql`; `SqliteDueRepository` maps the columns, writes `repeat_rule`/`repeat_day` on insert and update (never changes `repeat_source_id` on update) and implements `UpdateWithNextAsync` in one transaction with the NOT EXISTS guard.
+3. Write failing App tests: Details mark paid creates one next occurrence and announces it (RC04, RC05, RC08); editor repeat picker, category reset, anchor rules and editor paid creating the next (RC06); row meta/accessibility and Details fact row (RC07).
+4. App: `ReminderAwareDueRepository` forwards `UpdateWithNextAsync` and reconciles both IDs; `DueDetailViewModel` and `DueEditViewModel` use it when a repeating due becomes paid; editor Repeat picker after Type (Bill/Subscription only); `DueListItem`/`DashboardItem` repeat text; Details "Repeats" row.
+5. Run Core then App tests, Debug build, Release compile; emulator: create a monthly Bill on the 31st, mark paid, see the next on the last day of the next month, toggle unpaid/paid without a duplicate, check Dashboard, Calendar and the stored rows; dark and 200%; clean up.
+6. Update PRD (UX03 shipped, recurrence exclusion), SDD (schema 5, contract), DESIGN (editor, rows, Details), STATUS, evidence, tasks.

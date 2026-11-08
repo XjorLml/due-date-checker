@@ -1,0 +1,36 @@
+# V1.3 task tracking
+
+Implementation and basic verification recorded 2026-10-17. See [spec scenarios](spec.md#acceptance-scenarios), [as-built plan](plan.md), and [detailed evidence](../../docs/phases/V1.3.md).
+
+## Completed implementation and verification
+
+- [x] Link approved R06/R07 scope and existing repository/navigation contracts.
+- [x] Define observable scenarios SD01–SD09; distinguish implemented behavior from remaining acceptance.
+- [x] Add tests before delete implementation; record the initial missing-feature compilation failure.
+- [x] Add editor-only destructive action and original-title native confirmation.
+- [x] Keep false confirmation/dismissal away from storage; preserve unfinished input.
+- [x] Implement confirmed deletion, busy/error/retry state, and completed-operation navigation guard.
+- [x] Reuse the existing atomic/idempotent soft-delete SQL without a schema/index/package change.
+- [x] Verify 28 Core and 42 App cases pass, including prior-slice regression coverage.
+- [x] Verify final Android Release build passes with zero warnings/errors.
+- [x] Install update without clearing user data.
+- [x] Verify native new-form visibility, named dialog, Cancel retention, confirmed list removal, and hidden state after process restart using temporary dues only.
+- [x] Record observed evidence separately from unperformed release/device checks.
+
+## Remaining acceptance
+
+- [x] SD08: repeat native delete/cancel/restart in airplane mode. Agent-observed on 2026-10-17 using the existing V1.3 APK; see [core-flow evidence](../../docs/delivery/evidence/CORE-FLOWS-2026-10-17.md#native-checks). Final intended-key artifact pass remains pending.
+- [x] Exercise native dialog Back/dismissal. Same follow-up verified retained unsaved input and an active saved due after dismissal/restart.
+- [ ] Exercise repeated taps during a native write. Emulator 2026-11-06: three concurrent Save taps on create stored one row ([record](../../docs/delivery/evidence/EMULATOR-HARDENING-2026-11-06.md#controlled-failures-empty-state-and-repeated-taps)); delete path and phone pending.
+- [ ] Exercise controlled native confirmation-display, storage-write, and return-navigation failures from TP05.
+- [ ] Verify both themes, large text, accessibility focus, and the destructive action on-device.
+- [ ] Inspect retained tombstones in an authorized phone test database; automated SQLite retention evidence does not establish this device-level gate. Emulator equivalent 2026-11-06: eight tombstones kept every field with `deleted_at = updated_at` ([record](../../docs/delivery/evidence/EMULATOR-HARDENING-2026-11-06.md#tombstones-v13-emulator-equivalent)); phone pending.
+- [ ] Complete intended-key signing and rerun release acceptance with that artifact.
+
+The unchecked items do not negate the completed implementation/observed checks. They remain explicit acceptance work; no user acceptance is inferred for them.
+
+## Dependencies and completion criteria
+
+Implementation dependency order: repository contract -> view-model confirmation/state guards -> page confirmation/navigation -> automated/build verification -> native verification. The checked steps above retain the feature task's evidence in the [execution record](../../docs/delivery/evidence/V1.3-2026-10-17.md).
+
+Remaining tasks use [TEST-PLAN](../../docs/delivery/TEST-PLAN.md) expected outcomes: native edge/failure/accessibility checks require a controlled test build and phone; physical tombstone checks require an authorized test database. SD08 now has airplane-mode cancel/confirm/restart evidence on the existing artifact. Intended-key signing precedes the final signed-artifact pass. Record environment, artifact/source identity, date, expected/actual outcome, and observer before checking off an item. Feature release acceptance remains open until all required remaining checks have evidence; old passes do not satisfy a changed implementation automatically.

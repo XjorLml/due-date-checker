@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:DueDateChecker.App.ViewModels"
+             xmlns:pages="clr-namespace:DueDateChecker.App.Pages"
+             x:Class="DueDateChecker.App.Pages.SettingsPage" x:DataType="vm:SettingsViewModel"
+             Title="Settings" Shell.NavBarIsVisible="False">
+    <!-- Prototype Settings (PA09): preference cards, Reminders row, Your data card (UX05, kept), a privacy note,
+         and Save fixed at the bottom right above the bar (UX25 keeps Save; the F04 draft rule is unchanged). -->
+    <Grid RowDefinitions="*,Auto">
+        <ScrollView>
+            <VerticalStackLayout x:Name="PageContent" Spacing="16">
+                <pages:RootHeader RemindersClicked="OnRemindersClicked" />
+                <VerticalStackLayout Spacing="6">
+                    <Label x:Name="Heading" Text="Make it feel like you." Style="{StaticResource Heading1}" />
+                    <Label Text="A few preferences. A clearer routine." Style="{StaticResource CaptionLabel}" />
+                </VerticalStackLayout>
+                <Border Style="{StaticResource SurfaceCard}">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="Appearance" Style="{StaticResource Heading2}" />
+                        <Label Text="System follows your device. Save to apply." Style="{StaticResource SupportingLabel}" />
+                        <pages:SegmentedControl Options="{Binding Themes}" SelectedIndex="{Binding SelectedThemeIndex}"
+                                                AutomationId="SettingsTheme" SemanticProperties.Description="Appearance: System, Light or Dark" />
+                    </VerticalStackLayout>
+                </Border>
+                <Border Style="{StaticResource SurfaceCard}">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="Start of week" Style="{StaticResource Heading2}" />
+                        <Label Text="Your dates stay in Asia/Manila." Style="{StaticResource SupportingLabel}" />
+                        <pages:SegmentedControl Options="{Binding WeekStarts}" SelectedIndex="{Binding SelectedWeekStartIndex}"
+                                                AutomationId="SettingsWeekStart" SemanticProperties.Description="Calendar week starts on Monday or Sunday" />
+                    </VerticalStackLayout>
+                </Border>
+                <!-- Prototype settings row: bell, title and saved state, chevron. -->
+                <Border Style="{StaticResource SettingsRow}" AutomationId="SettingsReminders"
+                        SemanticProperties.Description="{Binding ReminderSummary, StringFormat='Reminders, {0}. Opens due-date reminders'}">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnRemindersTapped" />
+                    </Border.GestureRecognizers>
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                        <pages:Glyph Kind="bell" VerticalOptions="Center"
+                                     Color="{AppThemeBinding Light={StaticResource TextLight}, Dark={StaticResource TextDark}}" />
+                        <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                            <Label Text="Reminders" Style="{StaticResource Heading3}" />
+                            <Label Text="{Binding ReminderSummary}" Style="{StaticResource CaptionLabel}" AutomationId="SettingsReminderSummary" />
+                        </VerticalStackLayout>
+                        <pages:Glyph Grid.Column="2" Kind="next" VerticalOptions="Center"
+                                     Color="{AppThemeBinding Light={StaticResource TextLight}, Dark={StaticResource TextDark}}" />
+                    </Grid>
+                </Border>
+                <!-- UX05 (decided 2026-11-06): export to and import from a file the user chooses. Its BindingContext
+                     is the DataTransferViewModel, set in code-behind; its actions never touch the preference draft. -->
+                <Border x:Name="DataCard" Style="{StaticResource SurfaceCard}" x:DataType="vm:DataTransferViewModel">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="Your data" Style="{StaticResource Heading2}" />
+                        <Label Text="Export saves every due, deleted ones included, to a file you choose. Import restores that file while Duewise shows no dues."
+                               Style="{StaticResource SupportingLabel}" />
+                        <Label Text="The file isn't encrypted: anyone who opens it can read your dues. Keep it somewhere private."
+                               Style="{StaticResource CaptionLabel}" />
+                        <Button Text="Export dues" Clicked="OnExportClicked" IsEnabled="{Binding CanAct}" Style="{StaticResource SecondaryButton}"
+                                AutomationId="SettingsExport" SemanticProperties.Hint="Opens Android's save dialog" />
+                        <Button Text="Import dues" Clicked="OnImportClicked" IsEnabled="{Binding CanAct}" Style="{StaticResource SecondaryButton}"
+                                AutomationId="SettingsImport" SemanticProperties.Hint="Opens Android's file picker; asks before importing" />
+                        <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" SemanticProperties.Description="Working on your dues file" />
+                        <Label Text="{Binding Message}" IsVisible="{Binding HasMessage}" AutomationId="SettingsDataMessage" />
+                    </VerticalStackLayout>
+                </Border>
+                <Border Style="{StaticResource NoticeCard}">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                        <pages:Glyph Kind="shield" Size="20" VerticalOptions="Start"
+                                     Color="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" />
+                        <Label Grid.Column="1" Text="Saved on this device. No account, bank connection or currency switch."
+                               Style="{StaticResource CaptionLabel}" />
+                    </Grid>
+                </Border>
+                <Label Text="Save applies both preferences. Leaving this page discards a draft; a Reminders visit keeps it."
+                       Style="{StaticResource CaptionLabel}" />
+                <Label Text="{Binding Message}" AutomationId="SettingsMessage" />
+                <Button Text="Refresh / Retry" Command="{Binding LoadCommand}" Style="{StaticResource SecondaryButton}"
+                        IsVisible="{Binding HasLoadError}" HorizontalOptions="Start" />
+            </VerticalStackLayout>
+        </ScrollView>
+        <Grid Grid.Row="1" x:Name="SaveBar">
+            <Button Text="✓  Save" Command="{Binding SaveCommand}" HorizontalOptions="End" Padding="24,0"
+                    AutomationId="SettingsSave" SemanticProperties.Description="Save preferences" />
+        </Grid>
+    </Grid>
+</ContentPage>

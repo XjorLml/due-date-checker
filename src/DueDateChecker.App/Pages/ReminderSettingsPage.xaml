@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:DueDateChecker.App.ViewModels" xmlns:pages="clr-namespace:DueDateChecker.App.Pages"
+             x:Class="DueDateChecker.App.Pages.ReminderSettingsPage"
+             x:DataType="vm:ReminderSettingsViewModel" Title="Reminders"
+             Shell.NavBarIsVisible="False" Shell.TabBarIsVisible="False">
+    <!-- Prototype Reminders (PA10; settles round 2 UX19): status card, schedule and quiet-hours cards, Android
+         details in a collapsed section, and a footer whose two actions follow the on/off state. Commands and
+         rules are unchanged (PRD F05). -->
+    <Grid RowDefinitions="Auto,*,Auto">
+        <pages:PushedHeader Title="Reminders" Padding="8,0" />
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout x:Name="PageContent" Spacing="16">
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="A gentle nudge." Style="{StaticResource Heading1}" />
+                    <Label Text="Only when you ask for one." Style="{StaticResource CaptionLabel}" />
+                </VerticalStackLayout>
+                <Border Style="{StaticResource NoticeCard}">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                        <pages:Glyph Kind="bell" VerticalOptions="Start"
+                                     Color="{AppThemeBinding Light={StaticResource TextLight}, Dark={StaticResource TextDark}}" />
+                        <VerticalStackLayout Grid.Column="1" Spacing="2">
+                            <Label Text="{Binding StatusTitle}" FontFamily="JakartaBold" FontSize="16" AutomationId="ReminderEnabledState"
+                                   SemanticProperties.Description="{Binding EnabledText}"
+                                   TextColor="{AppThemeBinding Light={StaticResource TextLight}, Dark={StaticResource TextDark}}" />
+                            <Label Text="All active, unpaid dues · times in Asia/Manila" Style="{StaticResource CaptionLabel}" />
+                            <Label Text="{Binding ScheduleText}" Style="{StaticResource CaptionLabel}" />
+                        </VerticalStackLayout>
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource SurfaceCard}">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="Your schedule" Style="{StaticResource Heading2}" />
+                        <Label Text="On each due date, with an optional day-before nudge." Style="{StaticResource SupportingLabel}" />
+                        <Grid ColumnDefinitions="*,Auto" MinimumHeightRequest="48">
+                            <Label Text="Also one day before" VerticalOptions="Center" AutomationProperties.IsInAccessibleTree="False" />
+                            <CheckBox Grid.Column="1" IsChecked="{Binding DayBefore}" IsEnabled="{Binding CanEdit}" AutomationId="ReminderDayBefore"
+                                      Color="{AppThemeBinding Light={StaticResource PrimaryLight}, Dark={StaticResource PrimaryDark}}"
+                                      SemanticProperties.Description="Also remind one day before" />
+                        </Grid>
+                        <Label Text="Time · Asia/Manila" Style="{StaticResource FieldLabel}" />
+                        <Border Style="{StaticResource FieldBorder}">
+                            <TimePicker Time="{Binding ReminderTime}" Format="HH:mm" IsEnabled="{Binding CanEdit}" AutomationId="ReminderTime"
+                                        SemanticProperties.Description="Reminder time, Asia/Manila" />
+                        </Border>
+                    </VerticalStackLayout>
+                </Border>
+
+                <Border Style="{StaticResource SurfaceCard}">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="Quiet hours" Style="{StaticResource Heading2}" />
+                        <Label Text="From" Style="{StaticResource FieldLabel}" />
+                        <Border Style="{StaticResource FieldBorder}">
+                            <TimePicker Time="{Binding QuietStart}" Format="HH:mm" IsEnabled="{Binding CanEdit}" AutomationId="ReminderQuietStart"
+                                        SemanticProperties.Description="Quiet hours start, Asia/Manila" />
+                        </Border>
+                        <Label Text="Until" Style="{StaticResource FieldLabel}" />
+                        <Border Style="{StaticResource FieldBorder}">
+                            <TimePicker Time="{Binding QuietEnd}" Format="HH:mm" IsEnabled="{Binding CanEdit}" AutomationId="ReminderQuietEnd"
+                                        SemanticProperties.Description="Quiet hours end, Asia/Manila" />
+                        </Border>
+                        <Label Text="Reminders move to the next allowed time, skipping dates that have passed. Equal times turn quiet hours off."
+                               Style="{StaticResource CaptionLabel}" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" SemanticProperties.Description="Updating reminders" />
+                <Label Text="{Binding Message}" AutomationId="ReminderMessage" />
+
+                <!-- Android's own status and tools (F05, UX04 maker steps), folded like the prototype's diagnostics. -->
+                <Border Style="{StaticResource SurfaceCard}" Padding="0">
+                    <VerticalStackLayout>
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10" MinimumHeightRequest="56" Padding="16,0">
+                            <Label Text="Notification readiness &amp; privacy" FontFamily="JakartaSemibold" FontSize="16" VerticalOptions="Center"
+                                   TextColor="{AppThemeBinding Light={StaticResource TextLight}, Dark={StaticResource TextDark}}" />
+                            <pages:Glyph Grid.Column="1" x:Name="ReadinessGlyph" Kind="plus" Size="20" VerticalOptions="Center"
+                                         Color="{AppThemeBinding Light={StaticResource TextLight}, Dark={StaticResource TextDark}}" />
+                            <Button Grid.ColumnSpan="2" Style="{StaticResource OverlayButton}" Clicked="OnReadinessToggled" AutomationId="ReminderReadiness"
+                                    SemanticProperties.Description="Notification readiness and privacy. Shows Android status and settings" />
+                        </Grid>
+                        <VerticalStackLayout x:Name="ReadinessBody" IsVisible="False" Spacing="10" Padding="16,0,16,16">
+                            <Label Text="{Binding StatusText}" Style="{StaticResource SupportingLabel}" AutomationId="ReminderPermissionState" />
+                            <Label Text="{Binding BackgroundText}" Style="{StaticResource SupportingLabel}" AutomationId="ReminderBackgroundState" />
+                            <Label Text="{Binding MakerStepsText}" IsVisible="{Binding HasMakerSteps}" Style="{StaticResource SupportingLabel}" AutomationId="ReminderMakerSteps" />
+                            <Label Text="Notifications never show titles, amounts or notes. Android may delay them to save battery, and Force stop can pause them until you reopen Duewise."
+                                   Style="{StaticResource CaptionLabel}" />
+                            <Button Text="Test notification" Command="{Binding TestCommand}" IsEnabled="{Binding CanEdit}" Style="{StaticResource SecondaryButton}" />
+                            <Button Text="Android notification settings" Command="{Binding OpenSystemSettingsCommand}" Style="{StaticResource SecondaryButton}" />
+                            <Button Text="Android app / battery settings" Command="{Binding OpenAppSettingsCommand}" Style="{StaticResource SecondaryButton}" />
+                            <Button Text="Refresh / Retry" Command="{Binding LoadCommand}" Style="{StaticResource SecondaryButton}" />
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </Border>
+            </VerticalStackLayout>
+        </ScrollView>
+        <Grid Grid.Row="2" RowDefinitions="1,Auto"
+              BackgroundColor="{AppThemeBinding Light={StaticResource SurfaceLight}, Dark={StaticResource SurfaceDark}}">
+            <BoxView HeightRequest="1" Color="{AppThemeBinding Light={StaticResource BorderLight}, Dark={StaticResource BorderDark}}" />
+            <!-- Off: keep the schedule without opting in, or save and enable. On: turn off, or save the schedule. -->
+            <Grid Grid.Row="1" x:Name="ActionBar">
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="12" IsVisible="{Binding IsOff}">
+                <Button Text="Save only" Command="{Binding SaveCommand}" IsEnabled="{Binding CanEdit}" Style="{StaticResource SecondaryButton}"
+                        AutomationId="ReminderSaveOnly" SemanticProperties.Hint="Saves the schedule; reminders stay off" />
+                <Button Grid.Column="1" Text="Save &amp; enable" Command="{Binding EnableCommand}" IsEnabled="{Binding CanEdit}"
+                        AutomationId="ReminderEnable" SemanticProperties.Hint="Saves the schedule, turns reminders on and asks Android for permission" />
+            </Grid>
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="12" IsVisible="{Binding Enabled}">
+                <Button Text="Disable" Command="{Binding DisableCommand}" IsEnabled="{Binding CanEdit}" Style="{StaticResource SecondaryButton}"
+                        AutomationId="ReminderDisable" SemanticProperties.Description="Disable reminders" />
+                <Button Grid.Column="1" Text="✓  Save schedule" Command="{Binding SaveCommand}" IsEnabled="{Binding CanEdit}"
+                        AutomationId="ReminderSave" SemanticProperties.Description="Save schedule" />
+            </Grid>
+            </Grid>
+        </Grid>
+    </Grid>
+</ContentPage>

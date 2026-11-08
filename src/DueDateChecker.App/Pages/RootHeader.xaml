@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:pages="clr-namespace:DueDateChecker.App.Pages"
+             x:Class="DueDateChecker.App.Pages.RootHeader">
+    <!-- Prototype root header (DESIGN prototype alignment): brand mark with the lowercase wordmark,
+         and a bell that opens Reminders. Shown on Dashboard, Calendar, Dues and Settings. -->
+    <Grid ColumnDefinitions="*,Auto" MinimumHeightRequest="48">
+        <HorizontalStackLayout Spacing="8" VerticalOptions="Center" SemanticProperties.Description="duewise">
+            <Image Source="brand_mark.png" WidthRequest="32" HeightRequest="32" VerticalOptions="Center"
+                   AutomationProperties.IsInAccessibleTree="False" />
+            <Label Text="duewise" FontFamily="JakartaBold" FontSize="22" CharacterSpacing="-0.6" VerticalOptions="Center"
+                   AutomationProperties.IsInAccessibleTree="False" />
+        </HorizontalStackLayout>
+        <Grid Grid.Column="1" WidthRequest="48" HeightRequest="48">
+            <pages:Glyph Kind="bell" HorizontalOptions="Center" VerticalOptions="Center"
+                         Color="{AppThemeBinding Light={StaticResource TextLight}, Dark={StaticResource TextDark}}" />
+            <Button Style="{StaticResource OverlayButton}" Clicked="OnRemindersClicked" AutomationId="HeaderReminders"
+                    SemanticProperties.Description="Reminders" SemanticProperties.Hint="Opens due-date reminders" />
+        </Grid>
+    </Grid>
+</ContentView>

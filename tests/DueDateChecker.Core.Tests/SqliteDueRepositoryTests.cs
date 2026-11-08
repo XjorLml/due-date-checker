@@ -21,14 +21,14 @@ public sealed class SqliteDueRepositoryTests : IDisposable
     public void Dispose()
     {
         // Pooled connections keep the file open; clear them before deleting.
-        SqliteConnection.ClearAllPools();
+        TestDatabase.ClearPool(_dbPath);
         File.Delete(_dbPath);
     }
 
     [Fact]
     public void Initialize_sets_user_version_and_creates_the_dues_table()
     {
-        Assert.Equal(1, ReadUserVersion());
+        Assert.Equal(5, ReadUserVersion());
         Assert.Equal(1L, Scalar("SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'dues'"));
     }
 
@@ -37,7 +37,7 @@ public sealed class SqliteDueRepositoryTests : IDisposable
     {
         new DatabaseInitializer(_dbPath).Initialize();
 
-        Assert.Equal(1, ReadUserVersion());
+        Assert.Equal(5, ReadUserVersion());
     }
 
     [Fact]
@@ -50,6 +50,24 @@ public sealed class SqliteDueRepositoryTests : IDisposable
 
         var stored = Assert.Single(listed);
         Assert.Equal(due, stored);
+    }
+
+    [Fact]
+    public async Task Initialize_rejects_newer_schema_without_changing_existing_data()
+    {
+        var due = Due.Create("Rent", Money.FromCentavos(100), new DateOnly(2026, 10, 17), Now);
+        await _repo.AddAsync(due);
+        using (var connection = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = _dbPath }.ToString()))
+        {
+            connection.Open();
+            using var command = connection.CreateCommand();
+            command.CommandText = "PRAGMA user_version = 99";
+            command.ExecuteNonQuery();
+        }
+
+        Assert.Throws<InvalidOperationException>(() => new DatabaseInitializer(_dbPath).Initialize());
+        Assert.Equal(99, ReadUserVersion());
+        Assert.Equal(due, await _repo.GetAsync(due.Id));
     }
 
     [Fact]
@@ -102,6 +120,82 @@ public sealed class SqliteDueRepositoryTests : IDisposable
     }
 
     private int ReadUserVersion() => (int)(long)Scalar("PRAGMA user_version");
+
+    [Fact]
+    public async Task Repeated_soft_delete_keeps_the_first_timestamps_after_reopening()
+    {
+        var due = Due.Create("Rent", Money.FromCentavos(100), new DateOnly(2026, 10, 17), Now);
+        await _repo.AddAsync(due);
+        var firstDeletion = Now.AddHours(1);
+        await _repo.SoftDeleteAsync(due.Id, firstDeletion);
+        await _repo.SoftDeleteAsync(due.Id, Now.AddHours(2));
+        var reopened = new SqliteDueRepository(_dbPath);
+        Assert.Equal(due with { DeletedAt = firstDeletion, UpdatedAt = firstDeletion }, await reopened.GetAsync(due.Id));
+        Assert.Empty(await reopened.ListActiveAsync());
+    }
+
+    [Fact]
+    public async Task Deleting_an_unknown_id_is_a_no_op_for_other_rows()
+    {
+        var due = Due.Create("Rent", Money.FromCentavos(100), new DateOnly(2026, 10, 17), Now);
+        await _repo.AddAsync(due);
+        await _repo.SoftDeleteAsync(Guid.NewGuid(), Now.AddHours(1));
+        Assert.Equal(due, Assert.Single(await _repo.ListActiveAsync()));
+    }
+
+    [Fact]
+    public async Task Update_rejects_a_deleted_due_and_preserves_the_tombstone()
+    {
+        var due = Due.Create("Rent", Money.FromCentavos(100), new DateOnly(2026, 10, 17), Now);
+        await _repo.AddAsync(due);
+        var deletedAt = Now.AddHours(1);
+        await _repo.SoftDeleteAsync(due.Id, deletedAt);
+
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => _repo.UpdateAsync(due with { Title = "Stale edit", UpdatedAt = Now.AddHours(2) }));
+        var stored = await _repo.GetAsync(due.Id);
+        Assert.Equal(deletedAt, stored!.DeletedAt);
+        Assert.Equal(deletedAt, stored.UpdatedAt);
+        Assert.Equal("Rent", stored.Title);
+    }
+
+    [Fact]
+    public async Task Update_of_an_unknown_id_throws()
+    {
+        var due = Due.Create("Unknown", Money.FromCentavos(0), new DateOnly(2026, 10, 17), Now);
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => _repo.UpdateAsync(due));
+    }
+
+    [Fact]
+    public async Task Update_preserves_created_at_and_cannot_soft_delete_an_active_record()
+    {
+        var due = Due.Create("Rent", Money.FromCentavos(0), new DateOnly(2026, 10, 17), Now);
+        await _repo.AddAsync(due);
+        await _repo.UpdateAsync(due with { Title = "Edited", CreatedAt = Now.AddDays(-1), DeletedAt = Now, UpdatedAt = Now.AddDays(1) });
+        var stored = await _repo.GetAsync(due.Id);
+        Assert.Equal(due.CreatedAt, stored!.CreatedAt);
+        Assert.Null(stored.DeletedAt);
+        Assert.Equal("Edited", stored.Title);
+        Assert.Single(await _repo.ListActiveAsync());
+    }
+
+    [Fact]
+    public async Task Equal_due_dates_list_in_creation_order_regardless_of_insert_order()
+    {
+        // The list query is ORDER BY due_date, created_at. App writes store UTC, so the text
+        // order of created_at matches time order (STATUS known gap, closed 2026-11-06).
+        var date = new DateOnly(2026, 11, 20);
+        var utc = new DateTimeOffset(2026, 11, 6, 1, 0, 0, TimeSpan.Zero);
+        var first = Due.Create("Created first", Money.FromCentavos(100), date, utc);
+        var second = Due.Create("Created second", Money.FromCentavos(100), date, utc.AddMinutes(5));
+        var third = Due.Create("Created third", Money.FromCentavos(100), date, utc.AddHours(2));
+        var earlierDate = Due.Create("Earlier date", Money.FromCentavos(100), date.AddDays(-1), utc.AddHours(3));
+        foreach (var due in new[] { third, earlierDate, first, second })
+            await _repo.AddAsync(due);
+
+        var listed = await new SqliteDueRepository(_dbPath).ListActiveAsync();
+
+        Assert.Equal(new[] { earlierDate.Id, first.Id, second.Id, third.Id }, listed.Select(d => d.Id));
+    }
 
     private object Scalar(string sql)
     {

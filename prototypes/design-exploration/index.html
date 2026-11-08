@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f5f5ef">
+  <meta name="description" content="Four interactive directions for Duewise. Compare, explore and choose your preferred mobile finance design.">
+  <title>Duewise — Find your direction</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="interaction-lab.css">
+  <link rel="stylesheet" href="essential-editor.css">
+  <link rel="stylesheet" href="decision-lab.css">
+  <link rel="stylesheet" href="notification-lab.css">
+  <script src="../mobile-review/model.js" defer></script>
+  <script src="design-system.js" defer></script>
+  <script src="exploration-model.js" defer></script>
+  <script src="ph-catalog.js" defer></script>
+  <script src="ph-ui.js" defer></script>
+  <script src="essential-model.js" defer></script>
+  <script src="interaction-lab.js" defer></script>
+  <script src="decision-lab.js" defer></script>
+  <script src="notification-lab.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body data-selected-focus="true">
+  <a class="skip" href="#main">Skip to design exploration</a>
+  <header class="studio-header">
+    <a class="brand" href="#a/dashboard"><span class="brand-symbol" aria-hidden="true">✓</span>duewise<span class="brand-divider"></span><span class="brand-note">Design explorations</span></a>
+    <nav class="view-toggle" aria-label="Exploration view"><button data-view="compare" aria-pressed="true">Compare all <span>04</span></button><button data-view="explore" aria-pressed="false">Explore one <span>↗</span></button><button data-view="decide" aria-pressed="false">UX decisions <span>11</span></button><button data-view="notify" aria-pressed="false">Notifications <span>06</span></button></nav>
+    <a class="original-link" href="../mobile-review/index.html#dashboard">Original prototype ↗</a>
+  </header>
+  <main id="main">
+    <section class="introduction">
+      <div><p class="eyebrow"><span class="status-dot"></span>FOCUS / PHILIPPINE DUES</p><h1>Less noise.<br> More <span>financial calm.</span></h1></div>
+      <div class="intro-copy"><p>Focus navigation. Your everyday Philippine dues.</p><p>Find a familiar category, choose a biller, and make the schedule your own.</p><div class="intro-meta"><span>01 / Compare</span><span>02 / Explore</span><span>03 / Make it yours</span></div></div>
+    </section>
+    <section id="compare-view" aria-labelledby="compare-heading">
+      <div class="section-heading"><div><p class="eyebrow">THE COLLECTION</p><h2 id="compare-heading">Four perspectives. Same peace of mind.</h2></div><div class="comparison-tools"><label>Preview screen <select id="compare-page"><option value="dashboard">Dashboard</option><option value="calendar">Calendar</option><option value="dues">Dues</option><option value="settings">Settings</option></select></label><label>Appearance <select id="compare-mode"><option value="signature">Signature</option><option value="light">All light</option><option value="dark">All dark</option></select></label></div></div>
+      <div id="concept-gallery" class="concept-gallery"></div>
+      <div class="comparison-note"><span>◈</span><p>Identical sample dues. Different ways of seeing them.<br><strong>Nothing is selected for you.</strong> Open any direction to try its screens.</p><a href="AUDIT.md">Read the UI/UX audit ↗</a></div>
+      <div class="table-scroll"><table class="comparison-table"><caption>What changes between directions</caption><thead><tr><th>Direction</th><th>Information hierarchy</th><th>Visual language</th><th>Worth evaluating</th></tr></thead><tbody id="comparison-rows"></tbody></table></div>
+    </section>
+    <section id="explore-view" hidden aria-label="Explore a design concept">
+      <div class="lab-entry"><div><strong>Sticky actions. Room to focus.</strong><p>Cancel and Save stay together below the form. Focus navigation returns when you finish.</p></div><button class="studio-secondary" data-lab="enter">Compare other layouts</button><a href="INTERACTION-AUDIT.md">Read the audit</a></div>
+      <section id="interaction-lab" hidden aria-labelledby="lab-heading">
+        <div class="lab-heading"><div><p class="eyebrow">INTERACTION LAB / PREVIEW ONLY</p><h2 id="lab-heading">The same Focus. A better flow.</h2><p>Preview any combination. Your two preferences stay independent.</p></div><button class="studio-secondary" data-lab="exit">Return to Focus prototype</button></div>
+        <div class="lab-section-label"><h3>01 / Cancel & Save</h3><span>Choose placement, not bigger buttons.</span></div>
+        <div id="lab-action-options" class="lab-options"></div>
+        <div class="lab-section-label"><h3>02 / Navigation behavior</h3><span>The Focus navbar keeps its visual style.</span></div>
+        <div id="lab-nav-options" class="lab-options"></div>
+        <div class="lab-review"><p id="lab-preferences" role="status"></p><button class="studio-secondary" data-lab="export">Export these choices</button><button class="text-action" data-lab="clear">Clear choices</button></div>
+        <p class="lab-recommendation">Applied to the HTML mockup: A sticky actions + B context-aware navigation. You can still compare other combinations here.</p>
+        <div class="lab-tools"><button class="studio-primary" data-lab="add">Try Add Due</button><button class="studio-secondary" data-lab="edit">Try Edit Due</button><label>Action state <select id="lab-state"><option value="ready">Ready</option><option value="disabled">Disabled</option><option value="loading">Loading preview</option><option value="error">Save error preview</option><option value="success">Success preview</option></select></label><label class="lab-check"><input id="lab-keyboard" type="checkbox">Reserve keyboard space</label></div>
+        <p class="small-note">Use the live phone below. Keyboard space is a simulation; real mobile keyboards still need device review. Dues are temporary sample data.</p>
+        <p id="lab-storage" class="small-note" role="status"></p>
+      </section>
+      <div class="workbench-toolbar"><div id="concept-switcher" class="concept-switcher" aria-label="Preview a concept"></div><div id="lab-live-controls" hidden><label>Actions <select data-lab-switch="action" aria-label="Live action layout"><option value="a">A / Sticky</option><option value="b">B / Primary</option><option value="c">C / Header</option></select></label><label>Navigation <select data-lab-switch="navigation" aria-label="Live navigation behavior"><option value="a">A / Persistent</option><option value="b">B / Context</option><option value="c">C / Layered</option></select></label></div><div class="workbench-controls"><label>Screen <select id="screen-selector"><option value="dashboard">Dashboard</option><option value="calendar">Calendar</option><option value="dues">Dues</option><option value="settings">Settings</option><option value="reminders">Reminders</option></select></label><div class="appearance-toggle" aria-label="Preview appearance"><button data-mode="light" aria-pressed="true">Light</button><button data-mode="dark" aria-pressed="false">Dark</button></div></div></div>
+      <section id="minimal-refinements" class="minimal-refinements" hidden aria-labelledby="refinement-heading">
+        <div class="refinement-heading"><div><p class="eyebrow">MINIMAL FINTECH / A CLOSER LOOK</p><h2 id="refinement-heading">Three ways to make it feel right.</h2></div><p>Keep your centered Add button. Compare the rhythm around it.</p></div>
+        <p class="refinement-scroll-hint">Swipe across to compare all three →</p>
+        <div id="refinement-options" class="refinement-options"></div>
+        <p id="refinement-recommendation" class="refinement-recommendation" role="status"></p>
+      </section>
+      <div class="workbench">
+        <aside id="concept-description" class="concept-description"></aside>
+        <div id="phone-stage" class="phone-stage"><div class="stage-corner">LIVE PROTOTYPE / SAMPLE DATA</div><div id="phone" class="phone"><div class="sample-label"><span class="status-dot"></span>Sample · 04 Nov 2026<span>Asia/Manila · PHP</span></div><header id="app-header" class="app-header"></header><div id="app-body" class="app-body" tabindex="-1"></div><div id="app-actions" class="app-actions" aria-label="Page actions" role="group" hidden></div><nav id="app-nav" class="app-nav" aria-label="App navigation"></nav><div id="app-toast" class="app-toast" role="status" aria-live="polite"></div></div><div class="stage-caption"><span id="stage-label">A / Minimal Fintech</span><span>Tap. Scroll. Explore.</span></div></div>
+        <aside class="selection-panel"><p class="eyebrow">YOUR CALL</p><h2>Make it your Duewise.</h2><p>Focus is selected. Review your categories and billers, then record any refinements here.</p><button id="select-concept" class="studio-primary">Choose this direction <span>↗</span></button><p id="selection-status" class="selection-status" role="status">No preferred direction selected.</p><button id="clear-selection" class="text-action" hidden>Clear my selection</button><label for="concept-notes">What would you refine?</label><textarea id="concept-notes" rows="4" placeholder="Keep the typography, make the cards denser…"></textarea><p id="storage-status" class="small-note">Your choice and notes stay in this browser.</p><button id="export-selection" class="studio-secondary">Export my design brief ↓</button><div class="sandbox-note"><span>DESIGN SANDBOX</span><p>Totals, recurrence, weekly view and four-tab navigation are explorations. Sample changes reset on reload.</p><a href="SYSTEM.md">Tokens, components & scope ↗</a></div></aside>
+      </div>
+      <div class="scenario-toolbar"><label>Sample state <select id="sample-state"><option value="normal">Normal</option><option value="empty">Empty</option><option value="loading">Loading</option><option value="error">Read error</option><option value="stale">Stale data</option></select></label><button id="reset-sample" class="text-action">Reset sample data</button><button class="text-action" data-view="compare">← Back to all four</button></div>
+    </section>
+    <section id="decision-view" hidden aria-labelledby="decision-heading">
+      <div class="dl-heading">
+        <div><p class="eyebrow" id="dl-eyebrow">UX DECISIONS</p><h2 id="decision-heading" tabindex="-1">UX decisions</h2>
+          <!-- decision-lab.js fills the eyebrow, heading, intro, sources and round switch for the active round. -->
+          <p id="dl-intro">Each decision shows <strong>today's Android app</strong> next to the proposed options, drawn with the app's real colours and layout.</p>
+          <p>Choices are saved in this browser only. Copy or export them and paste them into the chat: nothing changes in the app until a choice is confirmed and written into the PRD/DESIGN. Sources: <span id="dl-sources"></span>.</p>
+          <div id="dl-rounds" class="dl-rounds" role="group" aria-label="Review round"></div></div>
+        <div class="dl-review"><p id="dl-progress" role="status"></p><button type="button" class="studio-primary" data-dl-cmd="copy">Copy for Claude</button><button type="button" class="studio-secondary" data-dl-cmd="export">Export .md</button><button type="button" class="text-action" data-dl-cmd="clear">Clear choices</button><textarea id="dl-export-text" hidden aria-label="Exported decisions" readonly></textarea></div>
+      </div>
+      <div class="dl-layout">
+        <nav id="dl-list" class="dl-list" aria-label="Decisions by impact"></nav>
+        <div id="dl-main" class="dl-main"></div>
+      </div>
+    </section>
+    <!-- Notification lab (specs/notification-lab): notification-lab.js renders the whole section. -->
+    <section id="notification-view" hidden aria-labelledby="notification-heading"><div id="nl-root"></div></section>
+  </main>
+  <footer class="studio-footer"><span>Duewise / A study in everyday clarity</span><span>Focus selected. Make it yours. <a href="AUDIT.md">Audit</a> <a href="SYSTEM.md">Design system</a></span></footer>
+  <dialog id="confirmation" aria-labelledby="confirmation-title"><form method="dialog"><span class="eyebrow">DUEWISE EXPLORATIONS</span><h2 id="confirmation-title"></h2><p id="confirmation-copy"></p><div class="dialog-actions"><button value="cancel" class="studio-secondary">Cancel</button><button value="confirm" id="confirmation-yes" class="studio-primary">Confirm</button></div></form></dialog>
+  <dialog id="category-picker" class="catalog-sheet" aria-labelledby="category-picker-title">
+    <header class="sheet-header"><div><p class="eyebrow">MADE FOR YOUR EVERYDAY DUES</p><h2 id="category-picker-title">Choose a category</h2></div><button type="button" class="icon-button" data-ph="close-picker" aria-label="Close category picker">×</button></header>
+    <div class="sheet-search field"><label for="category-search">Search categories</label><input id="category-search" type="search" placeholder="e.g. Amilyar, tuition, electricity" autocomplete="off"></div>
+    <div id="category-picker-body" class="sheet-scroll"></div>
+    <footer class="sheet-footer"><button type="button" class="app-button primary" data-ph="create-category">+ Create Custom Category</button></footer>
+  </dialog>
+  <dialog id="catalog-editor" class="catalog-editor" aria-labelledby="catalog-editor-title">
+    <header class="sheet-header"><h2 id="catalog-editor-title">Custom category</h2><button type="button" class="icon-button" data-ph="close-editor" aria-label="Cancel catalog edit">×</button></header>
+    <form id="catalog-editor-form" novalidate><div class="field"><label id="catalog-name-label" for="catalog-name">Category name</label><input id="catalog-name" required autocomplete="off" aria-describedby="catalog-name-error"><span id="catalog-name-error" class="error" role="status"></span></div><div id="catalog-icon-fields"><div class="field"><label for="catalog-icon">Icon <span class="optional-label">optional</span></label><select id="catalog-icon"></select></div><fieldset class="color-options"><legend>Color <span class="optional-label">optional</span></legend><div id="catalog-color"></div></fieldset></div></form>
+    <footer class="sheet-footer"><button id="catalog-delete" type="button" class="app-button danger" hidden>Delete</button><button type="button" class="app-button" data-ph="close-editor">Cancel</button><button type="submit" form="catalog-editor-form" class="app-button primary">Save</button></footer>
+  </dialog>
+  <noscript><p class="noscript">Enable JavaScript to compare and interact with the four concepts. The <a href="AUDIT.md">audit</a> is available without JavaScript.</p></noscript>
+</body>
+</html>

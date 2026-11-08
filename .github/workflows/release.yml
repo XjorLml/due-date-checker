@@ -1,0 +1,163 @@
+# Manual R01/R08 delivery extension. Setup: docs/delivery/GITHUB-RELEASE.md.
+name: Android draft release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version, for example 1.0.0 (no v prefix)'
+        required: true
+        default: '1.0.0'
+        type: string
+      version_code:
+        description: 'Android build number: increase for each distributed version'
+        required: true
+        default: '2'
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-release-${{ inputs.version }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    name: Test and sign Android APK
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    outputs:
+      version: ${{ steps.release.outputs.version }}
+      code: ${{ steps.release.outputs.code }}
+      tag: ${{ steps.release.outputs.tag }}
+      apk: ${{ steps.release.outputs.apk }}
+      artifact: ${{ steps.artifact.outputs.name }}
+    env:
+      RELEASE_VERSION: ${{ inputs.version }}
+      VERSION_CODE: ${{ inputs.version_code }}
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: 'true'
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Validate release inputs
+        id: release
+        run: python3 tools/release/release.py inputs
+
+      - name: Release helper tests
+        run: python3 -m unittest discover -s tools/release/tests -v
+
+      - name: Check for conflicting release or tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: python3 tools/release/release.py check
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: microsoft
+          java-version: '21'
+
+      - name: Core tests
+        run: dotnet test tests/DueDateChecker.Core.Tests/DueDateChecker.Core.Tests.csproj -c Release
+
+      - name: App tests
+        run: dotnet test tests/DueDateChecker.App.Tests/DueDateChecker.App.Tests.csproj -c Release
+
+      - name: Install MAUI Android workload and SDK packages
+        run: |
+          dotnet workload install maui-android
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0" "platform-tools"
+
+      - name: Restore temporary signing keystore
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: python3 tools/release/release.py decode
+
+      - name: Publish signed Release APK
+        env:
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          dotnet publish src/DueDateChecker.App/DueDateChecker.App.csproj \
+            -c Release -f net10.0-android \
+            -p:AndroidPackageFormats=apk \
+            -p:AndroidSdkBuildToolsVersion=36.0.0 \
+            "-p:AndroidSdkDirectory=$ANDROID_HOME" \
+            "-p:JavaSdkDirectory=$JAVA_HOME" \
+            -p:AndroidKeyStore=true \
+            "-p:AndroidSigningKeyStore=$RUNNER_TEMP/duewise-upload.jks" \
+            "-p:AndroidSigningKeyAlias=$ANDROID_KEY_ALIAS" \
+            -p:AndroidSigningStorePass=env:ANDROID_KEYSTORE_PASSWORD \
+            -p:AndroidSigningKeyPass=env:ANDROID_KEY_PASSWORD \
+            "-p:ApplicationDisplayVersion=$RELEASE_VERSION" \
+            "-p:ApplicationVersion=$VERSION_CODE" \
+            -o artifacts/release-build
+
+      - name: Verify signature, identity, versions and checksum
+        env:
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: python3 tools/release/release.py package
+
+      - name: Remove temporary signing material
+        if: always()
+        run: python3 tools/release/release.py clean
+
+      - name: Name verified artifact
+        id: artifact
+        run: echo "name=duewise-release-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" >> "$GITHUB_OUTPUT"
+
+      - name: Upload verified public deliverables
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.artifact.outputs.name }}
+          path: |
+            artifacts/github-release/${{ steps.release.outputs.apk }}
+            artifacts/github-release/${{ steps.release.outputs.apk }}.sha256
+            artifacts/github-release/RELEASE-NOTES.md
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 7
+
+  release:
+    name: Attach APK to draft GitHub release
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      RELEASE_VERSION: ${{ needs.build.outputs.version }}
+      VERSION_CODE: ${{ needs.build.outputs.code }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: ${{ needs.build.outputs.artifact }}
+          path: artifacts/github-release
+
+      - name: Create or refresh same-source draft
+        run: python3 tools/release/release.py draft

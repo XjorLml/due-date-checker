@@ -27,6 +27,8 @@ The v1 deliverable is an Android app distributed as a sideloaded Release APK. It
 
 ## Business rules and validation
 
+Delivery automation extension authorized 2026-11-08: a manually triggered [GitHub release workflow](../specs/github-release/spec.md) may test, build and sign the selected Android revision using GitHub Secrets, verify its package/certificate, and attach APK/checksum assets to an **unpublished draft**. Publishing remains a separate maintainer action after release acceptance. R01 phone acceptance and the existing R08 push-test workflow remain distinct; no native product behavior or Play distribution is added.
+
 Approved extension **F01**, authorized 2026-10-18: a saved row opens read-only details for the selected ID, showing existing title, amount, due date, computed status (Paid, Overdue, Due today or Upcoming since 2026-11-05), notes and created/updated timestamps (explicit UTC labels until [UX12](#ux-review-decisions-2026-11-06); Asia/Manila time labelled "Manila" since 2026-11-06). Details offers Mark as paid / Mark as unpaid (since [UX01](#ux-review-decisions-2026-11-06), 2026-11-06), Edit and Back to dues. Editor Save/Cancel/Back returns to reloaded Details; deletion returns to an unavailable state. Add remains direct create → Dues. Missing/deleted IDs cannot be inserted/restored; reads are retryable and never write, and the payment action writes only the payment status of an active due. [DT01–DT06](../specs/f01-item-details/spec.md#acceptance-scenarios) define feature scenarios. R01–R08 and their data/payment rules are preserved.
 
 - Title is required, must contain a non-whitespace character, and is trimmed when saved. There is no approved title or notes maximum length. A new limit requires an explicit product decision.

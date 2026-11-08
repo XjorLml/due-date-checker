@@ -71,6 +71,14 @@ Export via Android's file dialog, inspect format 2/categoryId and stored NULL/ze
 
 Inspect the picker/editor in light/dark, 320–430dp widths, 100%/200% text and with the keyboard open. Search, wrapping rows, Back and Cancel must remain operable; the picker must scroll without adding root navigation. Restore settings/remove task fixtures after checks. Emulator/build evidence is separate from intended-key phone acceptance, TalkBack and timed-user observation. Record exact checks and unperformed cases in the evidence; do not infer process-recreation draft recovery from theme switching.
 
+## GitHub draft release verification
+
+Scenarios [GR01–GR07](../../specs/github-release/spec.md#acceptance), [setup](GITHUB-RELEASE.md). Run `python -m unittest discover -s tools/release/tests -v` and actionlint against both workflow files. Local helper tests cover version/path/injection rejection, missing/malformed secrets without logging values, package/version/debug/certificate validation, archive selection, explicit public deliverables, checksum/source-marker tampering, annotated tags, published/tag/draft conflicts and same-source retry policy. These tests fake GitHub/tool responses and do not use repository signing credentials.
+
+For the first hosted run, record selected branch and exact SHA, version/code, runner/.NET/workload/JDK versions, Core/App/tool test outcomes, signed build, public certificate fingerprint and resulting draft URL. Confirm downloaded APK signature, version, checksum and notes against the run. Confirm only APK/checksum assets are attached, draft remains unpublished, no credential appears in logs/artifacts, and cleanup ran. Exercise missing-secret and conflicting-version failures with controlled versions; do not overwrite a published release for testing. Test a same-source rerun against its own draft before publication. Secrets/default-branch setup and workflow availability must be verified, not inferred from local lint.
+
+The intended-key APK still requires relevant phone acceptance. A hosted build, a draft release and local verifier success are distinct outcomes. Publishing remains a maintainer action; finish known exposed-secret/history cleanup first.
+
 ## Design-adoption verification
 
 Scope and expected outcomes are owned by [DA01–DA10](../../specs/design-adoption/spec.md#acceptance-scenarios). Use the automated commands above (sequentially, since test projects share Core output) and a fresh Android Release build after UI changes. Inspect the APK for the four local font weights/license and the merged manifest for Duewise display identity, unchanged ApplicationId and disabled backup.

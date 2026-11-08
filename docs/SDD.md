@@ -408,6 +408,16 @@ Requirement definitions and product acceptance outcomes remain in the [PRD](PRD.
 
 Use domain/Core tests for invariants and SQL behavior, the linked-source App harness for view-model/dispatcher behavior, and the Android Release build/device for XAML, handlers, navigation, lifecycle, and trimming. The [test plan](delivery/TEST-PLAN.md) owns commands, coverage inventory, gaps, and acceptance procedures. Recorded results belong in [STATUS](delivery/STATUS.md) and phase evidence, not this contract document.
 
+### GitHub release automation
+
+The separately authorized [release workflow](../.github/workflows/release.yml), [spec](../specs/github-release/spec.md) and [setup guide](delivery/GITHUB-RELEASE.md) extend R01/R08 delivery without changing the push-test CI workflow. Manual dispatch accepts a validated three-part display version and positive Android version code. It checks out `github.sha`, tests Core/App plus release-tool policy, installs .NET 10/JDK 21/MAUI Android and SDK/build-tools 36, and publishes only APK with explicit version overrides. No native source version fields are edited.
+
+Four repository secrets supply the existing keystore base64, alias, store password and key password. The key is decoded to a fixed runner-temp file with private permissions after tests. Password arguments are environment references (`env:`), never plaintext properties; runner failure diagnostics omit tool output that could expose configuration. An always-run step removes key/certificate files. There is no Debug signing fallback; the hosted checkout does not contain the ignored local signing file.
+
+The [release helper](../tools/release/release.py) requires one signed package, checks archive integrity, successful apksigner verification, certificate equality with the provided keystore, expected package/version/code and non-debuggable status. It emits a renamed APK, SHA-256 and notes carrying the exact source marker/certificate. Only those explicit public files cross jobs; no temporary signing material is uploaded. The build token is read-only; only the draft-release job has contents write and it has no signing secrets.
+
+GraphQL reads the pending draft and tag state; annotated tags are peeled to a commit. A new release targets the built SHA and stays draft. Only a same-source draft can refresh its assets; a published release, mismatched tag or missing/different draft source marker fails closed. The downloaded APK checksum and notes marker are rechecked before writing. Version concurrency queues matching runs, but release/asset API operations are not atomic; maintainers must not publish/edit the draft mid-run. Repository secret configuration, default-branch workflow availability, first hosted execution and intended-key phone acceptance are separate evidence gates. Local tests/lint cannot establish a hosted build.
+
 ## Deferred extension points
 
 - F05 local date-only reminders are implemented under the [F05 contract](#f05-reminder-contract). Each recurring occurrence ([F07 recurrence contract](#f07-recurrence-contract)) gets ordinary reminders; timed reminders, per-due or per-series presets and cloud push remain deferred; DateOnly/timezone placeholders do not implement them.

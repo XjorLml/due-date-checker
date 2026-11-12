@@ -35,6 +35,24 @@ Android distribution requires signing; development/debug identity is not the int
 5. Execute required native acceptance scenarios and record expected/actual outcomes with the exact artifact.
 6. Record the release decision. Distribute only within the user's authorization, then record the channel/release identity and post-distribution smoke evidence.
 
+## Backend deployment, if the app uses its own API
+
+The API ships on its own schedule, while released apps stay installed. [API](API.md#compatibility-and-versioning) owns the compatibility rules; this section owns the deployment procedure.
+
+| Item | Selected value / owner |
+|---|---|
+| Hosting and environments | {{HostEnvironmentsAndOwner}} |
+| Deploy method | {{PipelineOrManualProcedure}} |
+| Server database changes | {{MigrationBundleOrReviewedSqlScript}} |
+| Production secrets | {{HostSecretStore; rotation owner}} |
+| Health and monitoring | {{HealthEndpointAlertsLogRetention}} |
+| Rollback | {{PreviousBuildAndDataCompatibility}} |
+
+1. Deploy API changes that every supported app version can use **before** releasing an app that depends on them.
+2. Remove or rename in two steps. First add the new shape while the old one keeps working. Then remove the old one in a later release, once no supported app or older API build uses it. This keeps a rollback from breaking newly written data.
+3. Apply production database changes with a migration bundle or a reviewed SQL script; migrating at app startup needs a deliberate decision ([references](REFERENCES.md#remote-api-and-server)).
+4. Verify the deployed API (health check and one real request) before releasing the app, and record the API build next to the app artifact in evidence.
+
 ## Recovery and support
 
 {{Describe crash/support intake without personal-data leakage, release suspension/replacement, key loss/rotation, and data recovery limits.}}

@@ -147,3 +147,57 @@ Use node:test for deterministic gate aggregation, source invalidation, schema va
 Run affected prototype model/browser regressions when its bridge is added. Native .NET tests/builds are needed only if implementation actually changes native contracts/source; never rerun them to validate Markdown. If explicitly running native verification, retain the known application-control limitation and record actual outcomes. No security-policy bypass is proposed. No browser pass establishes Android device acceptance.
 
 Initial evidence ingestion needs source/artifact attribution and may leave many gates unknown. Prototype/native differences are expected and must remain labeled. Source hashes can show staleness, not prove behavior. No current percentage is claimed. The dashboard reduces repeated status queries but cannot remove the need to record accurate checkpoints or verify changed behavior.
+
+## Review and proposed revision — 2026-11-09
+
+The same prompt was invoked again. Claude Code re-inspected the proposal against the current repository: `develop` at `2cc92c1`, clean tree, on the user's second computer with Node v22.12.0, npm 10.9.0, .NET SDK 10.0.403 and no Python on PATH. This was agent-observed source inspection only; nothing was run or built.
+
+**Still accurate.** Since this proposal, the prototype's navigation was not changed. These findings still hold:
+- roots `dashboard/calendar/dues/settings`
+- the guarded `navigate()` covering nine screens
+- `render()` writing the hash with `history.replaceState`
+- `loadHash()` accepting only root screens
+- the `confirmation`, `category-picker` and `catalog-editor` dialogs
+- the compare, explore, decide and notify views
+
+The buildless Node standard-library choice, opt-in bridge, postMessage envelope, loopback-only server and no-fabricated-liveness rules stand.
+
+**Stale.**
+- **Environment row:** `7adbe52` predates the 2026-11-08 history rewrite, and Node 24/Python 3.14 describe the other computer. Target Node 22 or later on both machines, with no Python dependency.
+- **Evidence row:** the Application Control block was followed by a local pass (185 Core + 313 App, per [STATUS current focus](../../docs/delivery/STATUS.md#current-focus)). GitHub release automation and the [starter kit API add-on](../starter-kit-api/spec.md) landed afterwards. Seed from current STATUS, not from that row.
+
+**Proposed changes, pending the user's approval:**
+
+| # | Change | Reason |
+|---|---|---|
+| R1 | **Derive instead of hand-seeding.** Read features from `specs/*/` (29 today) and scenario IDs from spec tables (306 rows). Read task progress from `tasks.md` checkboxes (395 checked, 100 open), labeled "tasks checked" and never counted as verification. Hand-maintain only prototype mappings, phase grouping, and verification and visual-review records. | Hand-seeding about 30 features × criteria × boundaries is the costly, drift-prone step. Agents already update `tasks.md` under AGENTS, so the dashboard stays current without extra work. |
+| R2 | **Smaller first slice.** Stage 1a is read-only: overview, feature list, embedded prototype, reload on change, no writes. Frozen scope baselines, source fingerprints and journal recovery move to Stage 3. | Delivers the 10-second status view in one session while keeping DD02's no-estimates rule. |
+| R3 | **`status --brief` for agents.** The CLI prints the same deterministic summary (about 20 lines) as text. AGENTS tells agents to run it, rather than read STATUS (7,676 words), when asked about progress. | Agents rereading STATUS is the largest repeated token cost. |
+| R4 | **Session signals from agent hooks.** Claude Code hooks (SessionStart, Stop, SessionEnd) call the CLI, and so does Codex's `notify` command once its behavior is confirmed. Changed files come from `git status` at that moment. Signals are shown as "last signal at …", never "running". Manual checkpoints remain for task and blocker notes. | Hooks cost no tokens and don't depend on an agent remembering to report. The Codex `notify` behavior and its IDE-extension coverage are unverified. |
+| R5 | **Records that follow the developer.** Commit verification and visual-review records (small JSON Lines files). Keep the session journal machine-local and ignored. | The user works on two computers; ignored records would not follow them. |
+| R6 | **Generic tool, project config.** One config file names the prototype, the spec glob and the STATUS path. | The tool can later move into the standalone starter-kit template without a fork. |
+
+Revised layout (none of it exists yet):
+
+```text
+tools/developer-dashboard/
+  README.md
+  dashboard.config.json   # prototype path, spec glob, status document
+  server.mjs  cli.mjs
+  lib/                    # Markdown parsing, projection, validation, git, SSE
+  public/                 # index.html, styles.css, app.js; no build step
+  records/                # committed: mappings.json, verifications.jsonl, reviews.jsonl
+  tests/                  # node:test
+.developer-dashboard/     # ignored: session journal and cache
+prototypes/design-exploration/dashboard-bridge.js
+```
+
+Revised stages:
+- **1a:** derived read-only overview, embedded prototype with refresh, and `status --brief` (DD01, DD04, DD05, DD13, DD14; DD03 without verification records).
+- **1b:** mappings and verification records through the CLI (DD02, DD03).
+- **2:** connected preview, unchanged (DD06–DD09).
+- **3:** hook-based sessions, Git/test capture and history recovery (DD10–DD12).
+
+The DD01–DD14 scenarios are unchanged. R1–R6 change how and when they are delivered, not what they require.
+
+**Decision, 2026-11-10:** the user approved the plan ("these plan is approved implement now"). The recommended options were applied: R1–R6, project-level Claude Code hooks, and committed verification/review/blocker records. As built, the folder name is `tools/developer-dashboard/` and the config file is `dashboard.config.json`. The results are in [tasks](tasks.md#implementation-evidence--2026-11-10).

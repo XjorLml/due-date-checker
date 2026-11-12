@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "phases": ["v1 requirements", "v1 slices", "Approved extensions", "Design and UX", "HTML prototypes", "Delivery and tooling"],
+  "features": {
+    "R01": {
+      "phase": "v1 requirements", "scope": "approved",
+      "unavailable": { "kind": "no-ui", "note": "Install and launch from the phone launcher is a device check, not a prototype screen." },
+      "status": { "value": "in_review", "source": "docs/delivery/STATUS.md#release-slices", "seeded": "2026-11-10", "note": "Project and signing configuration exist; intended-key signing and launcher acceptance are pending." }
+    },
+    "R02": {
+      "phase": "v1 requirements", "scope": "approved", "prototype": { "screen": "add" },
+      "status": { "value": "in_review", "source": "docs/delivery/STATUS.md#release-slices", "seeded": "2026-11-10", "note": "Create is implemented and agent-verified on the V1.3 artifact; hardening and intended-key gates remain." }
+    },
+    "R03": {
+      "phase": "v1 requirements", "scope": "approved", "prototype": { "screen": "dues" },
+      "status": { "value": "in_review", "source": "docs/delivery/STATUS.md#release-slices", "seeded": "2026-11-10", "note": "List is implemented and agent-verified on the V1.3 artifact; hardening and intended-key gates remain." }
+    },
+    "R04": {
+      "phase": "v1 requirements", "scope": "approved", "prototype": { "screen": "edit" },
+      "status": { "value": "in_review", "source": "docs/delivery/STATUS.md#release-slices", "seeded": "2026-11-10", "note": "Edit is implemented with historical user acceptance; intended-key and hardening gates remain." }
+    },
+    "R05": {
+      "phase": "v1 requirements", "scope": "approved", "prototype": { "screen": "details" },
+      "status": { "value": "in_review", "source": "docs/delivery/STATUS.md#release-slices", "seeded": "2026-11-10", "note": "Paid/unpaid is implemented with historical user acceptance; intended-key and hardening gates remain." }
+    },
+    "R06": {
+      "phase": "v1 requirements", "scope": "approved", "prototype": { "screen": "details" },
+      "status": { "value": "in_review", "source": "docs/delivery/STATUS.md#release-slices", "seeded": "2026-11-10", "note": "Confirmed soft delete is implemented and agent-verified; phone tombstone, hardening and intended-key gates remain." }
+    },
+    "R07": {
+      "phase": "v1 requirements", "scope": "approved",
+      "unavailable": { "kind": "no-ui", "note": "Offline operation is checked on a device in airplane mode; the prototype has no network to remove." },
+      "status": { "value": "in_review", "source": "docs/delivery/STATUS.md#release-slices", "seeded": "2026-11-10", "note": "Offline create/list/edit/delete were agent-verified on recorded artifacts; remaining hardening gates are open." }
+    },
+    "R08": {
+      "phase": "v1 requirements", "scope": "optional",
+      "unavailable": { "kind": "no-ui", "note": "Continuous integration runs on GitHub; it has no screen." }
+    },
+
+    "v1.3-soft-delete": { "phase": "v1 slices", "scope": "approved", "prototype": { "screen": "details" } },
+    "v1.4-ci": { "phase": "v1 slices", "scope": "optional", "unavailable": { "kind": "no-ui", "note": "GitHub Actions workflow; no screen." } },
+
+    "f01-item-details": { "phase": "Approved extensions", "scope": "approved", "prototype": { "screen": "details" } },
+    "f02-dashboard": { "phase": "Approved extensions", "scope": "approved", "prototype": { "screen": "dashboard" } },
+    "f03-calendar": { "phase": "Approved extensions", "scope": "approved", "prototype": { "screen": "calendar" } },
+    "f04-preferences": { "phase": "Approved extensions", "scope": "approved", "prototype": { "screen": "settings" } },
+    "f04-export-import": { "phase": "Approved extensions", "scope": "approved", "prototype": { "screen": "settings" }, "note": "Export and import live in the Settings \"Your data\" section." },
+    "f05-reminders": { "phase": "Approved extensions", "scope": "approved", "prototype": { "screen": "reminders" }, "note": "The browser simulates reminders; nothing is scheduled." },
+    "f07-categories": { "phase": "Approved extensions", "scope": "approved", "prototype": { "screen": "add" } },
+    "f07-optional-amounts": { "phase": "Approved extensions", "scope": "approved", "prototype": { "screen": "add" } },
+    "f07-recurrence": { "phase": "Approved extensions", "scope": "approved", "prototype": { "screen": "add" } },
+    "ph-categories-native": { "phase": "Approved extensions", "scope": "approved", "prototype": { "screen": "add", "overlay": "category-picker" }, "note": "Custom categories and billers in the prototype are sample-only." },
+    "ux06-confirmations-undo": { "phase": "Approved extensions", "scope": "approved", "prototype": { "screen": "details" } },
+
+    "design-adoption": { "phase": "Design and UX", "scope": "approved", "prototype": { "screen": "dues" } },
+    "focus-adoption": { "phase": "Design and UX", "scope": "approved", "prototype": { "screen": "dashboard" } },
+    "focus-pages": { "phase": "Design and UX", "scope": "approved", "prototype": { "screen": "dashboard" } },
+    "ui-consistency": { "phase": "Design and UX", "scope": "approved", "prototype": { "screen": "dues" } },
+    "prototype-alignment": { "phase": "Design and UX", "scope": "approved", "prototype": { "screen": "dues" } },
+    "ux-improvements": { "phase": "Design and UX", "scope": "approved", "prototype": { "view": "decide" }, "note": "Opens the UX decision lab, which compares the options for each item." },
+    "ux-improvements-2": { "phase": "Design and UX", "scope": "proposed", "prototype": { "view": "decide" }, "note": "Four items were decided through prototype alignment; seven remain open." },
+
+    "mobile-ui-prototype": { "phase": "HTML prototypes", "scope": "prototype", "prototype": { "file": "prototypes/mobile-review/index.html" }, "note": "A separate HTML review; it has no dashboard bridge, so only the file opens." },
+    "interaction-lab": { "phase": "HTML prototypes", "scope": "prototype", "prototype": { "view": "lab", "screen": "dashboard" } },
+    "ph-catalog-prototype": { "phase": "HTML prototypes", "scope": "prototype", "prototype": { "screen": "catalog" } },
+    "notification-lab": { "phase": "HTML prototypes", "scope": "prototype", "prototype": { "view": "notify" }, "note": "N1 and N2 were decided; the native implementation is tracked in STATUS." },
+    "future-pages": { "phase": "HTML prototypes", "scope": "roadmap", "unavailable": { "kind": "unmapped", "note": "A roadmap across many pages; preview the specific feature instead." } },
+
+    "github-release": { "phase": "Delivery and tooling", "scope": "tooling", "unavailable": { "kind": "no-ui", "note": "GitHub Actions release workflow; no screen." } },
+    "docs-toolkit": { "phase": "Delivery and tooling", "scope": "tooling", "unavailable": { "kind": "no-ui", "note": "Documentation and checker tooling; no screen." } },
+    "starter-kit-api": { "phase": "Delivery and tooling", "scope": "tooling", "unavailable": { "kind": "no-ui", "note": "Starter-kit templates; no screen." } },
+    "developer-dashboard": {
+      "phase": "Delivery and tooling", "scope": "tooling",
+      "unavailable": { "kind": "no-ui", "note": "This dashboard itself; it is not part of the prototype." },
+      "relatedFiles": ["tools/developer-dashboard/", "prototypes/design-exploration/dashboard-bridge.js"]
+    }
+  }
+}

@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="dashboard-token" content="__TOKEN__">
+  <meta name="color-scheme" content="light dark">
+  <title>Developer dashboard</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <a class="skip" href="#feature-list">Skip to features</a>
+  <header class="topbar">
+    <div class="brand"><strong id="project">Project</strong><span>Developer dashboard</span></div>
+    <div id="git-chips" class="chips" aria-label="Git"></div>
+    <div class="topbar-end">
+      <span id="connection" class="connection" role="status" aria-live="polite">Connecting…</span>
+      <label class="inline">Theme
+        <select id="theme"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select>
+      </label>
+    </div>
+  </header>
+
+  <main>
+    <section class="overview" aria-label="Project overview">
+      <div id="cards" class="cards"></div>
+      <p id="overview-note" class="note"></p>
+    </section>
+
+    <section class="workspace" id="workspace">
+      <div class="pane features-pane">
+        <div class="filters">
+          <label class="sr-only" for="search">Search features</label>
+          <input id="search" type="search" placeholder="Search IDs, names, tasks" autocomplete="off">
+          <label class="sr-only" for="status-filter">Status</label>
+          <select id="status-filter">
+            <option value="">All statuses</option>
+            <option value="backlog">Backlog</option><option value="in_progress">In Progress</option>
+            <option value="in_review">In Review</option><option value="blocked">Blocked</option><option value="verified">Verified</option>
+          </select>
+          <label class="sr-only" for="scope-filter">Scope</label>
+          <select id="scope-filter"><option value="">All scopes</option></select>
+        </div>
+        <p id="list-count" class="note" aria-live="polite"></p>
+        <div id="feature-list" class="feature-list" aria-label="Features" tabindex="-1"></div>
+      </div>
+
+      <div class="pane inspector" id="inspector" tabindex="-1" aria-label="Feature details"></div>
+
+      <div class="resizer" id="resizer" role="separator" aria-orientation="vertical" aria-label="Resize the preview panel" tabindex="0"></div>
+
+      <div class="pane preview-pane" id="preview-pane">
+        <div class="preview-bar">
+          <div class="preview-title"><span class="muted">Screen</span> <strong id="active-screen">Loading…</strong> <span id="screen-flags"></span></div>
+          <div class="preview-actions">
+            <label class="sr-only" for="viewport">Preview size</label>
+            <select id="viewport">
+              <option value="390">Mobile · 390 px</option>
+              <option value="820">Tablet · 820 px</option>
+              <option value="fill" selected>Fill panel</option>
+            </select>
+            <button id="reload-preview" type="button">Reload</button>
+            <button id="fullscreen" type="button">Full screen</button>
+            <a id="open-tab" class="button" href="#" target="_blank" rel="noopener">Open in new tab</a>
+          </div>
+        </div>
+        <div id="preview-banner" class="banner" hidden></div>
+        <div id="preview-related" class="related" hidden></div>
+        <div class="frame-wrap" id="frame-wrap"><iframe id="preview" title="Prototype preview"></iframe></div>
+        <p id="preview-status" class="note" role="status" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <section class="activity" aria-label="Activity">
+      <div class="card" id="sessions"></div>
+      <div class="card" id="git-card"></div>
+      <div class="card" id="tests-card"></div>
+      <div class="card" id="problems-card"></div>
+    </section>
+  </main>
+</body>
+</html>

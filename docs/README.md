@@ -5,7 +5,7 @@ This index owns documentation navigation and authority. Read the documents relev
 ## Start here
 
 - New checkout: [local setup](SETUP.md), then the [agent workflow](../AGENTS.md).
-- Current progress or release readiness: [STATUS](delivery/STATUS.md); a prototype or build alone is not acceptance.
+- Current progress or release readiness: [STATUS](delivery/STATUS.md); a prototype or build alone is not acceptance. For a quick deterministic summary or the live prototype beside the feature list, use the [developer dashboard](../tools/developer-dashboard/README.md).
 - Work on a feature: find its spec in the [feature catalog](FEATURES.md), then use the authority map below.
 - Check docs or find a utility: [developer tools](../tools/README.md).
 - Start a different MAUI project: [reusable starter kit](templates/maui-starter/README.md). It contains templates and a local checker, not a generated app.
@@ -43,7 +43,7 @@ The dated register of each exploration, its selection status and governing scena
 
 ## Templates for future projects
 
-- [Reusable MAUI starter kit](templates/maui-starter/README.md): documentation templates, a proposed project structure, development standards, and a reusable setup prompt for a new application.
+- [Reusable MAUI starter kit](templates/maui-starter/README.md): documentation templates, a proposed project structure, development standards, and a reusable setup prompt for a new application. Includes an optional client–server path (API contract template, ASP.NET Core layout) added 2026-11-09 under the [API add-on spec](../specs/starter-kit-api/spec.md).
 - [Repository review and template validation](templates/maui-starter/REVIEW.md): source-backed findings, improvement priorities, evidence limits, and documentation checks for the kit.
 
 These are adaptation materials for future projects. They do not expand Duewise requirements, change its architecture, or close its release gates.

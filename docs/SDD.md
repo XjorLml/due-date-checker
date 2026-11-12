@@ -20,6 +20,7 @@ The original 2026-10-13 review described missing App wiring and an older UpdateA
 - [App composition root](../src/DueDateChecker.App/MauiProgram.cs): platform path, clock, and service registration.
 - [Initializer](../src/DueDateChecker.Core/Data/DatabaseInitializer.cs), [connection factory](../src/DueDateChecker.Core/Data/SqliteConnections.cs), and [repository](../src/DueDateChecker.Core/Data/SqliteDueRepository.cs): persisted behavior.
 - [Editor](../src/DueDateChecker.App/ViewModels/DueEditViewModel.cs), [list](../src/DueDateChecker.App/ViewModels/DuesListViewModel.cs), and [dispatcher](../src/DueDateChecker.App/Services/DatabaseDispatcher.cs): application state and operation ordering.
+- [Developer dashboard](../tools/developer-dashboard/README.md): local Node.js tooling outside the solution. It reads documentation and records, serves the HTML prototype with an opt-in [bridge](../prototypes/design-exploration/dashboard-bridge.js), and has no reference to or effect on the App, Core, database or Android packaging.
 
 ## 4. Architecture
 

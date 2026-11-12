@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "project": "Duewise",
+  "requirements": { "file": "docs/PRD.md", "section": "Approved requirements" },
+  "specsDir": "specs",
+  "statusDocument": { "file": "docs/delivery/STATUS.md", "focusSection": "Current focus" },
+  "preview": {
+    "entry": "prototypes/design-exploration/index.html",
+    "roots": ["prototypes/design-exploration", "prototypes/mobile-review"],
+    "ignore": ["tests", "node_modules"]
+  },
+  "documents": ["docs", "specs"],
+  "records": "tools/developer-dashboard/records",
+  "mappings": "tools/developer-dashboard/records/mappings.json",
+  "runtime": ".developer-dashboard",
+  "server": { "host": "127.0.0.1", "port": 4317 },
+  "sessions": { "staleAfterMinutes": 30 },
+  "testSuites": {
+    "dashboard": { "label": "Dashboard unit and HTTP tests", "command": ["node", "--test", "tools/developer-dashboard/tests/*.test.mjs"] },
+    "dashboard-browser": { "label": "Dashboard browser check (Edge or Chrome)", "command": ["node", "tools/developer-dashboard/tests/browser-check.mjs"] },
+    "prototype-model": { "label": "Prototype model tests", "command": ["node", "--test", "prototypes/design-exploration/tests/*.test.cjs"] },
+    "prototype-browser": { "label": "Prototype browser flows (Edge or Chrome)", "command": ["node", "prototypes/design-exploration/tests/browser-check.cjs"] },
+    "core": { "label": ".NET Core tests", "command": ["dotnet", "test", "tests/DueDateChecker.Core.Tests/DueDateChecker.Core.Tests.csproj", "-c", "Release"] },
+    "app": { "label": ".NET App tests", "command": ["dotnet", "test", "tests/DueDateChecker.App.Tests/DueDateChecker.App.Tests.csproj", "-c", "Release"] }
+  }
+}

@@ -296,3 +296,38 @@ OOP pillar links:
 - The planned `ReminderPaymentService` reuses the repository's guarded save instead of writing its own SQL → encapsulation and reuse through an interface (`IDueRepository`).
 
 Learning checkpoint: explain why a reminder's Mark as paid must re-check the due before writing, why the lock screen gets a different text, and why the release key cannot change after people install the app.
+
+## Starter kit API add-on (2026-11-09; explained by Claude, not yet demonstrated)
+Built by Claude after the toolkit review ("rate and audit … same stack but using api") and "yes i would likely to work on c# stack projects": an optional client–server path (MAUI app plus own ASP.NET Core API) and a readiness-check fix. Documentation and tooling only. [Spec](../specs/starter-kit-api/spec.md).
+
+Introduced (explained by Claude, not yet demonstrated):
+- Released apps are old clients: users update late, so every released API shape is a promise. Change by adding first, then remove later.
+- A shared C# Contracts project compiles both sides together, which can hide a breaking change; the committed OpenAPI diff catches it.
+- Retries can create duplicates: .NET's standard resilience handler retries POST by default, so writes need a client-generated ID or idempotency key. A timeout after a write means "unknown", not "failed".
+- `10.0.2.2` is the PC as seen from the Android emulator; the emulator's own `localhost` is the emulator.
+- Test-first bug fix: the new checker test failed first, reproducing the readiness defect, and passed after the change.
+
+OOP pillar links:
+- A Core interface for the API client hides `HttpClient`, URLs and JSON from view models → abstraction and encapsulation.
+- Tests swap the real network for a fake `HttpMessageHandler`, and `HttpClient` works unchanged → polymorphism through an abstract base class.
+- Server rules stay inside the Api project and never ship in the app → encapsulation at the deployment boundary.
+
+Learning checkpoint: explain why a retried create needs an ID chosen before the first attempt, why removing a response field is breaking even when every project in the repository still compiles, and why a network-state check cannot replace handling the request's own failure.
+
+## Developer dashboard (2026-11-10; explained by Claude, not yet demonstrated)
+Built by Claude after "these plan is approved implement now": a local Node.js dashboard and CLI that show progress from the specs, with the HTML prototype beside them. [Spec](../specs/developer-dashboard/spec.md), [guide](../tools/developer-dashboard/README.md).
+
+Introduced (explained by Claude, not yet demonstrated):
+- Derive, don't duplicate: features and progress are read from the files the workflow already updates, so there is no second list to fall out of date.
+- Append-only records with a lock file: many writers, one line each; a half-written last line is reported, never silently "fixed".
+- `postMessage` safety: check the sender window and origin, then a random nonce, then an allowlist of message types and screens.
+- Server-sent events: the server pushes "something changed"; the page fetches the new snapshot. No polling, no AI.
+- Loopback-only plus a Host-header check stops other websites from reaching the local server (DNS rebinding).
+- Tests caught three real bugs: a missed dirty-draft signal, CSS overriding `hidden`, and an unhandled full-screen rejection.
+
+OOP pillar links:
+- `progress.mjs` holds pure rules (status, staleness, summaries) behind small functions; the server, CLI and tests all call the same ones → abstraction and a single source of behavior.
+- The bridge exposes only `publish()` and a message protocol; the dashboard never touches the prototype's internals directly → encapsulation.
+- Records share one shape (`kind`, `id`, timestamps) with a validator per kind → polymorphism by data shape rather than class inheritance.
+
+Learning checkpoint: explain why a checked task is not a verified gate, why the dashboard refuses to pick a feature when a screen is shared, and why a hook must print nothing and always exit 0.

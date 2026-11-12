@@ -8,7 +8,7 @@ Start from the repository root. Choose the tool for your task; the native runner
 | Reuse/customize documentation for another app | [Starter kit](../docs/templates/maui-starter/README.md) | Copyable documentation, adoption workflow and the same portable checker |
 | Prepare a draft release | [Release procedure](../docs/delivery/GITHUB-RELEASE.md) and [helper source](release/release.py) | Explicit package/signature validation and draft-release workflow; follow the procedure before invoking helpers |
 | Verify Android behavior | [Native verification guide](verification/README.md) | Task-specific, guarded fixtures; read target/checkpoint/cleanup requirements first |
-| Review the developer dashboard idea | [Proposal](../specs/developer-dashboard/spec.md) | Proposed only; no dashboard server or progress CLI exists yet |
+| See progress, or preview a feature in the prototype | [Developer dashboard](developer-dashboard/README.md): `node tools/developer-dashboard/cli.mjs status`, or `serve` for the page | Deterministic projection of the PRD, spec tasks and committed records, with a linked live prototype. No AI calls; tests run only through `test <suite>` |
 
 ## Documentation checks
 

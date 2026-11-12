@@ -15,6 +15,8 @@
 | Apple tools, if targeted | {{macOS, Xcode, SDK, signing/provisioning setup}} | {{Release compatibility source}} |
 | Windows tools, if targeted | {{Windows SDK, Windows App SDK/build requirements}} | {{Release compatibility source}} |
 | Package sources / dependencies | {{Feed config; version and update policy}} | {{Project files or central package file}} |
+| API host, if the app has its own API | {{ASP.NET Core version; hosting model and server OS}} | {{Official source / Date}} |
+| Server database, if used | {{Provider and version; EF Core version if used}} | {{Official source / Date}} |
 
 Recheck [MAUI support and release compatibility](REFERENCES.md#toolchain-and-platforms) at adoption and upgrades. MAUI has its own support lifecycle. Exact native-tool requirements depend on the selected release. iOS development requires a Mac build host; plan a macOS runner for Apple builds and Windows for Windows builds. Select an Android-capable host for Android. A Linux test runner for plain .NET code does not establish any MAUI target build.
 
@@ -62,6 +64,32 @@ These commands have not been executed for a new project. Adjust App.Tests if pre
 - For repeatable application restores, choose and document a NuGet lock-file policy, commit the appropriate lock files, and use locked mode in CI only after generating them. Review dependency/servicing updates with relevant tests and platform builds. See [NuGet dependency locking](https://learn.microsoft.com/en-us/nuget/consume-packages/package-references-in-project-files#locking-dependencies).
 - Document non-secret environment variable names and example values. Inject secrets from a local ignored file or CI secret store; never embed service credentials in a distributed client.
 - Keep local signing files, keystores/certificates, build output, and sensitive device captures ignored. Confirm examples contain placeholders rather than developer-specific paths.
+
+## Local API development
+
+Only when the app calls its own API ([API](API.md)); otherwise delete this section. Record the values once verified, and keep secrets out of the repository.
+
+| Item | Selected value |
+|---|---|
+| API project and local URLs | {{ProjectPath; ports from launch settings}} |
+| Address from the Android emulator | {{EmulatorUrl, such as http://10.0.2.2:port}}; the emulator's own `localhost` is the emulator, not the PC |
+| Address from a physical device | {{PcNetworkAddressWithFirewallRule or a development tunnel}} |
+| Local secrets | {{UserSecretsKeyNames}}; never in `appsettings*.json` or the app |
+| Local database | {{Provider; reset and seed command with synthetic data}} |
+
+- **Plain HTTP:** Android blocks it by default. For local work, either allow cleartext only for the development address, or keep HTTPS and accept the development certificate only in Debug builds. Keep both exceptions out of Release builds (for example, conditional on the Debug configuration), and confirm with TEST-PLAN TP12 ([official options](REFERENCES.md#remote-api-and-server)).
+- **iOS simulator:** it uses the Mac's network, so an API running on a Windows PC is not `localhost` there.
+- **Development secrets:** `dotnet user-secrets` is unencrypted and for development only. Production secrets come from the host's secret store.
+
+PowerShell examples; replace placeholders and record the verified commands:
+
+```powershell
+dotnet user-secrets set "{{SecretKey}}" "{{LocalValue}}" --project src/{{ProjectName}}.Api/{{ProjectName}}.Api.csproj
+dotnet run --project src/{{ProjectName}}.Api/{{ProjectName}}.Api.csproj --launch-profile {{Profile}}
+dotnet test tests/{{ProjectName}}.Api.Tests/{{ProjectName}}.Api.Tests.csproj -c Release
+```
+
+Run the API and the app as separate processes. The API tests need no emulator.
 
 ## Troubleshooting and maintenance
 

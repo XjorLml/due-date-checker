@@ -201,6 +201,7 @@ function render(){
   else{renderInspector();renderPhone();}
   const hash=Lab.enabled?`#interaction-lab/${state.page}`:state.view==='compare'?'#compare':state.view==='decide'?window.DecisionLab.hash():state.view==='notify'?window.NotificationLab.hash():`#${state.concept}/${state.page}`;
   if(location.hash!==hash)history.replaceState(null,'',hash);
+  window.DashboardBridge?.publish(); // developer dashboard only; undefined when not embedded
 }
 async function navigate(page){
   if(![...roots,'details','add','edit','reminders','catalog'].includes(page))return;

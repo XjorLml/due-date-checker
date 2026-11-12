@@ -15,6 +15,10 @@ from urllib.parse import unquote, urlsplit
 
 DEFAULT_PATHS = ("README.md", "AGENTS.md", "docs", "specs", "tools", "prototypes", ".vibe-wise")
 EXCLUDED = {".git", ".venv", "node_modules", "bin", "obj", ".qa", "artifacts", "__pycache__"}
+# Reusable templates keep their placeholders on purpose, so --ready skips them.
+# Copies get new names (NNN-title.md, specs/<feature>/), so copies are enforced.
+TEMPLATE_FILES = {"template.md"}
+TEMPLATE_DIRS = {"feature-template"}
 # Inline destinations support escaped punctuation, angle brackets and balanced
 # parentheses one level deep. This is a local documentation checker, not a full
 # CommonMark renderer; see tools/README.md for supported constructs and limits.
@@ -31,7 +35,13 @@ class Report:
     external: int = 0
     routes: int = 0
     placeholders: int = 0
+    template_placeholders: int = 0
     errors: list[str] = field(default_factory=list)
+
+
+def reusable_template(relative: Path) -> bool:
+    folders = {part.lower() for part in relative.parts[:-1]}
+    return relative.name.lower() in TEMPLATE_FILES or bool(TEMPLATE_DIRS & folders)
 
 
 def prose(text: str) -> str:
@@ -133,7 +143,9 @@ def check(root: Path, paths: list[str] | None = None, ready: bool = False,
             report.errors.append(f'{path.relative_to(root)}:{text.count(chr(10), 0, offset) + 1}: {message}')
         placeholders = list(re.finditer(r'\{\{(?=[^{}\n]*[A-Za-z])[^{}\n]+\}\}', text))
         report.placeholders += len(placeholders)
-        if ready:
+        if ready and reusable_template(path.relative_to(root)):
+            report.template_placeholders += len(placeholders)
+        elif ready:
             for match in placeholders:
                 problem(match.start(), f'unresolved placeholder {match[0]}; customize or remove the inapplicable example.')
         for offset, raw in destinations(text):
@@ -196,7 +208,8 @@ def main(argv=None) -> int:
     for error in report.errors:
         print(f'ERROR {error}')
     print(f'{"FAIL" if report.errors else "PASS"}: {report.files} Markdown files; {report.links} local links; {len(report.errors)} errors.')
-    print(f'Not executed: {report.external} external URLs; {report.routes} declared application routes. Placeholders: {report.placeholders} ({"readiness enforced" if args.ready else "drafts allowed"}).')
+    mode = f'readiness enforced; {report.template_placeholders} kept in reusable templates' if args.ready else 'drafts allowed'
+    print(f'Not executed: {report.external} external URLs; {report.routes} declared application routes. Placeholders: {report.placeholders} ({mode}).')
     return int(bool(report.errors))
 
 

@@ -79,6 +79,15 @@ For the first hosted run, record selected branch and exact SHA, version/code, ru
 
 The intended-key APK still requires relevant phone acceptance. A hosted build, a draft release and local verifier success are distinct outcomes. Publishing remains a maintainer action; finish known exposed-secret/history cleanup first.
 
+## Developer dashboard verification
+
+Scenarios [DD01–DD14](../../specs/developer-dashboard/spec.md#observable-acceptance-scenarios); [tool guide](../../tools/developer-dashboard/README.md#test).
+- **Unit, CLI and HTTP tests:** `node --test tools/developer-dashboard/tests/*.test.mjs` runs against temporary fixture repositories. It covers parsing, status precedence, staleness, record locking and torn lines, hooks, and the HTTP boundaries (host, path, origin, token).
+- **Browser check:** `node tools/developer-dashboard/tests/browser-check.mjs` drives the real prototype in headless Edge or Chrome. It writes to temporary record copies.
+- **Prototype regressions:** after any bridge change, rerun the prototype's own model tests and `prototypes/design-exploration/tests/browser-check.cjs`.
+
+Run suites through `cli.mjs test <suite>` to record their results. Dashboard results describe developer tooling and the HTML prototype only. They are not evidence for native behavior, device checks or release acceptance.
+
 ## Design-adoption verification
 
 Scope and expected outcomes are owned by [DA01–DA10](../../specs/design-adoption/spec.md#acceptance-scenarios). Use the automated commands above (sequentially, since test projects share Core output) and a fresh Android Release build after UI changes. Inspect the APK for the four local font weights/license and the merged manifest for Duewise display identity, unchanged ApplicationId and disabled backup.

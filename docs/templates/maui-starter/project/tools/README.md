@@ -11,7 +11,7 @@ python tools/check_docs.py
 python tools/check_docs.py --ready
 ```
 
-The normal check allows unfinished template placeholders. Use `--ready` after customization; it fails on remaining `{{...}}` fields, including examples. Resolve decisions honestly or remove inapplicable examples with a reason. A structurally ready document can still have pending product approval, builds or device checks.
+The normal check allows unfinished template placeholders. Use `--ready` after customization; it fails on remaining `{{...}}` fields, including examples. Reusable templates are the exception: files named `TEMPLATE.md` and anything in a `feature-template` folder keep their placeholders, and the summary counts them. Their links are still checked, and copies you make from them (new names or folders) are enforced. Resolve decisions honestly or remove inapplicable examples with a reason. A structurally ready document can still have pending product approval, builds or device checks.
 
 PASS means supported local paths and heading/HTML anchors resolve. Exit 0 = pass, 1 = documentation errors, 2 = invalid arguments/configuration. Failures include file/line and corrective action. Use `python tools/check_docs.py --help` for options; paths are relative to `--root`, which defaults to this copied project independently of the working directory. Example subset: `python tools/check_docs.py docs/README.md`.
 

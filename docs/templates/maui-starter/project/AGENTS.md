@@ -8,6 +8,7 @@ Start with [docs/README.md](docs/README.md), then read only the documents releva
 
 - [PRD](docs/PRD.md): approved behavior, stable requirement IDs, exclusions, acceptance outcomes.
 - [SDD](docs/SDD.md): technical contracts and dependency boundaries.
+- [API](docs/API.md), if the app calls a server: client–server rules; the committed OpenAPI document owns endpoint shapes.
 - [DESIGN](docs/DESIGN.md): UI standards and explicitly scoped concepts.
 - [SETUP](docs/SETUP.md): chosen toolchain and reproducible commands.
 - [DEVELOPMENT](docs/DEVELOPMENT.md): implementation and review practices.
@@ -31,6 +32,7 @@ Start with [docs/README.md](docs/README.md), then read only the documents releva
 
 - Keep each contract authoritative in one place. Link to it from plans and tests.
 - Review PRD for behavior changes, SDD for contract changes, and DESIGN for UI-system changes.
+- Released apps keep calling the API. Follow API's compatibility rules, review the OpenAPI diff with every API change, and record a decision before any breaking change.
 - Future concepts do not authorize features. Keep proposals and accepted behavior distinct.
 - Record actual dates, source/artifact identity, environments, observer attribution, and expected/actual outcomes. Never transfer another project's passes or approvals.
 - Use ADRs for significant choices with supported rationale. Do not invent decision dates, identities, or approval.

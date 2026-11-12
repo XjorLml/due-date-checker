@@ -52,6 +52,36 @@
 
 Keep assets used at runtime under App/Resources so packaging is explicit. Keep editable design originals and their licenses under `docs/assets/` only when needed; runtime and design originals have different owners. Preserve font/image license notices with the assets. Do not copy Duewise branding into unrelated products.
 
+## Client-server baseline
+
+When the app calls its own ASP.NET Core API, add these projects to the baseline tree. Rules for the API itself live in [API](project/docs/API.md).
+
+```text
+src/
+  {{ProjectName}}.Contracts/   # optional: request/response types only, plain .NET
+  {{ProjectName}}.Core/
+    Remote/                    # typed API client behind a Core interface
+  {{ProjectName}}.Api/         # ASP.NET Core: endpoints, sign-in, server data
+    openapi/                   # committed generated OpenAPI document
+tests/
+  {{ProjectName}}.Api.Tests/   # WebApplicationFactory integration tests
+```
+
+Dependency rules:
+- App references Core; Core may reference Contracts; Api may reference Contracts.
+- Core and App never reference Api. Api never references App or Core: Core is the app's library (API client, local storage), and server rules stay on the server.
+- Core tests cover the API client with a fake `HttpMessageHandler`; no emulator or running server is needed.
+
+How the app and the API share request/response types:
+
+| Option | Benefit | Cost |
+|---|---|---|
+| Shared Contracts project | One C# definition; a mismatch inside the repository fails to compile | Both sides recompile together, so a breaking change can look safe; released apps still hold the old shape. Keep the OpenAPI diff review. |
+| Client generated from the OpenAPI document | The client follows the published contract; also works for third-party APIs | A generator tool and generated code to maintain |
+| Separate hand-written types | No coupling between the app and server projects | Manual synchronization; contract tests carry the load |
+
+For a solo C# project, a shared Contracts project holding only data shapes is the simplest start. Never put server-only rules or secrets in it, because the app ships it.
+
 ## Dependency boundaries
 
 ```mermaid

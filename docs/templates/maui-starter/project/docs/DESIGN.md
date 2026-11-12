@@ -25,6 +25,7 @@ Centralize semantic resources. Document exceptions instead of allowing each page
 | {{List/search}} | Initial loading, ready, empty, no match, initial error, stale data | {{What is visible and retryable in each state}} |
 | {{Editor}} | Pristine, draft, validation error, saving, failure, committed | {{Input preservation, focus, enabled actions, return}} |
 | {{Native capability}} | Available, not granted, denied, unsupported | {{Explanation and appropriate next action}} |
+| {{Remote data, if an API is used}} | Loading, offline, slow, session expired, server error, saved but not yet sent (offline writes only) | {{What stays visible and editable; how the outcome is reported; see API errors}} |
 
 Link business rules to the PRD instead of redefining them. Preserve list identity/focus where possible during refresh/filtering. Ensure the keyboard does not hide required actions. Avoid nested scroll ownership that makes controls unreachable.
 

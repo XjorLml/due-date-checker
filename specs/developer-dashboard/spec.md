@@ -1,6 +1,6 @@
 # Local developer dashboard
 
-Status: **Proposed; awaiting architecture approval. No implementation authorized by this proposal.**
+Status: **Approved 2026-11-10 with revisions R1–R6 ([plan](plan.md#review-and-proposed-revision--2026-11-09)); implemented 2026-11-10.** Scenario coverage and the remaining gaps are recorded in [tasks](tasks.md#implementation-evidence--2026-11-10). Originally proposed 2026-11-08 and awaiting architecture approval; that wording is kept below as history.
 
 Requested scope: the user's developer-dashboard prompt, invoked on 2026-11-08. This is local developer tooling, separate from the native F02 Dashboard. [Repository analysis and technical proposal](plan.md); [execution tracking](tasks.md).
 

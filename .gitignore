@@ -499,3 +499,12 @@ local.signing.props
 !tools/release/tests/*.py
 tools/release/**/__pycache__/
 tools/release/**/*.pyc
+
+# Developer dashboard: machine-local session and test-run journals.
+# Verification, review and blocker records in tools/developer-dashboard/records/ are committed.
+.developer-dashboard/
+
+# Claude Code personal settings and their temporary save files stay local;
+# shared hooks live in .claude/settings.json.
+.claude/settings.local.json
+.claude/settings.local.json.tmp.*

@@ -17,12 +17,13 @@ Success measures: {{ApprovedMeasureOrNotYetDefined}}. Do not invent adoption tar
 | Target platforms | {{AndroidIOSMacCatalystWindowsSelection}} |
 | Offline and connectivity | {{OfflineRequiredOnlineRequiredOrHybrid; behavior during failures}} |
 | Data and accounts | {{Data stored; account requirement; retention/deletion/recovery expectations}} |
+| Server and older app versions | {{NoServer, OwnApi or ThirdPartyApi; how long older app versions must keep working; forced-update policy}} |
 | Languages and locales | {{Initial languages; formatting and RTL scope}} |
 | Date, time, and money | {{Calendar dates versus instants; product/device timezone; currency if applicable}} |
 | Distribution | {{InternalSideloadStore; intended audience}} |
 | Explicit exclusions | {{Capabilities deferred from this release}} |
 
-Implementation capabilities and technical OS baselines are recorded in the SDD platform matrix. Choose them to satisfy this product scope; do not assume every MAUI-supported platform is a release target.
+Implementation capabilities and technical OS baselines are recorded in the SDD platform matrix. With a server, the network rules that implement these choices belong in [API](API.md). Choose them to satisfy this product scope; do not assume every MAUI-supported platform is a release target.
 
 ## Requirements
 

@@ -33,6 +33,7 @@ public sealed record DueListItem(Due Due, DueStatus Status) : IDueRow
     {
         RepeatRule.Weekly => "Every week",
         RepeatRule.Monthly => "Every month",
+        RepeatRule.TwiceMonthly => "Twice a month",
         RepeatRule.Yearly => "Every year",
         _ => ""
     };
@@ -50,6 +51,7 @@ public sealed record DueListItem(Due Due, DueStatus Status) : IDueRow
     {
         RepeatRule.Weekly => "Every week",
         RepeatRule.Monthly => $"Every month on day {Due.RepeatDay}",
+        RepeatRule.TwiceMonthly => $"Twice a month on days {Due.RepeatDay} and {Due.RepeatDay2}",
         RepeatRule.Yearly => $"Every year on {Due.RepeatDay:00} {Due.DueDate.ToString("MMM", CultureInfo.InvariantCulture)}",
         _ => ""
     };
@@ -61,7 +63,7 @@ public sealed record DueListItem(Due Due, DueStatus Status) : IDueRow
     {
         var category = HasDetailedCategory ? $"{CategoryText}, {DetailedCategoryText}" : CategoryText;
         return IsRepeating
-            ? $"{Title}, {category}, repeats {Due.Repeat.ToString().ToLowerInvariant()}, {StatusText}, due {dueDate}, {AmountText}. Opens due details."
+            ? $"{Title}, {category}, repeats {ReminderText.RepeatPhrase(Due.Repeat)}, {StatusText}, due {dueDate}, {AmountText}. Opens due details."
             : $"{Title}, {category}, {StatusText}, due {dueDate}, {AmountText}. Opens due details.";
     }
 

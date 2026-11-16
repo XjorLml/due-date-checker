@@ -28,7 +28,8 @@ public sealed record Due(
     RepeatRule Repeat = RepeatRule.Never,
     int? RepeatDay = null,
     Guid? RepeatSourceId = null,
-    string CategoryId = PhilippineCategories.OtherId)
+    string CategoryId = PhilippineCategories.OtherId,
+    int? RepeatDay2 = null)
 {
     private readonly string _title = ValidateTitle(Title);
     private readonly DueCategory _category = ValidateCategory(Category);
@@ -61,12 +62,15 @@ public sealed record Due(
         init => _title = ValidateTitle(value);
     }
 
+    /// <param name="twiceMonthlyDays">The two days for <see cref="RepeatRule.TwiceMonthly"/>, in either order;
+    /// ignored for other repeats.</param>
     public static Due Create(string title, Money? amount, DateOnly dueDate, DateTimeOffset now, string? notes = null,
         DueCategory category = DueCategory.Other, RepeatRule repeat = RepeatRule.Never,
-        string categoryId = PhilippineCategories.OtherId)
+        string categoryId = PhilippineCategories.OtherId, (int, int)? twiceMonthlyDays = null)
     {
+        var (first, second) = Recurrence.DaysFor(repeat, dueDate, twiceMonthlyDays);
         var due = new Due(Guid.NewGuid(), title, amount, dueDate, notes, IsPaid: false, CreatedAt: now, UpdatedAt: now, DeletedAt: null,
-            Category: category, Repeat: repeat, RepeatDay: Recurrence.AnchorFor(repeat, dueDate), CategoryId: categoryId);
+            Category: category, Repeat: repeat, RepeatDay: first, CategoryId: categoryId, RepeatDay2: second);
         due.Validate();
         return due;
     }
@@ -96,9 +100,26 @@ public sealed record Due(
             throw new ArgumentException("A monthly or yearly repeat needs a day of month from 1 to 31.", nameof(RepeatDay));
         }
 
-        if (!needsAnchor && RepeatDay is not null)
+        // PRD TM: two different days, stored in ascending order so equal pairs compare equal.
+        var twice = Repeat == RepeatRule.TwiceMonthly;
+        if (twice && RepeatDay is not (>= 1 and <= 31))
         {
-            throw new ArgumentException("Only a monthly or yearly repeat stores a day of month.", nameof(RepeatDay));
+            throw new ArgumentException("A twice-a-month repeat needs a first day of month from 1 to 31.", nameof(RepeatDay));
+        }
+
+        if (twice && (RepeatDay2 is not (>= 1 and <= 31) || RepeatDay2 <= RepeatDay))
+        {
+            throw new ArgumentException("A twice-a-month repeat needs a later second day of month, up to 31.", nameof(RepeatDay2));
+        }
+
+        if (!needsAnchor && !twice && RepeatDay is not null)
+        {
+            throw new ArgumentException("Only a monthly, twice-a-month or yearly repeat stores a day of month.", nameof(RepeatDay));
+        }
+
+        if (!twice && RepeatDay2 is not null)
+        {
+            throw new ArgumentException("Only a twice-a-month repeat stores a second day.", nameof(RepeatDay2));
         }
     }
 

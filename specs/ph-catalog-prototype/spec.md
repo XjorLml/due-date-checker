@@ -32,6 +32,8 @@ Use PHP amounts, `en-PH` date/number presentation and Asia/Manila calendar conte
 
 Support None, weekly, monthly, quarterly, annually and a custom positive interval of 1–365 days/weeks/months/years. Preview the next date with month-end/leap handling and supported-date bounds; do not generate a series. Per-due reminder drafts allow multiple offsets: due date, 1/3/7 days before and additional comma-separated whole days from 0–365, deduplicated/sorted on Save. Global time/quiet-hour controls remain. These are HTML simulations, without OS permission, alarms or delivery. Series mutation and real per-due scheduling remain separate native product work.
 
+Follow-up, 2026-11-16: the Repeat choices also include **Twice a month** on two picked days (default 15 and 30), previewing the [PRD TM rule](../../docs/PRD.md#twice-a-month-repeat-2026-11-16) without generating a series ([TM spec](../f07-twice-monthly/spec.md#prototype-preview)). The sample rent repeats twice a month on days 4 and 19. The source hashes in this folder predate the change and stay as historical evidence.
+
 ## Observable acceptance
 
 | ID | Outcome | Boundary |

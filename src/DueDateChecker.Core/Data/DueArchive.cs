@@ -37,8 +37,9 @@ public sealed record DueArchiveContents(DateTimeOffset ExportedAt, IReadOnlyList
 }
 
 /// <summary>
-/// The UX05 export file, format <c>duewise.dues</c> version 2 (reads version 1 too): UTF-8 JSON with
+/// The UX05 export file, format <c>duewise.dues</c> version 3 (reads versions 1 and 2 too): UTF-8 JSON with
 /// <c>format</c>, <c>version</c>, <c>exportedAt</c> and <c>dues</c>, one object per stored row.
+/// Version 2 added <c>categoryId</c>; version 3 added <c>repeatDay2</c> for the twice-a-month repeat.
 /// </summary>
 /// <remarks>
 /// Written and read by hand with <see cref="Utf8JsonWriter"/> and <see cref="JsonDocument"/> rather than
@@ -50,7 +51,7 @@ public sealed record DueArchiveContents(DateTimeOffset ExportedAt, IReadOnlyList
 public static class DueArchive
 {
     public const string FormatName = "duewise.dues";
-    public const int CurrentVersion = 2;
+    public const int CurrentVersion = 3;
     public const int MaxBytes = 5 * 1024 * 1024;
 
     private const string DateFormat = "yyyy-MM-dd";
@@ -63,6 +64,7 @@ public static class DueArchive
         "createdAt", "updatedAt", "deletedAt", "category", "repeatRule", "repeatDay", "repeatSourceId",
     ];
     private static readonly string[] DetailedDueFields = [.. DueFields, "categoryId"];
+    private static readonly string[] TwiceMonthlyDueFields = [.. DetailedDueFields, "repeatDay2"];
 
     public static byte[] Write(IReadOnlyList<DueRecord> dues, DateTimeOffset exportedAt)
     {
@@ -95,6 +97,7 @@ public static class DueArchive
                 WriteNumber(writer, "repeatDay", due.RepeatDay);
                 writer.WriteString("repeatSourceId", due.RepeatSourceId);
                 writer.WriteString("categoryId", due.CategoryId);
+                WriteNumber(writer, "repeatDay2", due.RepeatDay2);
                 writer.WriteEndObject();
             }
             writer.WriteEndArray();
@@ -185,7 +188,7 @@ public static class DueArchive
 
         // The same domain rules every app write passes (amount required by type, repeat and anchor rules).
         var due = new Due(id, r.Title, r.AmountCentavos is { } centavos ? Money.FromCentavos(centavos) : null, dueDate, r.Notes, r.IsPaid,
-            createdAt, updatedAt, deletedAt, (DueCategory)r.Category, (RepeatRule)r.RepeatRule, r.RepeatDay, source, r.CategoryId);
+            createdAt, updatedAt, deletedAt, (DueCategory)r.Category, (RepeatRule)r.RepeatRule, r.RepeatDay, source, r.CategoryId, r.RepeatDay2);
         try
         {
             due.Validate();
@@ -197,6 +200,7 @@ public static class DueArchive
                 nameof(Due.Amount) => "amountCentavos",
                 nameof(Due.Repeat) => "repeatRule",
                 nameof(Due.RepeatDay) => "repeatDay",
+                nameof(Due.RepeatDay2) => "repeatDay2",
                 _ => "dues",
             });
         }
@@ -207,7 +211,7 @@ public static class DueArchive
     private static DueRecord ReadDue(JsonElement element, int number, int version)
     {
         var fields = Fields(element, number);
-        var requiredFields = version == 1 ? DueFields : DetailedDueFields;
+        var requiredFields = version switch { 1 => DueFields, 2 => DetailedDueFields, _ => TwiceMonthlyDueFields };
         foreach (var name in requiredFields)
         {
             if (!fields.ContainsKey(name)) throw new DueArchiveException(DueArchiveProblem.InvalidDue, number, name);
@@ -237,7 +241,10 @@ public static class DueArchive
                 ? day is >= int.MinValue and <= int.MaxValue ? (int)day : throw new DueArchiveException(DueArchiveProblem.InvalidDue, number, "repeatDay")
                 : null,
             RepeatSourceId: OptionalText(fields, "repeatSourceId", number),
-            CategoryId: version == 1 ? PhilippineCategories.OtherId : Text(fields, "categoryId", number));
+            CategoryId: version == 1 ? PhilippineCategories.OtherId : Text(fields, "categoryId", number),
+            RepeatDay2: version < 3 ? null : OptionalLong(fields, "repeatDay2", number) is { } second
+                ? second is >= int.MinValue and <= int.MaxValue ? (int)second : throw new DueArchiveException(DueArchiveProblem.InvalidDue, number, "repeatDay2")
+                : null);
     }
 
     // An object's fields by name. A repeated name makes the file ambiguous, so it is refused.

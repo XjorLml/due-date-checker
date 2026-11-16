@@ -142,10 +142,13 @@
                 <!-- F07 recurrence (UX03, RC06): only Bill and Subscription repeat, so the row is hidden otherwise. -->
                 <Border Style="{StaticResource SurfaceCard}" Padding="0" IsVisible="{Binding CanChooseRepeat}">
                     <VerticalStackLayout>
-                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10" MinimumHeightRequest="56" Padding="16,0">
+                        <!-- Label column Auto and summary column *: the longer "Twice a month · 15 & 30" summary wraps
+                             instead of squeezing "Repeat" to one letter per line at 200% text (found on the emulator, 2026-11-16). -->
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10" MinimumHeightRequest="56" Padding="16,0">
                             <Label Text="Repeat" FontFamily="JakartaSemibold" FontSize="16" VerticalOptions="Center"
                                    TextColor="{AppThemeBinding Light={StaticResource TextLight}, Dark={StaticResource TextDark}}" />
-                            <Label Grid.Column="1" Text="{Binding RepeatSummary}" Style="{StaticResource CaptionLabel}" VerticalOptions="Center" />
+                            <Label Grid.Column="1" Text="{Binding RepeatSummary}" Style="{StaticResource CaptionLabel}" VerticalOptions="Center"
+                                   HorizontalTextAlignment="End" LineBreakMode="WordWrap" />
                             <pages:Glyph Grid.Column="2" x:Name="RepeatGlyph" Kind="plus" Size="20" VerticalOptions="Center"
                                          Color="{AppThemeBinding Light={StaticResource TextLight}, Dark={StaticResource TextDark}}" />
                             <Button Grid.ColumnSpan="3" x:Name="RepeatToggle" Style="{StaticResource OverlayButton}" Clicked="OnRepeatToggled"
@@ -153,10 +156,27 @@
                         </Grid>
                         <VerticalStackLayout x:Name="RepeatBody" IsVisible="False" Spacing="8" Padding="16,0,16,16">
                             <Border Style="{StaticResource FieldBorder}">
-                                <Picker x:Name="RepeatPicker" Title="Choose how often" ItemsSource="{Binding Repeats}"
-                                        SelectedItem="{Binding SelectedRepeat}" IsEnabled="{Binding CanEdit}" AutomationId="DueRepeat"
+                                <Picker x:Name="RepeatPicker" Title="Choose how often" ItemsSource="{Binding RepeatLabels}"
+                                        SelectedIndex="{Binding SelectedRepeatIndex}" IsEnabled="{Binding CanEdit}" AutomationId="DueRepeat"
                                         SemanticProperties.Description="Repeat, optional" />
                             </Border>
+                            <!-- PRD TM (TM07): two days for Twice a month, stacked so they fit at 200% text on narrow phones. -->
+                            <VerticalStackLayout IsVisible="{Binding IsTwiceMonthly}" Spacing="8">
+                                <Label Text="First day" Style="{StaticResource CaptionLabel}" />
+                                <Border Style="{StaticResource FieldBorder}">
+                                    <Picker x:Name="FirstRepeatDayPicker" Title="Choose the first day" ItemsSource="{Binding RepeatDayOptions}"
+                                            SelectedItem="{Binding FirstRepeatDay}" IsEnabled="{Binding CanEdit}" AutomationId="RepeatFirstDay"
+                                            SemanticProperties.Description="First day of the month" />
+                                </Border>
+                                <Label Text="Second day" Style="{StaticResource CaptionLabel}" />
+                                <Border Style="{StaticResource FieldBorder}">
+                                    <Picker x:Name="SecondRepeatDayPicker" Title="Choose the second day" ItemsSource="{Binding RepeatDayOptions}"
+                                            SelectedItem="{Binding SecondRepeatDay}" IsEnabled="{Binding CanEdit}" AutomationId="RepeatSecondDay"
+                                            SemanticProperties.Description="Second day of the month" />
+                                </Border>
+                                <Label Text="{Binding RepeatDaysError}" IsVisible="{Binding HasRepeatDaysError}" Style="{StaticResource ErrorLabel}"
+                                       AutomationId="RepeatDaysError" />
+                            </VerticalStackLayout>
                             <Label Text="{Binding RepeatHelpText}" Style="{StaticResource CaptionLabel}" AutomationId="RepeatHelp" />
                         </VerticalStackLayout>
                     </VerticalStackLayout>

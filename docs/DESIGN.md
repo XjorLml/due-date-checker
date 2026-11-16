@@ -1,6 +1,6 @@
 # Duewise — Product Design System
 
-**Version:** 2.2.0 · **Status:** Normative · **Platforms:** Android (v1) · **Baseline:** 2026-11-05 (Focus adoption; supersedes 1.0.0 indigo baseline of 2026-10-16)
+**Version:** 2.3.0 · **Status:** Normative · **Platforms:** Android (v1) · **Baseline:** 2026-11-05 (Focus adoption; supersedes 1.0.0 indigo baseline of 2026-10-16)
 
 All dimensions are logical **dp** (Android) unless marked `px` (asset pixels), `sp` (scalable type), or `ms`. At 1× density, 1 dp corresponds to one reference pixel. Never hardcode physical pixels for layouts. Token paths in prose use `colors.light.text`; generated implementation constants may use camelCase.
 
@@ -8,6 +8,7 @@ All dimensions are logical **dp** (Android) unless marked `px` (asset pixels), `
 
 | Version | Date | Change |
 |---|---|---|
+| 2.3.0 | 2026-11-16 | [Twice-a-month repeat](#twice-a-month-repeat-2026-11-16): the editor's Repeat row adds "Twice a month" with First day / Second day pickers; rows, Details and spoken text name it. Behavior is owned by [PRD TM](PRD.md#twice-a-month-repeat-2026-11-16). |
 | 2.2.0 | 2026-11-07 | [Prototype alignment](#prototype-alignment-2026-11-07): every page takes the live prototype's look and layout (headers, rows, Dashboard sections, search on Dues, Calendar counts, Details, editor, Settings, Reminders); new prototype features stay deferred. |
 | 2.1.1 | 2026-11-07 | Bottom bar completed to the selected Focus look. The 2.0.0 adoption had left out the floating rounded card, the lime pill behind the selected icon, Jakarta captions and the prototype's Dashboard and Dues glyphs; found when the user compared the build with the prototype. §6 and §7 bottom bar updated. No behavior change. |
 | 2.1.0 | 2026-11-05 | Page content from the Focus mockup built on existing data ([focus-pages](../specs/focus-pages/spec.md)): ledger row, summary counters, filter chips, segmented control, icon/link buttons added to §7; as-built Dashboard, Calendar, Settings and Item detail sections in §8; Dashboard progress ring replaced by the Paid counter; Refresh/Retry only after an error. One product rule added: the PRD F02 upcoming total. |
@@ -138,6 +139,18 @@ On 2026-11-07 the user asked to bring every page in line with the live HTML prot
 | Editor | "Required fields are marked."; required/optional labels; compact "Type: Bill · Change" row (still before Amount, UX11); "Will save as ₱…" preview; date hint with "Manila. Past dates are allowed."; collapsible Repeat and Notes rows; "Paid · applies on Save" check row; footer Cancel / ✓ Save; "Discard changes?" prompt (UX22). |
 | Settings | Preference cards, Reminders row with bell, Your data card, privacy note, draft line, "✓ Save" fixed bottom right above the bar (UX25 keeps Save). |
 | Reminders | "A gentle nudge." page: status card, "Your schedule" and "Quiet hours" cards, a collapsed "Notification readiness & privacy" section for Android status and tools, state-dependent footer (settles round 2 UX19). |
+
+### Twice-a-month repeat (2026-11-16)
+
+Presentation for [PRD TM](PRD.md#twice-a-month-repeat-2026-11-16), previewed first in the [design exploration](../prototypes/design-exploration/index.html) ([TM spec](../specs/f07-twice-monthly/spec.md#prototype-preview)). Contracts are in the [SDD](SDD.md#twice-a-month-repeat-contract).
+
+| Area | Presentation decision |
+|---|---|
+| Editor Repeat row | The picker reads Never, Weekly, Monthly, Twice a month, Yearly. Choosing Twice a month shows "First day" and "Second day" captions, each over a full-width picker of 1–31 in a field border, stacked (not side by side) so both fit at 200% text on a 320 dp phone. The help line reads "When you mark it paid, the next one is added on the next of your two days. Shorter months use their last day." The collapsed row's summary reads "Twice a month · 15 & 30". The row's label column is sized to the label and the summary takes the rest, end-aligned and wrapping, so "Repeat" never squeezes at 200% text. |
+| Editor error | Equal or missing days show an error label under the pickers ("Choose two different days for Twice a month." / "Choose both days for Twice a month."); Save opens the Repeat row, focuses the second day and announces the error. |
+| Due row | The repeat line reads "⟲ Twice a month". Spoken text says "repeats twice a month". |
+| Details | The Repeats fact reads "Twice a month on days 15 and 30". |
+| Reminder | Unlocked reminder text ends "· repeats twice a month" ([N1](PRD.md#notification-decisions-2026-11-07)). |
 
 ## 2. Brand Identity
 

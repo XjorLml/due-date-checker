@@ -191,6 +191,13 @@ public partial class DueEditPage : ContentPage, IQueryAttributable
         else if (_viewModel.HasAmountError) { AmountEntry.Focus(); SemanticScreenReader.Default.Announce(_viewModel.AmountError); }
         else if (_viewModel.HasDateError) { DueDatePicker.Focus(); SemanticScreenReader.Default.Announce(_viewModel.DateError); }
         else if (_viewModel.HasDetailedCategoryError) { ChangeCategoryButton.Focus(); SemanticScreenReader.Default.Announce(_viewModel.DetailedCategoryError); }
+        else if (_viewModel.HasRepeatDaysError)
+        {
+            // The days sit inside the collapsible Repeat row; open it so the error is visible.
+            if (!RepeatBody.IsVisible) Toggle(RepeatBody, RepeatGlyph);
+            SecondRepeatDayPicker.Focus();
+            SemanticScreenReader.Default.Announce(_viewModel.RepeatDaysError);
+        }
     }
 
     // System Back: blocked while busy; with changes it asks first (UX22), otherwise Shell pops the page.

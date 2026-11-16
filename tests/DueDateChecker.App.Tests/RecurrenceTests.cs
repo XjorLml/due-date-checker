@@ -165,7 +165,7 @@ public sealed class RecurrenceTests : IDisposable
     public void Repeat_is_offered_only_for_bill_and_subscription_and_resets_to_never()
     {
         var editor = new DueEditViewModel(_database, _repository, _clock);
-        Assert.Equal(new[] { RepeatRule.Never, RepeatRule.Weekly, RepeatRule.Monthly, RepeatRule.Yearly }, editor.Repeats);
+        Assert.Equal(new[] { RepeatRule.Never, RepeatRule.Weekly, RepeatRule.Monthly, RepeatRule.TwiceMonthly, RepeatRule.Yearly }, editor.Repeats); // TwiceMonthly: PRD TM
         Assert.Equal(RepeatRule.Never, editor.SelectedRepeat);
         Assert.True(editor.CanChooseRepeat); // Bill is the default type
 

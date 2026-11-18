@@ -16,6 +16,7 @@
 | Lifecycle | Define refresh on appearance/resume, shared in-flight loads, draft retention, timers and event cleanup | Repeated navigation, background/foreground, process termination/restart |
 | Navigation | Pass validated IDs/typed values; define Back/deep-link/stale-target behavior and prevent duplicate navigation | Native routing tests; distinguish commit success from return-navigation failure |
 | Storage, if used | Parameterize SQL; encode dates/instants/currency deliberately; use atomic migrations and explicit ordering | Reopen-file tests, upgrade/failure tests, equal-sort-key cases |
+| Remote calls, if used | Typed clients registered with `IHttpClientFactory` at the composition root; cancellation tokens from the screen's lifetime; retries only where repeating is safe; Problem Details mapped to [API](API.md) error categories | Fake-handler client tests, API integration tests and TEST-PLAN TP08–TP12 |
 | Error recovery | Separate loading/empty/stale/error states; preserve useful data and drafts; allow appropriate retry | Controlled read/write/startup/navigation failures |
 | Diagnostics | Log sanitized event IDs, categories, duration and recovery outcome; keep sensitive fields out | Review each logged field; test failure paths without leaking fixtures or secrets |
 | Security | Use only required permissions; implement the chosen backup/retention policy; protect credentials and signing material | Inspect manifests/entitlements and packaged configuration |
@@ -47,7 +48,7 @@ Record an actual successful remote run before claiming CI works. Choose runner/a
 |---|---|---|
 | Presentation/Infrastructure projects | Source linking or dependency boundaries become costly | More projects, clearer compiled boundaries |
 | Structured telemetry/crash reporting | There is a defined support need and privacy policy | Useful diagnosis; data retention, user expectations and operations costs |
-| API/authentication/sync | Approved workflows require them | Network, expiry, authorization and conflict contracts become mandatory |
+| API/authentication/sync | Approved workflows require them | Network, expiry, authorization and conflict contracts become mandatory; fill in [API](API.md) |
 | Automated native UI suite | Repeated regressions justify maintenance | Device infrastructure and selectors need ownership |
 | Background notifications | Product explicitly requires them | OS-specific permissions, timing limits and lifecycle tests |
 | Performance/paging/caching | Measured data scale or latency exceeds an approved target | Complexity and cache invalidation; measure first |

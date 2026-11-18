@@ -15,6 +15,22 @@ public partial class ReminderSettingsPage : ContentPage
         Appearing += async (_, _) => { await RefreshAsync(); ShowStepsWhenOn(); };
     }
 
+    // UX29: the Sound & alert rows open Android settings in another activity. Returning resumes the
+    // window without Appearing, so the channels' state is read again on resume.
+    protected override void OnNavigatedTo(NavigatedToEventArgs args)
+    {
+        base.OnNavigatedTo(args);
+        if (Window is { } window) { window.Resumed -= OnWindowResumed; window.Resumed += OnWindowResumed; }
+    }
+
+    protected override void OnNavigatedFrom(NavigatedFromEventArgs args)
+    {
+        if (Window is { } window) window.Resumed -= OnWindowResumed;
+        base.OnNavigatedFrom(args);
+    }
+
+    private void OnWindowResumed(object? sender, EventArgs e) => _viewModel.RefreshStatus();
+
     public Task RefreshAsync() => _refresh is { IsCompleted: false } ? _refresh : _refresh = _viewModel.LoadCommand.ExecuteAsync(null);
 
     private void OnReadinessToggled(object? sender, EventArgs e) => SetReadiness(!ReadinessBody.IsVisible);

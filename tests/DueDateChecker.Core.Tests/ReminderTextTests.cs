@@ -34,8 +34,13 @@ public sealed class ReminderTextTests
     [Fact]
     public void Date_boundary_uses_explicit_date_without_overflow()
     {
-        var text = ReminderText.Create(Item() with { DueDate = DateOnly.MinValue }, DateOnly.MaxValue);
-        Assert.Equal("Rent is due on 01 Jan 0001", text.Title);
+        var ahead = ReminderText.Create(Item() with { DueDate = DateOnly.MaxValue }, DateOnly.MinValue);
+        Assert.Equal("Rent is due on 31 Dec 9999", ahead.Title);
+        Assert.Equal(ReminderKind.ComingUp, ahead.Kind);
+        // UX30: a delivery after the due date is an overdue reminder and says how late it is.
+        var late = ReminderText.Create(Item() with { DueDate = DateOnly.MinValue }, DateOnly.MaxValue);
+        Assert.Equal("Rent is 3652058 days late", late.Title);
+        Assert.Equal((ReminderKind.Overdue, "You have an overdue due"), (late.Kind, late.PublicBody));
     }
 
     [Fact]

@@ -88,7 +88,7 @@ public sealed class PhilippineCategoryTests : IDisposable
             """);
         var before = Snapshot();
         new DatabaseInitializer(_path).Initialize(); new DatabaseInitializer(_path).Initialize();
-        Assert.Equal(6L, Scalar("PRAGMA user_version")); Assert.Equal(before, Snapshot());
+        Assert.Equal(8L, Scalar("PRAGMA user_version")); Assert.Equal(before, Snapshot());
         var records = await new SqliteDueArchive(_path).ReadAllAsync();
         Assert.Equal(2, records.Count); Assert.All(records, item => Assert.Equal(PhilippineCategories.OtherId, item.CategoryId));
         Assert.Null(records[1].AmountCentavos); Assert.True(records[1].IsDeleted);
@@ -101,9 +101,9 @@ public sealed class PhilippineCategoryTests : IDisposable
         SchemaFive(); Execute("ALTER TABLE dues ADD COLUMN category_id TEXT NOT NULL DEFAULT 'ph.other.general'");
         Assert.Throws<SqliteException>(() => new DatabaseInitializer(_path).Initialize());
         Assert.Equal(5L, Scalar("PRAGMA user_version"));
-        Execute("PRAGMA user_version=7");
+        Execute("PRAGMA user_version=9");
         Assert.Throws<InvalidOperationException>(() => new DatabaseInitializer(_path).Initialize());
-        Assert.Equal(7L, Scalar("PRAGMA user_version"));
+        Assert.Equal(9L, Scalar("PRAGMA user_version"));
     }
 
     [Fact]
@@ -129,9 +129,11 @@ public sealed class PhilippineCategoryTests : IDisposable
         new DatabaseInitializer(_path).Initialize(); var repository = new SqliteDueRepository(_path); await repository.AddAsync(Item());
         var archive = new SqliteDueArchive(_path); var records = await archive.ReadAllAsync();
         var bytes = DueArchive.Write(records, Now); var root = JsonNode.Parse(bytes)!.AsObject();
-        Assert.Equal(2, (int)root["version"]!); Assert.Equal(records, DueArchive.Read(bytes).Dues);
+        // Format 3 (PRD TM) still carries categoryId; turning it into a format-1 file drops both later fields.
+        Assert.Equal(4, (int)root["version"]!); Assert.Equal(records, DueArchive.Read(bytes).Dues);
         root["version"] = 1;
-        foreach (var record in root["dues"]!.AsArray()) record!.AsObject().Remove("categoryId");
+        foreach (var record in root["dues"]!.AsArray())
+            foreach (var later in new[] { "categoryId", "repeatDay2", "amountVaries" }) record!.AsObject().Remove(later);
         Assert.Equal(PhilippineCategories.OtherId, Assert.Single(DueArchive.Read(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString())).Dues).CategoryId);
         await repository.SoftDeleteAsync(Guid.Parse(records.Single().Id), Now);
         await archive.ImportAsync(records);

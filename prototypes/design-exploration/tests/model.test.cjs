@@ -46,3 +46,16 @@ test('all concept/mode tokens meet normal-text contrast on their intended flat s
       assert.ok(contrast(t[a],t[b])>=4.5,`${c.id}/${mode} ${a}/${b}: ${contrast(t[a],t[b])}`);
   }
 });
+test('twice a month (PRD TM) follows two picked days, falls back at month end and has one Feb occurrence when both collide',()=>{
+  const chain=(date,days,n)=>{const out=[date];for(let i=0;i<n;i++)out.push(E.nextOccurrence(out.at(-1),'twicemonthly',1,'months',days));return out;};
+  assert.deepEqual(chain('2026-11-15',[15,30],2),['2026-11-15','2026-11-30','2026-12-15']);
+  assert.deepEqual(chain('2027-01-30',[15,30],4),['2027-01-30','2027-02-15','2027-02-28','2027-03-15','2027-03-30']);
+  assert.deepEqual(chain('2026-04-15',[15,31],3),['2026-04-15','2026-04-30','2026-05-15','2026-05-31']);
+  assert.deepEqual(chain('2027-01-30',[29,30],2),['2027-01-30','2027-02-28','2027-03-29']);
+  assert.deepEqual(chain('2028-01-30',[29,30],2),['2028-01-30','2028-02-29','2028-03-29']);
+  assert.equal(E.nextOccurrence('2026-11-20','twicemonthly',1,'months',[15,30]),'2026-11-30','an off-schedule first date moves to the next picked day');
+  assert.equal(E.nextOccurrence('2026-12-31','twicemonthly',1,'months',[30,15]),'2027-01-15','day order does not matter');
+  assert.equal(E.nextOccurrence('9999-12-30','twicemonthly',1,'months',[15,30]),null);
+  for(const days of [[15,15],[0,30],[15,32],[15.5,30],[15]])assert.equal(E.nextOccurrence('2026-11-01','twicemonthly',1,'months',days),null);
+  const rent=E.seed().find(d=>d.id==='rent');assert.equal(rent.repeat,'twicemonthly');assert.deepEqual([rent.repeatDay1,rent.repeatDay2],[4,19]);
+});

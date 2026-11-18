@@ -79,6 +79,15 @@ For the first hosted run, record selected branch and exact SHA, version/code, ru
 
 The intended-key APK still requires relevant phone acceptance. A hosted build, a draft release and local verifier success are distinct outcomes. Publishing remains a maintainer action; finish known exposed-secret/history cleanup first.
 
+## Developer dashboard verification
+
+Scenarios [DD01–DD14](../../specs/developer-dashboard/spec.md#observable-acceptance-scenarios); [tool guide](../../tools/developer-dashboard/README.md#test).
+- **Unit, CLI and HTTP tests:** `node --test tools/developer-dashboard/tests/*.test.mjs` runs against temporary fixture repositories. It covers parsing, status precedence, staleness, record locking and torn lines, hooks, and the HTTP boundaries (host, path, origin, token).
+- **Browser check:** `node tools/developer-dashboard/tests/browser-check.mjs` drives the real prototype in headless Edge or Chrome. It writes to temporary record copies.
+- **Prototype regressions:** after any bridge change, rerun the prototype's own model tests and `prototypes/design-exploration/tests/browser-check.cjs`.
+
+Run suites through `cli.mjs test <suite>` to record their results. Dashboard results describe developer tooling and the HTML prototype only. They are not evidence for native behavior, device checks or release acceptance.
+
 ## Design-adoption verification
 
 Scope and expected outcomes are owned by [DA01–DA10](../../specs/design-adoption/spec.md#acceptance-scenarios). Use the automated commands above (sequentially, since test projects share Core output) and a fresh Android Release build after UI changes. Inspect the APK for the four local font weights/license and the merged manifest for Duewise display identity, unchanged ApplicationId and disabled backup.
@@ -194,6 +203,30 @@ On the phone, preserve data and use only uniquely tagged temporary records. Veri
 Use [RC01–RC08](../../specs/f07-recurrence/spec.md#acceptance-scenarios), [PRD UX03/UX04](../PRD.md#ux-review-decisions-2026-11-06), the [SDD recurrence contract](../SDD.md#f07-recurrence-contract) and [ADR 009](../adr/009-recurring-dues.md). Automated: Core [RecurrenceTests](../../tests/DueDateChecker.Core.Tests/RecurrenceTests.cs) (date rules and bounds, domain rules, migration 005 fresh/upgrade/rollback, one-transaction write and one occurrence per source) and App [RecurrenceTests](../../tests/DueDateChecker.App.Tests/RecurrenceTests.cs) (Details, editor, row text), plus App [ReminderTests](../../tests/DueDateChecker.App.Tests/ReminderTests.cs) for the forwarding wrapper and maker steps. The rollback test also guards the migration runner: a failing statement after an `ALTER … CHECK` must throw and leave the previous schema. Executed 2026-11-06 with an emulator pass: [evidence](evidence/UX-WAVE2-2026-11-06.md).
 
 On the phone, after reinstalling from the laptop that holds its key: confirm the schema 4→5 upgrade keeps every due. With a uniquely named temporary Bill, choose Monthly on a date late in a month, mark it paid on Details, and check the visible "Next one added" line and the new row's date, type, amount and notes. Mark it unpaid and paid again and confirm no second occurrence. Switch a temporary Bill to Task and confirm Repeat disappears and the saved due no longer repeats. With reminders on, open Reminders and compare the Xiaomi/Redmi/POCO steps with the phone's own app-info labels (Autostart, Battery saver → No restrictions), following them from "Android app / battery settings". Check both themes at 100% and 200% text, then delete only the temporary dues and restore the reminder setting.
+
+## Twice-a-month repeat verification (TM01–TM10)
+
+Use [TM01–TM10](../../specs/f07-twice-monthly/spec.md#acceptance-scenarios), [PRD TM](../PRD.md#twice-a-month-repeat-2026-11-16), the [SDD contract](../SDD.md#twice-a-month-repeat-contract) and [ADR 011](../adr/011-twice-monthly-repeat.md). Automated: Core [TwiceMonthlyTests](../../tests/DueDateChecker.Core.Tests/TwiceMonthlyTests.cs) cover the date tables, Feb collisions, off-schedule first dates and bounds, day-pair validation, the switch to Monthly, migration 007 fresh/upgrade/rollback, the repository round trip with one next occurrence, export format 3, format-2 compatibility and invalid pairs, and reminder text with fingerprint compatibility. App [TwiceMonthlyTests](../../tests/DueDateChecker.App.Tests/TwiceMonthlyTests.cs) cover picker labels and index, default days, reset on Task, saving sorted days, equal/missing day errors, editing with dirty tracking, Details and editor payment, row and Details text, and no conversion. The existing recurrence, export and category suites must keep passing with schema 7 and format 3. Run an Android build to compile the editor XAML.
+
+On the emulator or phone, preserve data and use only uniquely named temporary dues. Install over the previous build and confirm that the 6→7 upgrade keeps every due. Create a Bill with Repeat set to Twice a month and check that the pickers show 15 and 30. Choose the same day twice and confirm Save is refused with the error. Save with 15 and 30 on a date such as the 20th, mark it paid on Details, and check "Next one added for 30 …". Mark it unpaid and paid again and confirm no second occurrence. Check the row's "Twice a month" line, the Details fact, an export file carrying `repeatDay2`, and both themes at normal and 200% text. Delete only the temporary dues.
+
+## UX Wave 6 verification (UX28–UX33)
+
+Use the [scenarios](../../specs/ux-improvements-3/spec.md#acceptance-scenarios), the [PRD decisions](../PRD.md#ux-review-decisions-2026-11-16), the [SDD contract](../SDD.md#ux-review-2026-11-16-contract) and [ADR 012](../adr/012-reminder-channels-and-overdue.md).
+
+**Automated tests:**
+- Core [UxImprovements3Tests](../../tests/DueDateChecker.Core.Tests/UxImprovements3Tests.cs) covers overdue offsets and times, the per-reminder deadline and quiet hours, overdue text and kinds, the stored overdue setting, the "amount changes" domain rules and next occurrence, the migration-8 upgrade, and the export-4 round trip and refusals.
+- App [UxImprovements3Tests](../../tests/DueDateChecker.App.Tests/UxImprovements3Tests.cs) covers delivery and Mark as paid of an overdue reminder through the coordinator, turning overdue off, the Reminders page (styles, one-time notice, channel buttons, refresh, saving overdue), preference formats 1 and 2, Settings paydays, the Dashboard payday total and live updates, the editor switch, and Details payment of a varying bill.
+- Existing reminder tests run with overdue off to keep their day-before and due-date scope.
+
+**On the device**, preserve data and use only uniquely named temporary dues:
+1. Install over the previous build. Confirm schema 8, that the old "Due reminders" channel is gone with "Due today" (High) and "Coming up" (Default) present, and the one-time message.
+2. Open Sound & alert style: check both rows' state, open each Android page, change a sound, return and see it updated.
+3. Play a test reminder with reminders off.
+4. With a temporary due dated yesterday and the reminder time a few minutes ahead, confirm the "… is 1 day late" banner, its Mark as paid, and a tap opening Details.
+5. Check "Before payday" on the Dashboard against the temporary dues, and change the paydays in Settings.
+6. Save a repeating bill with "Amount changes each month" and no amount, then mark it paid and check that the next one shows "Amount needed".
+7. Check dark mode and 200% text, then remove the temporary dues and restore the reminder settings.
 
 ## UX Wave 3 verification: export and import (UX05)
 

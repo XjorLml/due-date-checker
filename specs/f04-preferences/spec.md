@@ -4,6 +4,8 @@ Authorized by "implement f04" on 2026-10-18 following the proposed preferences s
 
 ## Scope
 
+**Later extensions:** this section and PF scenarios retain the original preference slice. [Focus adoption](../focus-adoption/spec.md) made Settings a root tab, superseding PF06's pushed-Settings placement while Reminders stays pushed. [Export/import](../f04-export-import/spec.md) separately implements the data card. Current navigation/backup rules belong to those scopes and the PRD; original preference evidence does not automatically verify them. Explicit Save remains in force.
+
 Add working System/Light/Dark appearance and Monday/Sunday week-start preferences with explicit Save, offline/restart persistence and access to the existing Reminders page. Default to System and Monday. Preserve dues, current calendar month/selection and reminder settings. Export, accounts, currency/timezone controls, data deletion, About/privacy content and new bottom tabs remain separate work. No schema/dependency/signing/release change.
 
 ## Acceptance scenarios

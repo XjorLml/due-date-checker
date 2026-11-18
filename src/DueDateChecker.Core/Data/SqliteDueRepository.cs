@@ -16,13 +16,13 @@ public sealed class SqliteDueRepository(string databasePath) : IDueRepository
     private const string TimestampFormat = "O";
 
     private const string SelectColumns =
-        "SELECT id, title, amount_centavos, due_date, notes, is_paid, created_at, updated_at, deleted_at, category, repeat_rule, repeat_day, repeat_source_id, category_id FROM dues";
+        "SELECT id, title, amount_centavos, due_date, notes, is_paid, created_at, updated_at, deleted_at, category, repeat_rule, repeat_day, repeat_source_id, category_id, repeat_day_2, amount_varies FROM dues";
 
     private const string InsertColumns =
-        "id, title, amount_centavos, due_date, notes, is_paid, created_at, updated_at, deleted_at, category, repeat_rule, repeat_day, repeat_source_id, category_id";
+        "id, title, amount_centavos, due_date, notes, is_paid, created_at, updated_at, deleted_at, category, repeat_rule, repeat_day, repeat_source_id, category_id, repeat_day_2, amount_varies";
 
     private const string InsertValues =
-        "@id, @title, @amount, @due_date, @notes, @is_paid, @created_at, @updated_at, @deleted_at, @category, @repeat_rule, @repeat_day, @repeat_source_id, @category_id";
+        "@id, @title, @amount, @due_date, @notes, @is_paid, @created_at, @updated_at, @deleted_at, @category, @repeat_rule, @repeat_day, @repeat_source_id, @category_id, @repeat_day_2, @amount_varies";
 
     // repeat_source_id is deliberately absent: where an occurrence came from never changes.
     private const string UpdateSql =
@@ -30,7 +30,8 @@ public sealed class SqliteDueRepository(string databasePath) : IDueRepository
         UPDATE dues
         SET title = @title, amount_centavos = @amount, due_date = @due_date, notes = @notes,
             is_paid = @is_paid, updated_at = @updated_at, category = @category,
-            repeat_rule = @repeat_rule, repeat_day = @repeat_day, category_id = @category_id
+            repeat_rule = @repeat_rule, repeat_day = @repeat_day, category_id = @category_id, repeat_day_2 = @repeat_day_2,
+            amount_varies = @amount_varies
         WHERE id = @id AND deleted_at IS NULL
         """;
 
@@ -184,6 +185,8 @@ public sealed class SqliteDueRepository(string databasePath) : IDueRepository
         command.Parameters.AddWithValue("@updated_at", due.UpdatedAt.ToString(TimestampFormat, CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("@repeat_rule", (int)due.Repeat);
         command.Parameters.AddWithValue("@repeat_day", due.RepeatDay is { } day ? day : DBNull.Value);
+        command.Parameters.AddWithValue("@repeat_day_2", due.RepeatDay2 is { } second ? second : DBNull.Value);
+        command.Parameters.AddWithValue("@amount_varies", due.AmountVaries ? 1 : 0);
     }
 
     // Column order matches SelectColumns.
@@ -201,7 +204,9 @@ public sealed class SqliteDueRepository(string databasePath) : IDueRepository
         Repeat: (RepeatRule)checked((int)reader.GetInt64(10)),
         RepeatDay: reader.IsDBNull(11) ? null : checked((int)reader.GetInt64(11)),
         RepeatSourceId: reader.IsDBNull(12) ? null : Guid.Parse(reader.GetString(12)),
-        CategoryId: reader.GetString(13));
+        CategoryId: reader.GetString(13),
+        RepeatDay2: reader.IsDBNull(14) ? null : checked((int)reader.GetInt64(14)),
+        AmountVaries: reader.GetInt64(15) != 0);
 
     private static DateTimeOffset ParseTimestamp(string value)
         => DateTimeOffset.ParseExact(value, TimestampFormat, CultureInfo.InvariantCulture);

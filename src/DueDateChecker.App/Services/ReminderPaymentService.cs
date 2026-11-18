@@ -44,8 +44,8 @@ public sealed class ReminderPaymentService(DatabaseDispatcher database, IDueRepo
                         expiry - startedAt != TimeSpan.FromSeconds(10) || now < startedAt || now >= expiry)
                         return new(ReminderActionStatus.Stale);
                 }
-                else if (due.IsPaid || due.DueDate < today || receipt.DueDate != due.DueDate ||
-                    !ReminderPlanner.Plan([due], settings, Zone).Any(item => item.Key == token.Key))
+                else if (due.IsPaid || receipt.DueDate != due.DueDate ||
+                    !ReminderPlanner.Plan([due], settings, Zone).Any(item => item.Key == token.Key && ReminderPlanner.LastDeliveryDate(item, Zone) >= today))
                     return new(ReminderActionStatus.Stale);
 
                 // This runs after all asynchronous reads, immediately before the serialized write.

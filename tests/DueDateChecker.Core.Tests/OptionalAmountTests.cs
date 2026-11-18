@@ -84,7 +84,7 @@ public sealed class OptionalAmountTests : IDisposable
     {
         new DatabaseInitializer(_path).Initialize();
 
-        Assert.Equal(6L, Scalar("PRAGMA user_version"));
+        Assert.Equal(8L, Scalar("PRAGMA user_version"));
         Assert.Equal(0L, Scalar("SELECT \"notnull\" FROM pragma_table_info('dues') WHERE name = 'amount_centavos'"));
     }
 
@@ -105,19 +105,19 @@ public sealed class OptionalAmountTests : IDisposable
         var columnsBefore = Snapshot("SELECT cid, name, type, dflt_value, pk FROM pragma_table_info('dues') WHERE cid < 12");
         var notNullBefore = Snapshot("SELECT name, \"notnull\" FROM pragma_table_info('dues') WHERE cid < 12 AND name <> 'amount_centavos'");
         var planBefore = ListQueryPlan();
-        var remindersBefore = Snapshot("SELECT * FROM reminder_settings");
+        var remindersBefore = Snapshot("SELECT id, enabled, day_before, minute_of_day, quiet_start, quiet_end FROM reminder_settings");
 
         new DatabaseInitializer(_path).Initialize();
         new DatabaseInitializer(_path).Initialize();
 
-        Assert.Equal(6L, Scalar("PRAGMA user_version")); // 004, then 005 (recurrence columns, checked in RecurrenceTests)
+        Assert.Equal(8L, Scalar("PRAGMA user_version")); // 004, then 005-008 (recurrence columns, checked in RecurrenceTests and TwiceMonthlyTests)
         Assert.Equal(rowsBefore, Snapshot(OriginalRows));
         Assert.Equal(indexBefore, Scalar("SELECT sql FROM sqlite_master WHERE name = 'ix_dues_active_due_date'"));
         Assert.Equal(columnsBefore, Snapshot("SELECT cid, name, type, dflt_value, pk FROM pragma_table_info('dues') WHERE cid < 12"));
         Assert.Equal(notNullBefore, Snapshot("SELECT name, \"notnull\" FROM pragma_table_info('dues') WHERE cid < 12 AND name <> 'amount_centavos'"));
         Assert.Equal(0L, Scalar("SELECT \"notnull\" FROM pragma_table_info('dues') WHERE name = 'amount_centavos'"));
         Assert.Equal(planBefore, ListQueryPlan());
-        Assert.Equal(remindersBefore, Snapshot("SELECT * FROM reminder_settings"));
+        Assert.Equal(remindersBefore, Snapshot("SELECT id, enabled, day_before, minute_of_day, quiet_start, quiet_end FROM reminder_settings"));
         Assert.Equal(0L, Scalar("SELECT COUNT(*) FROM sqlite_master WHERE name = 'dues_v4'"));
         // The category CHECK from migration 002 survives the rebuild.
         Assert.Throws<SqliteException>(() => Execute("UPDATE dues SET category = 9 WHERE id = 'a1'"));

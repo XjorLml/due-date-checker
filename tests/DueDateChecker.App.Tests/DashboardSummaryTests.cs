@@ -28,29 +28,32 @@ public sealed class DashboardSummaryTests : IDisposable
         Due.Create(title, Money.FromCentavos(centavos), Today.AddDays(offset), _clock.GetUtcNow()) with { IsPaid = paid };
 
     [Fact]
-    public async Task Upcoming_total_sums_unpaid_known_amounts_from_today_to_month_end_and_names_the_next_due()
+    public async Task Payday_total_sums_unpaid_known_amounts_before_the_next_payday_including_overdue_and_names_the_next_due()
     {
+        // UX33 (2026-11-16): default paydays 15 and 30, so on 05 Nov the next payday is 15 Nov.
         foreach (var due in new[]
         {
-            NewDue("Water bill", -2, 100_000),        // overdue: outside the window
+            NewDue("Water bill", -2, 100_000),        // overdue: inside since UX33 (settles UX18)
             NewDue("Rent", 0, 250_000),               // due today: inside
             NewDue("Internet", 5, 50_000),            // 10 Nov: inside
             NewDue("Phone load", 0, 99_900, true),    // paid today: excluded
-            NewDue("Insurance", 26, 70_000)           // 1 Dec: next month, outside
+            NewDue("Card", 10, 30_000),               // 15 Nov: paid from that payday, outside
+            NewDue("Insurance", 26, 70_000)           // 1 Dec: outside
         })
             await _repository.AddAsync(due);
 
         var vm = new DashboardViewModel(_database, _repository, _clock);
         await vm.LoadCommand.ExecuteAsync(null);
 
-        Assert.Equal("Upcoming · November", vm.MonthLabel);
-        Assert.Equal("₱3,000.00", vm.UpcomingTotalText);
-        Assert.Equal("2 unpaid · today to 30 Nov", vm.UpcomingMetaText);
+        Assert.Equal("Before payday · 15 Nov", vm.PaydayLabel);
+        Assert.Equal("₱4,000.00", vm.PaydayTotalText);
+        Assert.Equal("3 unpaid · ₱1,000.00 overdue", vm.PaydayMetaText);
+        Assert.Equal("Due before payday on 15 Nov: ₱4,000.00, 3 unpaid · ₱1,000.00 overdue", vm.PaydayDescription);
         Assert.True(vm.HasNext);
         Assert.Equal("Rent", vm.NextTitle);
         Assert.Equal("Next date · 05 Nov", vm.NextDateText);
-        Assert.Equal("1/5", vm.PaidCounterText);
-        Assert.Equal(5, vm.TotalCount);
+        Assert.Equal("1/6", vm.PaidCounterText);
+        Assert.Equal(6, vm.TotalCount);
     }
 
     [Fact]
@@ -62,8 +65,8 @@ public sealed class DashboardSummaryTests : IDisposable
         var vm = new DashboardViewModel(_database, _repository, _clock);
         await vm.LoadCommand.ExecuteAsync(null);
 
-        Assert.Equal("₱0.00", vm.UpcomingTotalText);
-        Assert.Equal("0 unpaid · today to 30 Nov", vm.UpcomingMetaText);
+        Assert.Equal("₱1,000.00", vm.PaydayTotalText); // the overdue bill still counts (UX33)
+        Assert.Equal("1 unpaid · ₱1,000.00 overdue", vm.PaydayMetaText);
         Assert.False(vm.HasNext);
         Assert.Equal("", vm.NextTitle);
         Assert.Equal("No unpaid dues coming up.", vm.NextDateText);

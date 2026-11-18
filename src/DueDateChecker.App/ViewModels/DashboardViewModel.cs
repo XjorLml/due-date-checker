@@ -17,15 +17,20 @@ public partial class DashboardViewModel : ObservableObject
     private readonly DatabaseDispatcher _database;
     private readonly IDueRepository _repository;
     private readonly TimeProvider _clock;
+    private readonly AppPreferencesService? _preferences;
     private IReadOnlyList<Due> _dues = [];
     private IReadOnlyList<DashboardItem> _allItems = [];
 
-    public DashboardViewModel(DatabaseDispatcher database, IDueRepository repository, TimeProvider clock)
+    public DashboardViewModel(DatabaseDispatcher database, IDueRepository repository, TimeProvider clock,
+        AppPreferencesService? preferences = null)
     {
         _database = database;
         _repository = repository;
         _clock = clock;
+        _preferences = preferences;
         Today = GetToday(clock);
+        // PD04: new paydays apply without a restart. Preferences are saved on the UI thread.
+        if (preferences is not null) preferences.Changed += (_, _) => { if (HasLoaded) RebuildSnapshot(Today); };
     }
 
     [ObservableProperty]
@@ -83,18 +88,28 @@ public partial class DashboardViewModel : ObservableObject
     public string ProgressText => $"{PaidCount} of {TotalCount} saved dues paid";
     public string ProgressDescription => $"{ProgressText}, {PercentageText}";
 
-    // Focus summary (PRD F02 upcoming-total rule): unpaid dues dated today through the end of
-    // today's Manila month, summed in centavos so the fixed PHP format stays inside Money.
+    // "A little further ahead" still runs to the end of today's Manila month.
     private IReadOnlyList<DashboardItem> _ahead = [];
     public DateOnly MonthEnd => new(Today.Year, Today.Month, DateTime.DaysInMonth(Today.Year, Today.Month));
-    public string MonthLabel => $"Upcoming · {Today.ToString("MMMM", CultureInfo.InvariantCulture)}";
-    // A due without an amount (F07) adds nothing to the total and is counted as excluded instead.
+
+    // UX33 (2026-11-16, PD02/PD03): the headline totals unpaid dues dated before the next payday,
+    // overdue ones included (which also settles UX18). Paydays follow the Twice a month day rules.
+    private IReadOnlyList<DashboardItem> _beforePayday = [];
+    private (int First, int Second) Paydays => _preferences is { } p ? (p.Current.PaydayFirst, p.Current.PaydaySecond) : (15, 30);
+    /// <summary>The earliest payday strictly after today; null only at the end of the calendar.</summary>
+    public DateOnly? NextPayday => Recurrence.NextDate(Today, RepeatRule.TwiceMonthly, Paydays.First, Paydays.Second);
+    private string NextPaydayText => NextPayday is { } payday ? payday.ToString("dd MMM", CultureInfo.InvariantCulture) : "the end of the calendar";
+    public string PaydayLabel => $"Before payday · {NextPaydayText}";
+    // A due without an amount (F07, UX32) adds nothing and is counted as excluded instead.
     // Summed in decimal: each amount fits in a long, but two of the largest allowed do not.
-    public string UpcomingTotalText => Money.Format(_ahead.Sum(item => (decimal)(item.Due.Amount?.Centavos ?? 0)) / 100m);
-    private int AheadWithoutAmount => _ahead.Count(item => item.Due.Amount is null);
-    public string UpcomingMetaText => $"{_ahead.Count} unpaid · today to {MonthEnd.ToString("dd MMM", CultureInfo.InvariantCulture)}"
-        + (AheadWithoutAmount > 0 ? $" · {AheadWithoutAmount} without an amount, excluded" : "");
-    public string UpcomingDescription => $"Upcoming total {UpcomingTotalText}, {UpcomingMetaText}";
+    private static decimal Sum(IEnumerable<DashboardItem> items) => items.Sum(item => (decimal)(item.Due.Amount?.Centavos ?? 0)) / 100m;
+    public string PaydayTotalText => Money.Format(Sum(_beforePayday));
+    private decimal OverdueAmount => Sum(_beforePayday.Where(item => item.Status == DueStatus.Overdue));
+    private int BeforePaydayWithoutAmount => _beforePayday.Count(item => item.Due.Amount is null);
+    public string PaydayMetaText => $"{_beforePayday.Count} unpaid"
+        + (OverdueAmount > 0 ? $" · {Money.Format(OverdueAmount)} overdue" : "")
+        + (BeforePaydayWithoutAmount > 0 ? $" · {BeforePaydayWithoutAmount} without an amount, excluded" : "");
+    public string PaydayDescription => $"Due before payday on {NextPaydayText}: {PaydayTotalText}, {PaydayMetaText}";
     public DashboardItem? NextDue => _allItems.FirstOrDefault(item => item.Status != DueStatus.Paid && item.Due.DueDate >= Today);
     public bool HasNext => NextDue is not null;
     public string NextTitle => NextDue?.Title ?? "";
@@ -147,12 +162,14 @@ public partial class DashboardViewModel : ObservableObject
             .OrderBy(item => item.Due.DueDate).ThenBy(item => item.Due.CreatedAt)
             .Select(item => new DashboardItem(item.Due, item.Status!.Value)).ToArray());
         _ahead = _allItems.Where(item => item.Status != DueStatus.Paid && item.Due.DueDate >= today && item.Due.DueDate <= MonthEnd).ToArray();
+        var payday = NextPayday;
+        _beforePayday = _allItems.Where(item => item.Status != DueStatus.Paid && (payday is null || item.Due.DueDate < payday)).ToArray();
         Attention = _allItems.Where(item => item.Status != DueStatus.Paid && item.Due.DueDate <= today).Take(SectionSize).ToArray();
         Later = _ahead.Where(item => item.Due.DueDate > today).Take(SectionSize).ToArray();
         foreach (var name in new[] { nameof(Today), nameof(DateText), nameof(TotalCount), nameof(PaidCount),
             nameof(TodayCount), nameof(OverdueCount), nameof(UpcomingCount), nameof(OpenCount), nameof(Completion),
             nameof(PercentageText), nameof(ProgressText), nameof(ProgressDescription), nameof(IsEmpty), nameof(HasSummary),
-            nameof(MonthLabel), nameof(UpcomingTotalText), nameof(UpcomingMetaText), nameof(UpcomingDescription),
+            nameof(NextPayday), nameof(PaydayLabel), nameof(PaydayTotalText), nameof(PaydayMetaText), nameof(PaydayDescription),
             nameof(NextDue), nameof(HasNext), nameof(NextTitle), nameof(NextDateText), nameof(NextDescription), nameof(PaidCounterText),
             nameof(ShowNoAttention), nameof(ShowNoAhead), nameof(ShowNoNext) })
             OnPropertyChanged(name);

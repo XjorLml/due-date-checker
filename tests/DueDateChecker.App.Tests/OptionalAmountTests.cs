@@ -281,9 +281,9 @@ public sealed class OptionalAmountTests : IDisposable
         var dashboard = new DashboardViewModel(_database, _repository, _clock);
         await dashboard.LoadCommand.ExecuteAsync(null);
 
-        Assert.Equal("₱2,500.00", dashboard.UpcomingTotalText);
-        Assert.Equal("3 unpaid · today to 30 Nov · 1 without an amount, excluded", dashboard.UpcomingMetaText);
-        Assert.Equal("Upcoming total ₱2,500.00, 3 unpaid · today to 30 Nov · 1 without an amount, excluded", dashboard.UpcomingDescription);
+        Assert.Equal("₱2,500.00", dashboard.PaydayTotalText);
+        Assert.Equal("3 unpaid · 1 without an amount, excluded", dashboard.PaydayMetaText);
+        Assert.Equal("Due before payday on 15 Nov: ₱2,500.00, 3 unpaid · 1 without an amount, excluded", dashboard.PaydayDescription);
     }
 
     [Fact]
@@ -298,8 +298,8 @@ public sealed class OptionalAmountTests : IDisposable
         var dashboard = new DashboardViewModel(_database, _repository, _clock);
         await dashboard.LoadCommand.ExecuteAsync(null);
 
-        Assert.Equal("₱184,467,440,737,095,516.14", dashboard.UpcomingTotalText);
-        Assert.StartsWith("Upcoming total ₱184,467,440,737,095,516.14", dashboard.UpcomingDescription);
+        Assert.Equal("₱184,467,440,737,095,516.14", dashboard.PaydayTotalText);
+        Assert.StartsWith("Due before payday on 15 Nov: ₱184,467,440,737,095,516.14", dashboard.PaydayDescription);
     }
 
     private sealed class FixedClock(DateTimeOffset now) : TimeProvider

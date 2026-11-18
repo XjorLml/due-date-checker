@@ -32,4 +32,12 @@ PLAN.md, phase records, the archived SDD, and `.vibe-wise` project/progress note
 - Deferred design concepts do not authorize new features. Record unresolved decisions in the relevant spec or existing conflict record and continue unaffected work.
 - Track implementation, automated verification, device verification, and acceptance separately. Record date, environment/artifact, and whether evidence was agent-observed, user-reported, or historical.
 - Update local links and section references when moving content. For documentation-only changes, validate links, traceability, preservation, and the diff; do not run builds or application tests merely to validate Markdown.
+- Run `python tools/check_docs.py` for supported local links/anchors; see [tools](tools/README.md#documentation-checks) for limits and recovery. Keep template readiness, runtime routes and external verification separate from a structural pass.
 - Keep signing keys/passwords out of version control. Do not log user financial details. Preserve the existing scope and security constraints in the PRD/SDD.
+
+## Progress checks
+
+- For "what is done, missing or next" questions, run `node tools/developer-dashboard/cli.mjs status` (about 15 lines) or `feature <id>` before reading STATUS. It is a deterministic projection of the PRD, spec tasks and committed records; read STATUS when its detail is needed. See the [dashboard guide](tools/developer-dashboard/README.md).
+- Keep `tasks.md` checkboxes current at meaningful checkpoints; the dashboard reads them. A checked task is workflow progress, not verification.
+- After recording attributed evidence in the canonical documents, add a pointer with `cli.mjs verify` (with `--observer` and an existing `--evidence` path). Never record a pass without evidence. Use `block`/`unblock` for blockers.
+- Session start/stop signals come from hooks. Add `session checkpoint` only at task, blocker or verification milestones, not for every edit.

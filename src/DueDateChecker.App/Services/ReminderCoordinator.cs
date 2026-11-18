@@ -43,7 +43,9 @@ public sealed class ReminderCoordinator(DatabaseDispatcher database, IDueReposit
                 // Reads or process suspension can span a clock/date boundary.
                 var now = clock.GetUtcNow();
                 var today = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(now, Zone).DateTime);
-                var plans = ReminderPlanner.Plan(dues.Where(due => due.DueDate >= today), settings, Zone).ToArray();
+                // UX30: overdue reminders reach back to the last overdue day, so recent overdue dues are planned too.
+                var earliest = ReminderPlanner.EarliestRelevantDueDate(today);
+                var plans = ReminderPlanner.Plan(dues.Where(due => due.DueDate >= earliest), settings, Zone).ToArray();
                 var allowed = settings.Enabled && platform.GetAccess().Allowed;
                 platform.CleanNotifications(allowed ? plans.Select(item => item.Key).ToHashSet() : new HashSet<string>(),
                     keepTestNotification: allowed);
@@ -101,7 +103,8 @@ public sealed class ReminderCoordinator(DatabaseDispatcher database, IDueReposit
                 (await store.ReadOccurrencesAsync()).Any(item => item.Key == key && item.DueId == id && item.DeliveredAt.HasValue);
         if (due.IsPaid) return false;
         var today = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(clock.GetUtcNow(), Zone).DateTime);
-        return due.DueDate >= today && (await store.ReadOccurrencesAsync()).Any(item => item.Key == key && item.DueId == id && item.DeliveredAt.HasValue)
-            && ReminderPlanner.Plan([due], settings, Zone).Any(item => item.Key == key);
+        // OD04: a reminder stays openable through its own last delivery day (later for an overdue one).
+        return (await store.ReadOccurrencesAsync()).Any(item => item.Key == key && item.DueId == id && item.DeliveredAt.HasValue)
+            && ReminderPlanner.Plan([due], settings, Zone).Any(item => item.Key == key && ReminderPlanner.LastDeliveryDate(item, Zone) >= today);
     });
 }

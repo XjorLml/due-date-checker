@@ -16,11 +16,13 @@ public sealed class ReminderTests : IDisposable
     private readonly Clock _clock = new();
     private readonly ReminderCoordinator _coordinator;
     private readonly ReminderAwareDueRepository _writes;
-    private static ReminderSettings Enabled => new(true);
+    // These tests cover the day-before and due-date rules; overdue reminders (UX30) are tested in UxImprovements3Tests.
+    private static ReminderSettings Enabled => new(true, Overdue: false);
     public ReminderTests()
     {
         new DatabaseInitializer(_path).Initialize(); _database = new(new DatabaseInitializer(_path));
         _repository = new(_path); _store = new(_path);
+        _store.SaveSettingsAsync(new(Overdue: false)).GetAwaiter().GetResult();
         _coordinator = Coordinator(); _writes = new(_repository, _coordinator);
     }
     private ReminderCoordinator Coordinator() => new(_database, _repository, _store, _platform, _clock);
@@ -176,10 +178,10 @@ public sealed class ReminderTests : IDisposable
         var vm = new ReminderSettingsViewModel(_coordinator, _platform); await vm.LoadCommand.ExecuteAsync(null);
         Assert.False(vm.Enabled); Assert.Equal(0, _platform.PermissionRequests);
         vm.DayBefore = false; vm.ReminderTime = TimeSpan.FromHours(10);
-        Assert.Equal(new(), await _store.ReadSettingsAsync());
+        Assert.Equal(new(Overdue: false), await _store.ReadSettingsAsync());
         await vm.LoadCommand.ExecuteAsync(null); Assert.False(vm.DayBefore); // Refresh retains draft.
         await vm.SaveCommand.ExecuteAsync(null);
-        Assert.Equal(new(false, false, 600), await _store.ReadSettingsAsync()); Assert.Equal(0, _platform.PermissionRequests);
+        Assert.Equal(new(false, false, 600, Overdue: false), await _store.ReadSettingsAsync()); Assert.Equal(0, _platform.PermissionRequests);
         _platform.Allowed = false; _platform.GrantOnRequest = false;
         await vm.EnableCommand.ExecuteAsync(null); Assert.False(vm.Enabled); Assert.Equal(1, _platform.PermissionRequests);
         Assert.False((await _store.ReadSettingsAsync()).Enabled);
@@ -195,12 +197,15 @@ public sealed class ReminderTests : IDisposable
     {
         var vm = new ReminderSettingsViewModel(_coordinator, _platform);
         await vm.EnableCommand.ExecuteAsync(null); Assert.Equal(0, _platform.PermissionRequests); // Not loaded.
-        await vm.LoadCommand.ExecuteAsync(null); vm.TestCommand.Execute(null); Assert.Equal(0, _platform.Tests);
+        // AL04 (2026-11-16): the test reminder works before reminders are enabled, and never enables them.
+        await vm.LoadCommand.ExecuteAsync(null); await vm.TestCommand.ExecuteAsync(null); Assert.Equal(1, _platform.Tests);
+        Assert.False((await _store.ReadSettingsAsync()).Enabled);
         vm.ReminderTime = TimeSpan.FromDays(1); await vm.EnableCommand.ExecuteAsync(null);
-        Assert.Equal(0, _platform.PermissionRequests); Assert.Equal(new(), await _store.ReadSettingsAsync());
+        Assert.Equal(0, _platform.PermissionRequests); Assert.Equal(new(Overdue: false), await _store.ReadSettingsAsync());
         vm.ReminderTime = TimeSpan.FromHours(9); await vm.EnableCommand.ExecuteAsync(null);
-        vm.TestCommand.Execute(null); Assert.Equal(1, _platform.Tests); Assert.Empty(await _repository.ListActiveAsync());
-        _platform.Allowed = false; vm.TestCommand.Execute(null); Assert.Equal(1, _platform.Tests);
+        await vm.TestCommand.ExecuteAsync(null); Assert.Equal(2, _platform.Tests); Assert.Empty(await _repository.ListActiveAsync());
+        _platform.Allowed = false; _platform.GrantOnRequest = false; await vm.TestCommand.ExecuteAsync(null);
+        Assert.Equal(2, _platform.Tests); Assert.Contains("blocked", vm.Message); // asked for permission, refused, nothing posted
     }
 
     [Fact]
@@ -249,7 +254,7 @@ public sealed class ReminderTests : IDisposable
         Assert.Contains(expected, vm.BackgroundText); Assert.Equal("Allowed", vm.StatusText);
         vm.DayBefore = false; vm.OpenAppSettingsCommand.Execute(null);
         Assert.Equal(1, _platform.AppSettingsOpened); Assert.Equal(0, _platform.PermissionRequests);
-        Assert.Equal(new(), await _store.ReadSettingsAsync());
+        Assert.Equal(new(Overdue: false), await _store.ReadSettingsAsync());
         _platform.Background = new(false, false, false); await vm.LoadCommand.ExecuteAsync(null);
         Assert.Contains("optimization is off", vm.BackgroundText); Assert.False(vm.DayBefore); Assert.False(vm.Enabled);
     }

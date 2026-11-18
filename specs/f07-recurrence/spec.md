@@ -19,5 +19,5 @@ Status: authorized 2026-11-06 ("start wave 2") under the decided [PRD UX03 rule]
 
 - Each occurrence is an ordinary due: payment, Details, edit, delete, reminders and filters work as before. Deleting an occurrence deletes only that occurrence; if it was unpaid, no next one is created.
 - Editing an occurrence changes only that occurrence. Because the next occurrence copies the occurrence that was paid, editing the current one before paying carries the change forward.
-- No series editing, skipping, end dates, custom intervals or reminders per series. Export (UX05) must include the three new columns.
+- No series editing, skipping, end dates, custom intervals or reminders per series. Export (UX05) must include the three new columns. Later change, 2026-11-16: the user authorized one more interval, [Twice a month](../f07-twice-monthly/spec.md) (TM01–TM10, not yet implemented); other custom intervals stay excluded.
 - Release, signing and pushing to `main` remain held.

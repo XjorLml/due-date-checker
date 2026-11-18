@@ -22,10 +22,10 @@ public interface IDueArchiveStore
 public sealed class SqliteDueArchive(string databasePath) : IDueArchiveStore
 {
     private const string Columns =
-        "id, title, amount_centavos, currency, due_date, notes, is_paid, timezone, created_at, updated_at, deleted_at, category, repeat_rule, repeat_day, repeat_source_id, category_id";
+        "id, title, amount_centavos, currency, due_date, notes, is_paid, timezone, created_at, updated_at, deleted_at, category, repeat_rule, repeat_day, repeat_source_id, category_id, repeat_day_2, amount_varies";
 
     private const string Values =
-        "@id, @title, @amount, @currency, @due_date, @notes, @is_paid, @timezone, @created_at, @updated_at, @deleted_at, @category, @repeat_rule, @repeat_day, @repeat_source_id, @category_id";
+        "@id, @title, @amount, @currency, @due_date, @notes, @is_paid, @timezone, @created_at, @updated_at, @deleted_at, @category, @repeat_rule, @repeat_day, @repeat_source_id, @category_id, @repeat_day_2, @amount_varies";
 
     // The WHERE lets a conflicting id replace only a deleted row; an active one leaves 0 rows changed.
     private const string UpsertSql =
@@ -36,7 +36,8 @@ public sealed class SqliteDueArchive(string databasePath) : IDueArchiveStore
             due_date = excluded.due_date, notes = excluded.notes, is_paid = excluded.is_paid, timezone = excluded.timezone,
             created_at = excluded.created_at, updated_at = excluded.updated_at, deleted_at = excluded.deleted_at,
             category = excluded.category, repeat_rule = excluded.repeat_rule, repeat_day = excluded.repeat_day,
-            repeat_source_id = excluded.repeat_source_id, category_id = excluded.category_id
+            repeat_source_id = excluded.repeat_source_id, category_id = excluded.category_id,
+            repeat_day_2 = excluded.repeat_day_2, amount_varies = excluded.amount_varies
         WHERE dues.deleted_at IS NOT NULL
         """;
 
@@ -65,7 +66,9 @@ public sealed class SqliteDueArchive(string databasePath) : IDueArchiveStore
                 RepeatRule: checked((int)reader.GetInt64(12)),
                 RepeatDay: reader.IsDBNull(13) ? null : checked((int)reader.GetInt64(13)),
                 RepeatSourceId: reader.IsDBNull(14) ? null : reader.GetString(14),
-                CategoryId: reader.GetString(15)));
+                CategoryId: reader.GetString(15),
+                RepeatDay2: reader.IsDBNull(16) ? null : checked((int)reader.GetInt64(16)),
+                AmountVaries: reader.GetInt64(17) != 0));
         }
         return records;
     }
@@ -110,6 +113,8 @@ public sealed class SqliteDueArchive(string databasePath) : IDueArchiveStore
             Set(insert, "@repeat_rule", due.RepeatRule);
             Set(insert, "@repeat_day", due.RepeatDay);
             Set(insert, "@repeat_source_id", due.RepeatSourceId);
+            Set(insert, "@repeat_day_2", due.RepeatDay2);
+            Set(insert, "@amount_varies", due.AmountVaries ? 1 : 0);
             // Disposing the transaction without Commit rolls back every row written so far.
             if (await insert.ExecuteNonQueryAsync() != 1) throw new DueArchiveException(DueArchiveProblem.AppNotEmpty);
         }

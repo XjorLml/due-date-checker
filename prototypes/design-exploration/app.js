@@ -20,7 +20,10 @@ Object.assign(paths,{water:'<path d="M12 2C9 7 4 11 4 16a8 8 0 0 0 16 0c0-5-5-9-
 const icon=name=>`<svg viewBox="0 0 24 24" aria-hidden="true">${paths[name]||paths.dues}</svg>`;
 const roots=['dashboard','calendar','dues','settings'];
 const rootNames={dashboard:'Dashboard',calendar:'Calendar',dues:'Dues',settings:'Settings'};
-const repeats={none:'Does not repeat',weekly:'Every week',monthly:'Every month',quarterly:'Every quarter',yearly:'Annually',custom:'Custom interval'};
+const repeats={none:'Does not repeat',weekly:'Every week',monthly:'Every month',twicemonthly:'Twice a month',quarterly:'Every quarter',yearly:'Annually',custom:'Custom interval'};
+const twiceDays=d=>[Number(d.repeatDay1),Number(d.repeatDay2)].sort((a,b)=>a-b);
+function repeatSummary(d){return d.repeat==='none'?"Doesn't repeat":d.repeat==='custom'?`Every ${d.repeatEvery} ${d.repeatUnit}`:d.repeat==='twicemonthly'?`Twice a month · ${twiceDays(d).join(' & ')}`:repeats[d.repeat];}
+function repeatFact(d){return d.repeat==='custom'?'Every '+d.repeatEvery+' '+d.repeatUnit:d.repeat==='twicemonthly'?`Twice a month on days ${twiceDays(d).join(' and ')}`:repeats[d.repeat];}
 const storageKey='duewise.design-exploration.v1';
 let storageAvailable=true,saved={};
 try{saved=JSON.parse(localStorage.getItem(storageKey)||'{}')||{};}catch{storageAvailable=false;}
@@ -91,12 +94,14 @@ function calendar(){
 function detail(){
   const d=state.sampleMode==='empty'?null:selected();
   if(!d)return empty('This due is unavailable.','It may have been deleted. Your other dues are still in the list.','back-to-parent','Back to list');
-  return `${phCategoryIcon(d)}<h1 class="detail-title">${esc(d.title)}</h1><div class="detail-amount">${M.money(d.amount)}</div><span class="badge ${statusClass(M.status(d))}">${M.status(d)}</span><dl class="detail-facts"><div><dt>Due date</dt><dd>${dateText(d.date)}</dd></div><div><dt>Category</dt><dd>${esc(phCategoryName(d))}</dd></div><div><dt>Provider / biller</dt><dd>${esc(phProviderName(d)||'Not set')}</dd></div><div><dt>Due type</dt><dd>${d.category}</dd></div><div><dt>Repeat <span class="concept-tag">Concept</span></dt><dd>${esc(d.repeat==='custom'?'Every '+d.repeatEvery+' '+d.repeatUnit:repeats[d.repeat])}</dd></div><div><dt>Reminder offsets</dt><dd>${(d.reminderDays||[]).map(n=>n===0?'On due date':n+(n===1?' day before':' days before')).join(', ')||'None'}<small class="detail-simulation">Simulation only</small></dd></div><div><dt>Currency / timezone</dt><dd>PHP / Asia/Manila</dd></div></dl><div class="detail-quick"><button class="app-button primary" data-action="quick-paid">${icon('check')}${d.paid?'Mark unpaid':'Mark paid'}</button><button class="app-button" data-action="reschedule">${icon('calendar')}Reschedule</button></div><p class="tiny-copy">Quick status changes are a confirmed prototype shortcut. No payment is made.</p><section class="detail-note"><h2 class="section-title">Notes</h2><p>${esc(d.notes||'No notes added.')}</p></section><p class="tiny-copy">Created · ${d.created||'01 Nov 2026, 01:41 UTC'}<br>Updated · ${d.updated||'01 Nov 2026, 01:41 UTC'}</p>`;
+  return `${phCategoryIcon(d)}<h1 class="detail-title">${esc(d.title)}</h1><div class="detail-amount">${M.money(d.amount)}</div><span class="badge ${statusClass(M.status(d))}">${M.status(d)}</span><dl class="detail-facts"><div><dt>Due date</dt><dd>${dateText(d.date)}</dd></div><div><dt>Category</dt><dd>${esc(phCategoryName(d))}</dd></div><div><dt>Provider / biller</dt><dd>${esc(phProviderName(d)||'Not set')}</dd></div><div><dt>Due type</dt><dd>${d.category}</dd></div><div><dt>Repeat <span class="concept-tag">Concept</span></dt><dd>${esc(repeatFact(d))}</dd></div><div><dt>Reminder offsets</dt><dd>${(d.reminderDays||[]).map(n=>n===0?'On due date':n+(n===1?' day before':' days before')).join(', ')||'None'}<small class="detail-simulation">Simulation only</small></dd></div><div><dt>Currency / timezone</dt><dd>PHP / Asia/Manila</dd></div></dl><div class="detail-quick"><button class="app-button primary" data-action="quick-paid">${icon('check')}${d.paid?'Mark unpaid':'Mark paid'}</button><button class="app-button" data-action="reschedule">${icon('calendar')}Reschedule</button></div><p class="tiny-copy">Quick status changes are a confirmed prototype shortcut. No payment is made.</p><section class="detail-note"><h2 class="section-title">Notes</h2><p>${esc(d.notes||'No notes added.')}</p></section><p class="tiny-copy">Created · ${d.created||'01 Nov 2026, 01:41 UTC'}<br>Updated · ${d.updated||'01 Nov 2026, 01:41 UTC'}</p>`;
 }
-function draft(editing){const d=editing?selected():null,days=d?.reminderDays||[0,1];return{title:d?.title||'',category:d?.category||'Bill',categoryId:d?.categoryId||'ph.other.general',providerLabel:d?phProviderName(d):'',amount:d?M.inputAmount(d.amount):'',date:d?.date||M.TODAY,notes:d?.notes||'',paid:d?.paid||false,repeat:d?.repeat||'none',repeatEvery:d?.repeatEvery||1,repeatUnit:d?.repeatUnit||'months',reminderDays:[...days],reminderExtra:days.filter(n=>![0,1,3,7].includes(n)).join(', ')};}
+function draft(editing){const d=editing?selected():null,days=d?.reminderDays||[0,1];return{title:d?.title||'',category:d?.category||'Bill',categoryId:d?.categoryId||'ph.other.general',providerLabel:d?phProviderName(d):'',amount:d?M.inputAmount(d.amount):'',date:d?.date||M.TODAY,notes:d?.notes||'',paid:d?.paid||false,repeat:d?.repeat||'none',repeatEvery:d?.repeatEvery||1,repeatUnit:d?.repeatUnit||'months',repeatDay1:d?.repeatDay1||15,repeatDay2:d?.repeatDay2||30,reminderDays:[...days],reminderExtra:days.filter(n=>![0,1,3,7].includes(n)).join(', ')};}
 
 function amountPreview(){if(!state.form.amount.trim())return '';const r=M.parseAmount(editorAmount(),state.form.category);return r.error?'Use a valid PHP amount.':`Will save as ${M.money(r.value)}.`;}
-function repeatPreview(){const d=state.form,next=E.nextOccurrence(d.date,d.repeat,Number(d.repeatEvery),d.repeatUnit);return d.repeat==='none'?'One date, no repeat preference.':next?`Next preview: ${dateText(next)}. No future dues are generated.`:'No next date within the supported calendar.';}
+function repeatPreview(){const d=state.form,days=[Number(d.repeatDay1),Number(d.repeatDay2)];
+  if(d.repeat==='twicemonthly'){if(!E.validTwiceDays(days))return 'Choose two different days.';const next=E.nextOccurrence(d.date,d.repeat,1,'months',days),after=next&&E.nextOccurrence(next,d.repeat,1,'months',days);return next?`Next preview: ${dateText(next)}${after?`, then ${dateText(after)}`:''}. No future dues are generated.`:'No next date within the supported calendar.';}
+  const next=E.nextOccurrence(d.date,d.repeat,Number(d.repeatEvery),d.repeatUnit);return d.repeat==='none'?'One date, no repeat preference.':next?`Next preview: ${dateText(next)}. No future dues are generated.`:'No next date within the supported calendar.';}
 function editorSection(id,label,value,body,extra=''){
   return `<details id="${id}" class="editor-disclosure ${extra}" data-editor-section="${id}" ${state.editorOpen?.[id]?'open':''}><summary><span class="summary-label">${label}</span><span class="summary-value" data-editor-value="${id}">${esc(value)}</span></summary><div class="editor-disclosure-content">${body}</div></details>`;
 }
@@ -112,7 +117,7 @@ function focusEditorError(input){
 function editorAmount(){return DuewiseEssential.normalizeAmount(state.form.amount);}
 function refreshEditorSummaries(){
   if(!state.form||!app('#due-form'))return;
-  const f=state.form,values={'type-options':`Type: ${f.category}`,'repeat-options':f.repeat==='none'?"Doesn't repeat":f.repeat==='custom'?`Every ${f.repeatEvery} ${f.repeatUnit}`:repeats[f.repeat],'reminder-options':DuewiseEssential.reminderSummary(f,state.reminder),'extra-details':[f.providerLabel.trim(),f.notes.trim()?'Notes added':''].filter(Boolean).join(' · ')||'Optional','custom-reminder-options':f.reminderExtra.trim()||'Optional'};
+  const f=state.form,values={'type-options':`Type: ${f.category}`,'repeat-options':repeatSummary(f),'reminder-options':DuewiseEssential.reminderSummary(f,state.reminder),'extra-details':[f.providerLabel.trim(),f.notes.trim()?'Notes added':''].filter(Boolean).join(' · ')||'Optional','custom-reminder-options':f.reminderExtra.trim()||'Optional'};
   for(const [id,value] of Object.entries(values)){const el=app(`[data-editor-value="${id}"]`);if(el)el.textContent=value;}
 }
 function editor(){
@@ -127,7 +132,7 @@ function editor(){
     <details id="type-options" class="editor-disclosure editor-type" data-editor-section="type-options" ${state.editorOpen?.['type-options']?'open':''}><summary><span data-editor-value="type-options">Type: ${esc(f.category)}</span><span class="type-change">Change</span></summary><div class="editor-disclosure-content"><div class="field"><label for="due-category">Due type</label><select id="due-category" name="category">${M.categories.map(c=>`<option ${c===f.category?'selected':''}>${c}</option>`).join('')}</select><p class="hint">Bill and Subscription require an amount. Task and Other can have no amount. Category stays separate.</p></div></div></details>
     <div class="field"><label for="due-date">Due date <span class="required-label">required</span></label><input id="due-date" name="date" type="date" value="${esc(f.date)}" min="0001-01-01" max="9999-12-31" required aria-describedby="date-error date-hint"><p id="date-hint" class="hint">${M.validDate(f.date)?dateText(f.date):'Choose a date'} · Manila. Past dates are allowed.</p><span id="date-error" class="error" role="status"></span></div>
     ${phCategoryFields(f)}
-    ${editorSection('repeat-options','Repeat',f.repeat==='none'?"Doesn't repeat":f.repeat==='custom'?`Every ${f.repeatEvery} ${f.repeatUnit}`:repeats[f.repeat],repeatBody)}
+    ${editorSection('repeat-options','Repeat',repeatSummary(f),repeatBody)}
     ${editorSection('reminder-options','Reminders',DuewiseEssential.reminderSummary(f,state.reminder),reminderBody)}
     ${editorSection('extra-details','Biller & notes',[f.providerLabel.trim(),f.notes.trim()?'Notes added':''].filter(Boolean).join(' · ')||'Optional',extraBody)}
     ${state.page==='edit'?`<label class="check-row" for="due-paid"><span>Paid · applies on Save</span><input id="due-paid" name="paid" type="checkbox" ${f.paid?'checked':''}></label>`:'<p class="tiny-copy">New dues start unpaid.</p>'}
@@ -201,6 +206,7 @@ function render(){
   else{renderInspector();renderPhone();}
   const hash=Lab.enabled?`#interaction-lab/${state.page}`:state.view==='compare'?'#compare':state.view==='decide'?window.DecisionLab.hash():state.view==='notify'?window.NotificationLab.hash():`#${state.concept}/${state.page}`;
   if(location.hash!==hash)history.replaceState(null,'',hash);
+  window.DashboardBridge?.publish(); // developer dashboard only; undefined when not embedded
 }
 async function navigate(page){
   if(![...roots,'details','add','edit','reminders','catalog'].includes(page))return;
@@ -227,15 +233,16 @@ function saveDueNow(event){
   event.preventDefault();if(!['title','amount','date'].map(validate).every(Boolean)){focusEditorError(app('[aria-invalid=true]'));return;}
   const f=state.form;
   if(!M.categories.includes(f.category)||!Object.keys(repeats).includes(f.repeat)||!catalog.all().some(c=>c.id===f.categoryId)){toast('Choose a valid category and due type.');return;}
-  app('#repeat-error').textContent='';app('#repeat-every').setAttribute('aria-invalid','false');app('#reminder-extra').setAttribute('aria-invalid','false');app('#due-provider').setAttribute('aria-invalid','false');
+  app('#repeat-error').textContent='';app('#repeat-every').setAttribute('aria-invalid','false');app('#repeat-day-2').setAttribute('aria-invalid','false');app('#reminder-extra').setAttribute('aria-invalid','false');app('#due-provider').setAttribute('aria-invalid','false');
   if(f.repeat==='custom'&&(!Number.isInteger(Number(f.repeatEvery))||Number(f.repeatEvery)<1||Number(f.repeatEvery)>365||!['days','weeks','months','years'].includes(f.repeatUnit))){app('#repeat-error').textContent='Choose 1 to 365 whole units for a custom interval.';app('#repeat-every').setAttribute('aria-invalid','true');focusEditorError(app('#repeat-every'));return;}
+  if(f.repeat==='twicemonthly'&&!E.validTwiceDays([Number(f.repeatDay1),Number(f.repeatDay2)])){app('#repeat-error').textContent='Choose two different days for Twice a month.';app('#repeat-day-2').setAttribute('aria-invalid','true');focusEditorError(app('#repeat-day-2'));return;}
   const offsets=phParseReminderDays(Array.from(document.querySelectorAll('#phone .reminder-offset:checked'),el=>Number(el.value)),f.reminderExtra);
   app('#offset-error').textContent=offsets.error||'';
   if(offsets.error){app('#reminder-extra').setAttribute('aria-invalid','true');focusEditorError(app('#reminder-extra'));return;}
   const provider=catalog.resolveProvider(f.providerLabel);app('#provider-error').textContent=provider.error||'';
   if(provider.error){app('#due-provider').setAttribute('aria-invalid','true');focusEditorError(app('#due-provider'));return;}
   const editing=state.page==='edit',d=editing?selected():null;if(editing&&!d)return;
-  const patch={title:f.title.trim(),category:f.category,categoryId:f.categoryId,providerId:provider.value?.id||null,providerText:provider.value?.name||'',amount:M.parseAmount(DuewiseEssential.normalizeAmount(f.amount),f.category).value,date:f.date,notes:f.notes.trim()?f.notes:'',repeat:f.repeat,repeatEvery:Number(f.repeatEvery),repeatUnit:f.repeatUnit,reminderDays:offsets.value,paid:editing?f.paid:false,updated:'04 Nov 2026, 01:41 UTC'};
+  const patch={title:f.title.trim(),category:f.category,categoryId:f.categoryId,providerId:provider.value?.id||null,providerText:provider.value?.name||'',amount:M.parseAmount(DuewiseEssential.normalizeAmount(f.amount),f.category).value,date:f.date,notes:f.notes.trim()?f.notes:'',repeat:f.repeat,repeatEvery:Number(f.repeatEvery),repeatUnit:f.repeatUnit,...(f.repeat==='twicemonthly'?(([repeatDay1,repeatDay2])=>({repeatDay1,repeatDay2}))(twiceDays(f)):{}),reminderDays:offsets.value,paid:editing?f.paid:false,updated:'04 Nov 2026, 01:41 UTC'};
   if(editing)Object.assign(d,patch);else state.data.push({id:'sample-'+Date.now(),...patch,createdOrder:state.data.length,created:'04 Nov 2026, 01:41 UTC'});
   const target=state.formReturn;state.form=null;state.sampleMode='normal';navigate(target);toast('Sample due saved. Your custom categories and billers stay in this browser.');
 }
@@ -291,8 +298,8 @@ document.addEventListener('change',event=>{
   if(el.id==='sample-state'){state.sampleMode=el.value;renderPhone();}
   if(el.id==='category-filter'){state.category=el.value;updateResults();}
   if(el.id==='due-category'){state.form.category=el.value;const required=['Bill','Subscription'].includes(el.value);app('#due-amount').required=required;app('#due-amount').setAttribute('aria-required',String(required));app('#amount-requirement').textContent=required?'required':'optional';app('#amount-rule').textContent=required?'Required for '+el.value+'.':'Blank means no amount; zero is a recorded amount.';app('#amount-preview').textContent=state.form.amount.trim()?amountPreview():'';validate('amount');}
-  if(el.id==='due-repeat'){state.form.repeat=el.value;app('#custom-repeat-fields').hidden=el.value!=='custom';app('#repeat-preview').textContent=repeatPreview();}
-  if(['repeat-every','repeat-unit'].includes(el.id))app('#repeat-preview').textContent=repeatPreview();
+  if(el.id==='due-repeat'){state.form.repeat=el.value;app('#custom-repeat-fields').hidden=el.value!=='custom';app('#twice-repeat-fields').hidden=el.value!=='twicemonthly';app('#repeat-preview').textContent=repeatPreview();}
+  if(['repeat-every','repeat-unit','repeat-day-1','repeat-day-2'].includes(el.id))app('#repeat-preview').textContent=repeatPreview();
   if(el.classList.contains('reminder-offset')&&state.form)state.form.reminderDays=Array.from(document.querySelectorAll('#phone .reminder-offset:checked'),e=>Number(e.value));
   refreshEditorSummaries();
 });

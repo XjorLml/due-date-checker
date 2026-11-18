@@ -64,9 +64,20 @@ module.exports=async({send,evaluate,waitFor,click,input,page,dims,shot,noOverflo
   // Enabled reminder summaries remain explicitly simulated; presets stay independent of global state.
   await evaluate('state.reminder.enabled=true');await click('#app-nav .floating-add');assert.ok(await evaluate("document.querySelector('[data-editor-value=reminder-options]').textContent.includes('09:00 Manila')"));
   await input('#due-title','Discard this draft');await leave(true);assert.equal(await evaluate("state.data.some(d=>d.title==='Discard this draft')"),false);assert.equal(await evaluate("document.querySelector('#app-nav').hidden"),false);
+  // Twice a month (PRD TM): default 15 & 30, equal days refused, both days saved and shown in Details.
+  await page('dues');await click('#app-nav .floating-add');await input('#due-title','Twice bill');await input('#due-amount','500');await input('#due-date','2026-11-20');await input('#due-repeat','twicemonthly');
+  assert.equal(await evaluate("document.querySelector('#twice-repeat-fields').hidden||document.querySelector('#custom-repeat-fields').hidden===false"),false);
+  assert.equal(await evaluate("document.querySelector('#repeat-day-1').value+'/'+document.querySelector('#repeat-day-2').value"),'15/30');
+  assert.equal(await evaluate("document.querySelector('#repeat-preview').textContent===`Next preview: ${dateText('2026-11-30')}, then ${dateText('2026-12-15')}. No future dues are generated.`"),true);
+  await input('#repeat-day-2','15');await click('#app-actions [type=submit]');
+  assert.equal(await evaluate("state.page==='add'&&document.activeElement.id==='repeat-day-2'&&document.querySelector('#repeat-error').textContent.includes('two different days')"),true);
+  await input('#repeat-day-1','30');await click('#app-actions [type=submit]');assert.equal(await evaluate('state.page'),'dues');
+  const twice=await evaluate("state.data.find(d=>d.title==='Twice bill')");assert.equal(twice.repeat,'twicemonthly');assert.deepEqual([twice.repeatDay1,twice.repeatDay2],[15,30]);
+  assert.ok(await evaluate(`document.querySelector('#phone [data-due="${twice.id}"]').textContent.includes('Twice a month')`));
+  await click(`#phone [data-due="${twice.id}"]`);assert.ok(await evaluate("document.querySelector('#phone .detail-facts').textContent.includes('Twice a month on days 15 and 30')"));
   // Every root still receives its direct Add return, including a successful quick Save.
   for(const origin of ['dashboard','calendar','dues','settings']){
     await page(origin);await click('#app-nav .floating-add');await input('#due-title','Quick '+origin);await input('#due-amount','1');await click('#app-actions [type=submit]');assert.equal(await evaluate('state.page'),origin);assert.equal(await evaluate("document.querySelector('#app-nav [aria-current=page]').dataset.page"),origin);
   }
-  console.log('PASS: essential-first default Add/Edit, earlier core fields, collapsed controls, draft/disclosure retention, normal dirty exits, revealed errors, PHP paste, amount policies, schedules and origin returns. 30-second human acceptance remains unmeasured.');
+  console.log('PASS: essential-first default Add/Edit, earlier core fields, collapsed controls, draft/disclosure retention, normal dirty exits, revealed errors, PHP paste, amount policies, schedules, twice-a-month days and origin returns. 30-second human acceptance remains unmeasured.');
 };

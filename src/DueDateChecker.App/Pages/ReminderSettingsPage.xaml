@@ -32,12 +32,22 @@
                 <Border Style="{StaticResource SurfaceCard}">
                     <VerticalStackLayout Spacing="10">
                         <Label Text="Your schedule" Style="{StaticResource Heading2}" />
-                        <Label Text="On each due date, with an optional day-before nudge." Style="{StaticResource SupportingLabel}" />
+                        <Label Text="On each due date, with optional nudges the day before and while a due is overdue." Style="{StaticResource SupportingLabel}" />
                         <Grid ColumnDefinitions="*,Auto" MinimumHeightRequest="48">
                             <Label Text="Also one day before" VerticalOptions="Center" AutomationProperties.IsInAccessibleTree="False" />
                             <CheckBox Grid.Column="1" IsChecked="{Binding DayBefore}" IsEnabled="{Binding CanEdit}" AutomationId="ReminderDayBefore"
                                       Color="{AppThemeBinding Light={StaticResource PrimaryLight}, Dark={StaticResource PrimaryDark}}"
                                       SemanticProperties.Description="Also remind one day before" />
+                        </Grid>
+                        <!-- UX30 (2026-11-16): overdue reminders 1, 7, 14, 21 and 28 days late. -->
+                        <Grid ColumnDefinitions="*,Auto" MinimumHeightRequest="48">
+                            <VerticalStackLayout VerticalOptions="Center" AutomationProperties.IsInAccessibleTree="False">
+                                <Label Text="Also when overdue" />
+                                <Label Text="1 day late, then weekly for 4 weeks" Style="{StaticResource CaptionLabel}" />
+                            </VerticalStackLayout>
+                            <CheckBox Grid.Column="1" IsChecked="{Binding Overdue}" IsEnabled="{Binding CanEdit}" AutomationId="ReminderOverdue"
+                                      Color="{AppThemeBinding Light={StaticResource PrimaryLight}, Dark={StaticResource PrimaryDark}}"
+                                      SemanticProperties.Description="Also remind when a due is overdue: 1 day late, then weekly for 4 weeks" />
                         </Grid>
                         <Label Text="Time · Asia/Manila" Style="{StaticResource FieldLabel}" />
                         <Border Style="{StaticResource FieldBorder}">
@@ -65,6 +75,38 @@
                     </VerticalStackLayout>
                 </Border>
 
+                <!-- UX29 (2026-11-16): Android keeps each channel's sound and banner; these rows open them. -->
+                <Border Style="{StaticResource SurfaceCard}">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="Sound &amp; alert style" Style="{StaticResource Heading2}" />
+                        <Label Text="Android keeps a sound for each kind of reminder. Tap one to choose its ringtone, vibration or banner." Style="{StaticResource SupportingLabel}" />
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" MinimumHeightRequest="56">
+                            <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                                <Label Text="Due today" Style="{StaticResource Heading3}" />
+                                <Label Text="On the due date and when overdue" Style="{StaticResource CaptionLabel}" />
+                                <Label Text="{Binding DueTodayStyle}" Style="{StaticResource SupportingLabel}" AutomationId="ReminderDueTodaySoundState" />
+                            </VerticalStackLayout>
+                            <pages:Glyph Grid.Column="1" Kind="next" VerticalOptions="Center"
+                                         Color="{AppThemeBinding Light={StaticResource TextLight}, Dark={StaticResource TextDark}}" />
+                            <Button Grid.ColumnSpan="2" Style="{StaticResource OverlayButton}" Command="{Binding OpenDueTodaySoundCommand}" AutomationId="ReminderDueTodaySound"
+                                    SemanticProperties.Description="{Binding DueTodayStyle, StringFormat='Due today reminders, {0}. Opens Android sound settings'}" />
+                        </Grid>
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" MinimumHeightRequest="56">
+                            <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                                <Label Text="Coming up" Style="{StaticResource Heading3}" />
+                                <Label Text="The day before" Style="{StaticResource CaptionLabel}" />
+                                <Label Text="{Binding ComingUpStyle}" Style="{StaticResource SupportingLabel}" AutomationId="ReminderComingUpSoundState" />
+                            </VerticalStackLayout>
+                            <pages:Glyph Grid.Column="1" Kind="next" VerticalOptions="Center"
+                                         Color="{AppThemeBinding Light={StaticResource TextLight}, Dark={StaticResource TextDark}}" />
+                            <Button Grid.ColumnSpan="2" Style="{StaticResource OverlayButton}" Command="{Binding OpenComingUpSoundCommand}" AutomationId="ReminderComingUpSound"
+                                    SemanticProperties.Description="{Binding ComingUpStyle, StringFormat='Coming up reminders, {0}. Opens Android sound settings'}" />
+                        </Grid>
+                        <Button Text="Play a test reminder" Command="{Binding TestCommand}" IsEnabled="{Binding CanEdit}" Style="{StaticResource SecondaryButton}"
+                                AutomationId="ReminderTest" SemanticProperties.Description="Play a test reminder with the Due today sound" />
+                    </VerticalStackLayout>
+                </Border>
+
                 <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" SemanticProperties.Description="Updating reminders" />
                 <Label Text="{Binding Message}" AutomationId="ReminderMessage" />
 
@@ -83,9 +125,9 @@
                             <Label Text="{Binding StatusText}" Style="{StaticResource SupportingLabel}" AutomationId="ReminderPermissionState" />
                             <Label Text="{Binding BackgroundText}" Style="{StaticResource SupportingLabel}" AutomationId="ReminderBackgroundState" />
                             <Label Text="{Binding MakerStepsText}" IsVisible="{Binding HasMakerSteps}" Style="{StaticResource SupportingLabel}" AutomationId="ReminderMakerSteps" />
-                            <Label Text="Notifications never show titles, amounts or notes. Android may delay them to save battery, and Force stop can pause them until you reopen Duewise."
-                                   Style="{StaticResource CaptionLabel}" />
-                            <Button Text="Test notification" Command="{Binding TestCommand}" IsEnabled="{Binding CanEdit}" Style="{StaticResource SecondaryButton}" />
+                            <!-- PR01 (UX28, 2026-11-16): matches N1. -->
+                            <Label Text="Unlocked, a reminder shows the due's title, amount and date. The lock screen only says you have a due. Notes are never shown. Android may delay reminders to save battery, and Force stop can pause them until you reopen Duewise."
+                                   Style="{StaticResource CaptionLabel}" AutomationId="ReminderPrivacy" />
                             <Button Text="Android notification settings" Command="{Binding OpenSystemSettingsCommand}" Style="{StaticResource SecondaryButton}" />
                             <Button Text="Android app / battery settings" Command="{Binding OpenAppSettingsCommand}" Style="{StaticResource SecondaryButton}" />
                             <Button Text="Refresh / Retry" Command="{Binding LoadCommand}" Style="{StaticResource SecondaryButton}" />

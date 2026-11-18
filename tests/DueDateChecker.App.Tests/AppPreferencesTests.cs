@@ -142,7 +142,7 @@ public sealed class AppPreferencesTests
         storage.FailWrite = false;
         vm.SaveCommand.Execute(null);
         Assert.Equal("Preferences saved.", vm.Message);
-        Assert.Equal("1|dark|sunday", storage.Value);
+        Assert.Equal("2|dark|sunday|15|30", storage.Value); // PD04: saves use format 2 with the paydays
         Assert.Equal(1, changes);
     }
 

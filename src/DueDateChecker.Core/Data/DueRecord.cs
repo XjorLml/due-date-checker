@@ -22,7 +22,9 @@ public sealed record DueRecord(
     int RepeatRule,
     int? RepeatDay,
     string? RepeatSourceId,
-    string CategoryId = Domain.PhilippineCategories.OtherId)
+    string CategoryId = Domain.PhilippineCategories.OtherId,
+    int? RepeatDay2 = null,
+    bool AmountVaries = false)
 {
     public bool IsDeleted => DeletedAt is not null;
 }

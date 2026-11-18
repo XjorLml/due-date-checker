@@ -15,15 +15,62 @@ public sealed class NotificationPermission : Permissions.BasePlatformPermission
 
 public sealed class AndroidReminderPlatform : IReminderPlatform
 {
-    public const string ChannelId = "duewise_reminders_v1";
+    // UX29 (2026-11-16): two channels so "due today" can have its own sound and a banner. Android lets
+    // only the user change a channel's sound after it exists, so these IDs are new and the old one goes.
+    public const string DueTodayChannelId = "duewise_due_today_v1";
+    public const string ComingUpChannelId = "duewise_coming_up_v1";
+    private const string LegacyChannelId = "duewise_reminders_v1";
+    private const string ChannelNoticeKey = "duewise.reminders.channel_notice";
     public const int ImmediateJob = 5205;
     public const int RecoveryJob = 5206;
     public const string TapAction = "com.lem.duedatechecker.OPEN_REMINDER";
     private static Context Context => global::Android.App.Application.Context;
     private static NotificationManager Manager => (NotificationManager)Context.GetSystemService(Context.NotificationService)!;
     private static JobScheduler Jobs => (JobScheduler)Context.GetSystemService(Context.JobSchedulerService)!;
-    private static void EnsureChannel() => Manager.CreateNotificationChannel(new NotificationChannel(ChannelId, "Due reminders", NotificationImportance.Default)
-    { Description = "Local reminders for unpaid due dates" });
+    private static string IdOf(ReminderChannel channel) => channel == ReminderChannel.ComingUp ? ComingUpChannelId : DueTodayChannelId;
+    private static void EnsureChannel()
+    {
+        Manager.CreateNotificationChannel(new NotificationChannel(DueTodayChannelId, "Due today", NotificationImportance.High)
+        { Description = "Reminders on the due date and when a due is overdue" });
+        Manager.CreateNotificationChannel(new NotificationChannel(ComingUpChannelId, "Coming up", NotificationImportance.Default)
+        { Description = "Reminders the day before a due" });
+        // AL02: the single channel of earlier builds is removed once, and the Reminders page says so.
+        if (Manager.GetNotificationChannel(LegacyChannelId) is not null)
+        {
+            Manager.DeleteNotificationChannel(LegacyChannelId);
+            Microsoft.Maui.Storage.Preferences.Default.Set(ChannelNoticeKey, true);
+        }
+    }
+    public bool TakeChannelNotice()
+    {
+        EnsureChannel();
+        var preferences = Microsoft.Maui.Storage.Preferences.Default;
+        if (!preferences.Get(ChannelNoticeKey, false)) return false;
+        preferences.Remove(ChannelNoticeKey);
+        return true;
+    }
+    public string GetAlertStyle(ReminderChannel channel)
+    {
+        EnsureChannel();
+        var found = Manager.GetNotificationChannel(IdOf(channel));
+        if (found is null || !Manager.AreNotificationsEnabled() || found.Importance == NotificationImportance.None) return "Off";
+        if (found.Importance is NotificationImportance.Low or NotificationImportance.Min) return "Silent";
+        string? sound = null;
+        if (found.Sound is { } uri)
+        {
+            try { sound = global::Android.Media.RingtoneManager.GetRingtone(Context, uri)?.GetTitle(Context); }
+            catch (Exception) { sound = "Custom sound"; }
+        }
+        var style = found.Importance >= NotificationImportance.High ? "Banner" : "Sound, no banner";
+        return sound is null ? (found.Importance >= NotificationImportance.High ? "Banner, no sound" : "No sound") : $"{style} · {sound}";
+    }
+    public void OpenChannelSettings(ReminderChannel channel)
+    {
+        EnsureChannel();
+        Context.StartActivity(new Intent(global::Android.Provider.Settings.ActionChannelNotificationSettings)
+            .PutExtra(global::Android.Provider.Settings.ExtraAppPackage, Context.PackageName)
+            .PutExtra(global::Android.Provider.Settings.ExtraChannelId, IdOf(channel)).AddFlags(ActivityFlags.NewTask));
+    }
 
     public NotificationAccess GetAccess()
     {
@@ -31,9 +78,12 @@ public sealed class AndroidReminderPlatform : IReminderPlatform
         if (OperatingSystem.IsAndroidVersionAtLeast(33) && Context.CheckSelfPermission(global::Android.Manifest.Permission.PostNotifications) != global::Android.Content.PM.Permission.Granted)
             return new(false, "Android notification permission is not allowed.");
         if (!Manager.AreNotificationsEnabled()) return new(false, "Notifications for Duewise are blocked in Android settings.");
-        if (Manager.GetNotificationChannel(ChannelId)?.Importance == NotificationImportance.None)
-            return new(false, "The Due reminders channel is blocked in Android settings.");
-        return new(true, "Android notification permission and Due reminders channel are allowed.");
+        if (Manager.GetNotificationChannel(DueTodayChannelId)?.Importance == NotificationImportance.None)
+            return new(false, "The Due today channel is blocked in Android settings.");
+        // AL05: a blocked Coming up channel only loses the day-before reminder.
+        if (Manager.GetNotificationChannel(ComingUpChannelId)?.Importance == NotificationImportance.None)
+            return new(true, "Android notifications are allowed. Coming up (day-before) reminders are turned off in Android settings.");
+        return new(true, "Android notification permission and both reminder channels are allowed.");
     }
     public async Task RequestPermissionAsync()
     { EnsureChannel(); await Permissions.RequestAsync<NotificationPermission>(); }
@@ -50,10 +100,9 @@ public sealed class AndroidReminderPlatform : IReminderPlatform
             global::Android.Net.Uri.Parse("package:" + Context.PackageName)).AddFlags(ActivityFlags.NewTask));
     public void OpenSettings()
     {
-        var intent = new Intent(global::Android.Provider.Settings.ActionChannelNotificationSettings)
-            .PutExtra(global::Android.Provider.Settings.ExtraAppPackage, Context.PackageName)
-            .PutExtra(global::Android.Provider.Settings.ExtraChannelId, ChannelId).AddFlags(ActivityFlags.NewTask);
-        Context.StartActivity(intent);
+        EnsureChannel();
+        Context.StartActivity(new Intent(global::Android.Provider.Settings.ActionAppNotificationSettings)
+            .PutExtra(global::Android.Provider.Settings.ExtraAppPackage, Context.PackageName).AddFlags(ActivityFlags.NewTask));
     }
     private static PendingIntent AlarmIntent() => PendingIntent.GetBroadcast(Context, 5205,
         new Intent(Context, typeof(ReminderReceiver)).SetAction("com.lem.duedatechecker.REMINDER_ALARM"),
@@ -110,7 +159,7 @@ public sealed class AndroidReminderPlatform : IReminderPlatform
         }
         return PendingIntent.GetActivity(Context, 0, intent, PendingIntentFlags.UpdateCurrent | PendingIntentFlags.Immutable)!;
     }
-    private static Notification PublicVersion(string text) => new Notification.Builder(Context, ChannelId)
+    private static Notification PublicVersion(string text, string channelId = DueTodayChannelId) => new Notification.Builder(Context, channelId)
         .SetSmallIcon(Resource.Drawable.notification_due).SetContentTitle("Duewise").SetContentText(text)
         .SetVisibility(NotificationVisibility.Public).Build();
 
@@ -141,10 +190,12 @@ public sealed class AndroidReminderPlatform : IReminderPlatform
                 Manager.Cancel(previous.Tag, previous.Id);
         var extras = new Bundle(); extras.PutString("due_id", item.DueId.ToString());
         extras.PutString("kind", "reminder"); extras.PutString("public_text", text.PublicBody);
-        var notification = new Notification.Builder(Context, ChannelId)
+        // AL01: the day before goes to Coming up; the due date and overdue reminders to Due today.
+        var channelId = text.Kind == ReminderKind.ComingUp ? ComingUpChannelId : DueTodayChannelId;
+        var notification = new Notification.Builder(Context, channelId)
             .SetSmallIcon(Resource.Drawable.notification_due).SetContentTitle(text.Title)
             .SetContentText(text.Body).SetStyle(new Notification.BigTextStyle().BigText(text.Body))
-            .SetVisibility(NotificationVisibility.Private).SetPublicVersion(PublicVersion(text.PublicBody))
+            .SetVisibility(NotificationVisibility.Private).SetPublicVersion(PublicVersion(text.PublicBody, channelId))
             .SetGroup(Group).SetGroupAlertBehavior(NotificationGroupAlertBehavior.Children)
             .AddAction(Action(new(item.DueId, item.Key, text.Version), false))
             .SetAutoCancel(true).SetOnlyAlertOnce(true).SetContentIntent(TapIntent(item)).SetExtras(extras).Build();
@@ -160,7 +211,7 @@ public sealed class AndroidReminderPlatform : IReminderPlatform
         var texts = reminders.Select(n => n.Notification!.Extras!.GetString("public_text")).Distinct().ToArray();
         var text = texts.Length == 1 && texts[0] == "You have a due today" ? $"You have {count} dues today"
             : texts.Length == 1 && texts[0] == "You have a due tomorrow" ? $"You have {count} dues tomorrow" : $"You have {count} due reminders";
-        Manager.Notify(SummaryTag, 0, new Notification.Builder(Context, ChannelId)
+        Manager.Notify(SummaryTag, 0, new Notification.Builder(Context, DueTodayChannelId)
             .SetSmallIcon(Resource.Drawable.notification_due).SetContentTitle("Duewise").SetContentText(text)
             .SetVisibility(NotificationVisibility.Private).SetPublicVersion(PublicVersion(text)).SetOnlyAlertOnce(true)
             .SetGroup(Group).SetGroupSummary(true).SetGroupAlertBehavior(NotificationGroupAlertBehavior.Children)
@@ -186,21 +237,24 @@ public sealed class AndroidReminderPlatform : IReminderPlatform
         var extras = new Bundle(); extras.PutString("due_id", original.DueId.ToString()); extras.PutString("kind", "feedback");
         extras.PutLong("feedback_until", expires.ToUnixTimeMilliseconds());
         var item = due is null ? null : new ReminderOccurrence(original.Key, due.Id, due.DueDate, DateTimeOffset.UtcNow);
-        var builder = new Notification.Builder(Context, ChannelId).SetSmallIcon(Resource.Drawable.notification_due)
+        var builder = new Notification.Builder(Context, DueTodayChannelId).SetSmallIcon(Resource.Drawable.notification_due)
             .SetContentTitle(title).SetContentText(body).SetStyle(new Notification.BigTextStyle().BigText(body))
             .SetVisibility(NotificationVisibility.Private).SetPublicVersion(PublicVersion("Open Duewise to review your dues."))
             .SetOnlyAlertOnce(true).SetAutoCancel(true).SetExtras(extras)
             .SetTimeoutAfter(Math.Max(1, expires.ToUnixTimeMilliseconds() - DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()))
             .SetContentIntent(TapIntent(item, due is null ? null : ReminderText.Fingerprint(due)));
+        // Payment feedback replaces the reminder it answers (same tag and ID) with OnlyAlertOnce, so it
+        // does not ring or pop up again on the High-importance Due today channel.
         if (result.Undo is { } token) builder.AddAction(Action(token, true));
         Manager.Notify(original.Key, 0, builder.Build()); UpdateGroup();
     }
     public void PostTest()
     {
         if (!GetAccess().Allowed) throw new InvalidOperationException("Android notifications blocked.");
-        Manager.Notify("duewise-test", 0, new Notification.Builder(Context, ChannelId)
-            .SetSmallIcon(Resource.Drawable.notification_due).SetContentTitle("Duewise test")
-            .SetContentText("Reminders can show notifications on this device.").SetAutoCancel(true)
+        // AL04: the test plays exactly what a due-date reminder will.
+        Manager.Notify("duewise-test", 0, new Notification.Builder(Context, DueTodayChannelId)
+            .SetSmallIcon(Resource.Drawable.notification_due).SetContentTitle("Duewise test reminder")
+            .SetContentText("This is how a reminder on a due date looks and sounds.").SetAutoCancel(true)
             .SetVisibility(NotificationVisibility.Private).SetContentIntent(TapIntent(null)).Build());
     }
 }

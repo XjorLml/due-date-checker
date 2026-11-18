@@ -16,6 +16,10 @@ On 2026-11-06, [009: Recurring dues as linked occurrences](009-recurring-dues.md
 
 On 2026-11-06, [010: Export and import as a user-chosen, versioned JSON file](010-export-import-file.md) records the UX05 choices (system file dialogs, format `duewise.dues` version 1 with strict reading, one-transaction import that may only replace deleted rows, dues only). The user decided the product rules; the technical choices are marked as not separately approved. The number is new.
 
+On 2026-11-16, [011: Twice-a-month repeat as a fifth rule with a second day column](011-twice-monthly-repeat.md) records the PRD TM storage choices (repeat code 4, `repeat_day_2`, the migration 007 table rebuild, export format 3, fingerprint compatibility). The user decided and authorized the product scope; the technical choices are marked as not separately approved. The number is new.
+
+On 2026-11-16, [012: Two reminder channels, overdue reminders by date, and a waiting amount](012-reminder-channels-and-overdue.md) records the storage and Android choices for the UX review decisions of that day (new channel IDs, overdue occurrences, `amount_varies`, paydays as a preference). The user decided the product scope; the technical choices are marked as not separately approved. The number is new.
+
 ## Recording a decision
 
 Create an ADR for a significant architecture choice or change, using `NNN-short-title.md`. Check the historical number references before assigning an ID; reconcile them explicitly rather than silently reusing them.

@@ -19,7 +19,8 @@ public sealed record DueListItem(Due Due, DueStatus Status) : IDueRow
     /// <summary>Shown wherever a due has no amount (F07). Zero is never shown this way; it stays ₱0.00.</summary>
     public const string NoAmountText = "No amount";
 
-    public string AmountText => Due.Amount?.ToString() ?? NoAmountText;
+    /// <summary>UX32: a repeating bill whose amount changes each month waits for its amount instead.</summary>
+    public string AmountText => Due.Amount?.ToString() ?? (Due.AmountVaries ? ReminderText.AmountNeeded : NoAmountText);
     /// <summary>UX14: Details shows an absent amount as quiet text, not in the large amount style.</summary>
     public bool HasAmount => Due.Amount is not null;
     public string DateText => Due.DueDate.ToString("dd MMM yyyy", CultureInfo.InvariantCulture);
@@ -33,6 +34,7 @@ public sealed record DueListItem(Due Due, DueStatus Status) : IDueRow
     {
         RepeatRule.Weekly => "Every week",
         RepeatRule.Monthly => "Every month",
+        RepeatRule.TwiceMonthly => "Twice a month",
         RepeatRule.Yearly => "Every year",
         _ => ""
     };
@@ -50,6 +52,7 @@ public sealed record DueListItem(Due Due, DueStatus Status) : IDueRow
     {
         RepeatRule.Weekly => "Every week",
         RepeatRule.Monthly => $"Every month on day {Due.RepeatDay}",
+        RepeatRule.TwiceMonthly => $"Twice a month on days {Due.RepeatDay} and {Due.RepeatDay2}",
         RepeatRule.Yearly => $"Every year on {Due.RepeatDay:00} {Due.DueDate.ToString("MMM", CultureInfo.InvariantCulture)}",
         _ => ""
     };
@@ -61,7 +64,7 @@ public sealed record DueListItem(Due Due, DueStatus Status) : IDueRow
     {
         var category = HasDetailedCategory ? $"{CategoryText}, {DetailedCategoryText}" : CategoryText;
         return IsRepeating
-            ? $"{Title}, {category}, repeats {Due.Repeat.ToString().ToLowerInvariant()}, {StatusText}, due {dueDate}, {AmountText}. Opens due details."
+            ? $"{Title}, {category}, repeats {ReminderText.RepeatPhrase(Due.Repeat)}, {StatusText}, due {dueDate}, {AmountText}. Opens due details."
             : $"{Title}, {category}, {StatusText}, due {dueDate}, {AmountText}. Opens due details.";
     }
 

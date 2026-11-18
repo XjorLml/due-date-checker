@@ -34,7 +34,7 @@ Support None, weekly, monthly, quarterly, annually and a custom positive interva
 
 Follow-up, 2026-11-16: the Repeat choices also include **Twice a month** on two picked days (default 15 and 30), previewing the [PRD TM rule](../../docs/PRD.md#twice-a-month-repeat-2026-11-16) without generating a series ([TM spec](../f07-twice-monthly/spec.md#prototype-preview)). The sample rent repeats twice a month on days 4 and 19. The source hashes in this folder predate the change and stay as historical evidence.
 
-Follow-up, 2026-11-19: the [payment history preview](../payment-history/spec.md#prototype-preview) adds a "How much did you pay?" dialog with Minimum / Full balance / Other chips, an optional Full balance on Bill and Subscription, a Payment history section on Details, and a sample BPI Credit Card with five earlier payments. Marking a repeating due paid now adds its next occurrence once, as in the native app.
+Follow-up, 2026-11-19: the [credit card payment history preview](../payment-history/spec.md#prototype-preview) adds a "How much did you pay?" dialog for Credit Card Bills dues (prefilled with the minimum), a Payment history section on a repeating card's Details, and a sample monthly BPI Credit Card with five earlier payments. Other dues keep the plain confirmation.
 
 ## Observable acceptance
 

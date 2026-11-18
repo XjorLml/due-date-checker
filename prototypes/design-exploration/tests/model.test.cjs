@@ -59,37 +59,29 @@ test('twice a month (PRD TM) follows two picked days, falls back at month end an
   for(const days of [[15,15],[0,30],[15,32],[15.5,30],[15]])assert.equal(E.nextOccurrence('2026-11-01','twicemonthly',1,'months',days),null);
   const rent=E.seed().find(d=>d.id==='rent');assert.equal(rent.repeat,'twicemonthly');assert.deepEqual([rent.repeatDay1,rent.repeatDay2],[4,19]);
 });
-test('payment history (proposed 2026-11-19): kinds, full balance rule, series history and summary',()=>{
-  assert.equal(E.paymentKind('1248000','150000','1248000'),'Full balance');
-  assert.equal(E.paymentKind('1300000','150000','1248000'),'Full balance');
-  assert.equal(E.paymentKind('150000','150000','1248000'),'Minimum');
-  assert.equal(E.paymentKind('500000','150000','1248000'),'Above minimum');
-  assert.equal(E.paymentKind('100000','150000','1248000'),'Less than due');
-  assert.equal(E.paymentKind('100000','150000',null),'Less than due');
-  assert.equal(E.paymentKind('150000','150000',null),null);
-  assert.equal(E.paymentKind(null,'150000','1248000'),null);
-  assert.ok(E.validFullBalance('150000','1248000'));assert.ok(E.validFullBalance('150000',null));assert.ok(E.validFullBalance(null,'1'));
-  assert.ok(!E.validFullBalance('150000','149999'));
-  const data=E.seed(),card=data.find(d=>d.id==='card'),rows=[...E.seedHistory(),...data];
-  const history=E.seriesHistory(rows,card);
+test('credit card payment history (proposed 2026-11-19): card detection, kinds, series history and summary',()=>{
+  const C=require('../ph-catalog.js'),data=C.localizeSeed(E.seed()),card=data.find(d=>d.id==='card');
+  assert.ok(E.isCreditCard(card));assert.ok(!E.isCreditCard(data.find(d=>d.id==='water')));assert.ok(!E.isCreditCard(null));
+  assert.equal(E.paymentKind('150000','150000'),'Minimum');
+  assert.equal(E.paymentKind('500000','150000'),'Above minimum');
+  assert.equal(E.paymentKind('100000','150000'),'Below minimum');
+  assert.equal(E.paymentKind(null,'150000'),null);assert.equal(E.paymentKind('1',null),null);
+  const rows=[...E.seedHistory(),...data],history=E.seriesHistory(rows,card);
   assert.deepEqual(history.map(h=>h.date),['2026-11-03','2026-10-03','2026-09-03','2026-08-03','2026-07-03']);
-  assert.ok(E.seriesHistory(rows,data.find(d=>d.id==='water')).every(h=>h.id==='water'),'series do not mix');
   assert.deepEqual(E.seriesHistory([...rows,{...card,id:'gone',paid:true,deleted:true,paidAmount:'1'}],card).length,5,'deleted rows are left out');
-  assert.deepEqual(E.historySummary(history),{count:5,recorded:5,total:'3402000',average:'680400'});
+  assert.ok(E.seriesHistory(rows,data.find(d=>d.id==='water')).every(h=>h.id==='water'),'series do not mix');
+  assert.deepEqual(E.historySummary(history),{count:5,total:'3402000',average:'680400'});
   assert.deepEqual(E.historySummary([{paidAmount:null},{paidAmount:'9223372036854775807'},{paidAmount:'9223372036854775807'}]),
-    {count:3,recorded:2,total:'18446744073709551614',average:'9223372036854775807'});
-  assert.deepEqual(E.historySummary([]),{count:0,recorded:0,total:'0',average:null});
+    {count:3,total:'18446744073709551614',average:'9223372036854775807'});
+  assert.deepEqual(E.historySummary([]),{count:0,total:'0',average:null});
 });
-test('payment history: paying records one payment and a repeating due adds its next occurrence once',()=>{
+test('credit card payment: records the amount and a repeating card adds next month once',()=>{
   const card=E.seed().find(d=>d.id==='card');
-  const r=E.payOccurrence(card,'1248000','2026-11-04');
-  assert.deepEqual(r.patch,{paid:true,paidAmount:'1248000',paidOn:'2026-11-04',nextAdded:true});
-  assert.equal(r.next.date,'2027-01-03');assert.equal(r.next.seriesId,'card');assert.equal(r.next.amount,'150000');
-  assert.equal(r.next.fullBalance,null,'a statement balance is not carried to the next month');
+  const r=E.payOccurrence(card,'500000','2026-11-04');
+  assert.deepEqual(r.patch,{paid:true,paidAmount:'500000',paidOn:'2026-11-04',nextAdded:true});
+  assert.equal(r.next.date,'2027-01-03');assert.equal(r.next.seriesId,'card');assert.equal(r.next.amount,'150000','next month keeps the minimum');
   assert.deepEqual([r.next.paid,r.next.paidAmount,r.next.paidOn],[false,null,null]);
   assert.equal(E.payOccurrence({...card,...r.patch,...E.unpay()},'1','2026-11-05').next,null,'paid, unpaid and paid again adds nothing more');
-  const task=E.seed().find(d=>d.id==='project');
-  assert.deepEqual(E.payOccurrence(task,null,'2026-11-04'),{patch:{paid:true,paidAmount:null,paidOn:'2026-11-04'},next:null});
-  const rent=E.seed().find(d=>d.id==='rent');assert.equal(E.payOccurrence(rent,'1250000','2026-11-04').next.date,'2026-11-19');
+  assert.equal(E.payOccurrence({...card,repeat:'none'},'1','2026-11-04').next,null);
   assert.deepEqual(E.unpay(),{paid:false,paidAmount:null,paidOn:null});
 });

@@ -44,9 +44,7 @@ function screenTitle(title,caption=''){return `<h1 class="page-title">${title}</
 function section(title,action='',label='View all'){return `<div class="section-line"><h2 class="section-title">${title}</h2>${action?`<button class="section-link" data-action="${action}">${label}${icon('next')}</button>`:''}</div>`;}
 function row(d){
   const status=M.status(d),category=phCategoryName(d),provider=phProviderName(d);
-  // Payment history preview: a paid due shows the amount actually paid.
-  const shown=d.paid&&d.paidAmount!=null?d.paidAmount:d.amount,spoken=(d.paid&&d.paidAmount!=null?'paid ':'')+M.money(shown);
-  return `<button class="due-row" data-due="${esc(d.id)}" aria-label="${esc(`${d.title}, ${category}, ${provider||'No biller'}, ${spoken}, due ${dateText(d.date)}, ${status}`)}">${phCategoryIcon(d)}<span class="row-main"><span class="row-title">${esc(d.title)}</span><span class="row-meta">${shortDate(d.date)} \u00b7 ${esc(category)}</span>${provider?`<span class="row-provider">${esc(provider)}</span>`:''}${d.repeat!=='none'?`<span class="row-meta">${icon('repeat')}${esc(repeats[d.repeat])}</span>`:''}</span><span class="row-end"><span class="row-amount ${shown===null?'absent':''}">${M.money(shown)}</span><span class="row-status ${statusClass(status)}">${status==='Paid'?'\u2713':status==='Overdue'?'!':'\u25cb'} ${status}</span></span></button>`;
+  return `<button class="due-row" data-due="${esc(d.id)}" aria-label="${esc(`${d.title}, ${category}, ${provider||'No biller'}, ${M.money(d.amount)}, due ${dateText(d.date)}, ${status}`)}">${phCategoryIcon(d)}<span class="row-main"><span class="row-title">${esc(d.title)}</span><span class="row-meta">${shortDate(d.date)} \u00b7 ${esc(category)}</span>${provider?`<span class="row-provider">${esc(provider)}</span>`:''}${d.repeat!=='none'?`<span class="row-meta">${icon('repeat')}${esc(repeats[d.repeat])}</span>`:''}</span><span class="row-end"><span class="row-amount ${d.amount===null?'absent':''}">${M.money(d.amount)}</span><span class="row-status ${statusClass(status)}">${status==='Paid'?'\u2713':status==='Overdue'?'!':'\u25cb'} ${status}</span></span></button>`;
 }
 function filteredData(data){return M.filter(data,state.query,state.filter,'All categories').filter(d=>(state.category==='All categories'||d.categoryId===state.category)&&(!state.onlyRepeats||d.repeat!=='none'));}
 
@@ -96,45 +94,29 @@ function calendar(){
 function detail(){
   const d=state.sampleMode==='empty'?null:selected();
   if(!d)return empty('This due is unavailable.','It may have been deleted. Your other dues are still in the list.','back-to-parent','Back to list');
-  return `${phCategoryIcon(d)}<h1 class="detail-title">${esc(d.title)}</h1><div class="detail-amount">${M.money(d.amount)}</div>${d.fullBalance!=null?`<p class="detail-sub">Minimum due · Full balance ${M.money(d.fullBalance)}</p>`:''}<span class="badge ${statusClass(M.status(d))}">${M.status(d)}</span>${paidLine(d)}<dl class="detail-facts"><div><dt>Due date</dt><dd>${dateText(d.date)}</dd></div><div><dt>Category</dt><dd>${esc(phCategoryName(d))}</dd></div><div><dt>Provider / biller</dt><dd>${esc(phProviderName(d)||'Not set')}</dd></div><div><dt>Due type</dt><dd>${d.category}</dd></div><div><dt>Repeat <span class="concept-tag">Concept</span></dt><dd>${esc(repeatFact(d))}</dd></div><div><dt>Reminder offsets</dt><dd>${(d.reminderDays||[]).map(n=>n===0?'On due date':n+(n===1?' day before':' days before')).join(', ')||'None'}<small class="detail-simulation">Simulation only</small></dd></div><div><dt>Currency / timezone</dt><dd>PHP / Asia/Manila</dd></div></dl><div class="detail-quick"><button class="app-button primary" data-action="quick-paid">${icon('check')}${d.paid?'Mark unpaid':'Mark paid'}</button><button class="app-button" data-action="reschedule">${icon('calendar')}Reschedule</button></div><p class="tiny-copy">Mark paid asks how much you paid and records it here. No payment is made from this app.</p>${historySection(d)}<section class="detail-note"><h2 class="section-title">Notes</h2><p>${esc(d.notes||'No notes added.')}</p></section><p class="tiny-copy">Created · ${d.created||'01 Nov 2026, 01:41 UTC'}<br>Updated · ${d.updated||'01 Nov 2026, 01:41 UTC'}</p>`;
+  return `${phCategoryIcon(d)}<h1 class="detail-title">${esc(d.title)}</h1><div class="detail-amount">${M.money(d.amount)}</div>${E.isCreditCard(d)?'<p class="detail-sub">Minimum due</p>':''}<span class="badge ${statusClass(M.status(d))}">${M.status(d)}</span>${cardPaidLine(d)}<dl class="detail-facts"><div><dt>Due date</dt><dd>${dateText(d.date)}</dd></div><div><dt>Category</dt><dd>${esc(phCategoryName(d))}</dd></div><div><dt>Provider / biller</dt><dd>${esc(phProviderName(d)||'Not set')}</dd></div><div><dt>Due type</dt><dd>${d.category}</dd></div><div><dt>Repeat <span class="concept-tag">Concept</span></dt><dd>${esc(repeatFact(d))}</dd></div><div><dt>Reminder offsets</dt><dd>${(d.reminderDays||[]).map(n=>n===0?'On due date':n+(n===1?' day before':' days before')).join(', ')||'None'}<small class="detail-simulation">Simulation only</small></dd></div><div><dt>Currency / timezone</dt><dd>PHP / Asia/Manila</dd></div></dl><div class="detail-quick"><button class="app-button primary" data-action="quick-paid">${icon('check')}${d.paid?'Mark unpaid':'Mark paid'}</button><button class="app-button" data-action="reschedule">${icon('calendar')}Reschedule</button></div><p class="tiny-copy">${E.isCreditCard(d)?'Mark paid asks how much you paid and keeps it in this card\u2019s history. No payment is made.':'Quick status changes are a confirmed prototype shortcut. No payment is made.'}</p>${cardHistory(d)}<section class="detail-note"><h2 class="section-title">Notes</h2><p>${esc(d.notes||'No notes added.')}</p></section><p class="tiny-copy">Created · ${d.created||'01 Nov 2026, 01:41 UTC'}<br>Updated · ${d.updated||'01 Nov 2026, 01:41 UTC'}</p>`;
 }
-// Payment history preview (proposed 2026-11-19, specs/payment-history).
-function paidLine(d){
-  if(!d.paid)return '';
-  return `<div class="paid-line"><span>${icon('check')}${d.paidAmount!=null?`Paid ${M.money(d.paidAmount)}`:'Paid · amount not recorded'}${d.paidOn?` on ${dateText(d.paidOn)}`:''}</span><button class="section-link" data-action="edit-payment">Edit amount</button></div>`;
+// Credit card payment history preview (proposed 2026-11-19, specs/payment-history).
+function cardPaidLine(d){
+  if(!E.isCreditCard(d)||!d.paid)return '';
+  return `<p class="paid-line">${icon('check')}${d.paidAmount!=null?`Paid ${M.money(d.paidAmount)}`:'Paid · amount not recorded'}${d.paidOn?` on ${dateText(d.paidOn)}`:''}</p>`;
 }
-function historySection(d){
-  const items=E.seriesHistory([...state.history,...state.data],d);
-  if(d.repeat==='none'&&items.length<=1)return '';
-  const s=E.historySummary(items);
-  const summary=s.count?`${s.count} payment${s.count===1?'':'s'} · ${M.money(s.total)} paid${s.average!==null?` · average ${M.money(s.average)}`:''}`:'No payments recorded yet. Mark this one paid to start the history.';
-  const rows=items.map(i=>{const kind=E.paymentKind(i.paidAmount,i.amount,i.fullBalance),cls=kind==='Full balance'?'paid':kind==='Less than due'?'overdue':'';
-    const facts=[i.amount!==null?(i.fullBalance!==null?'Min ':'Due ')+M.money(i.amount):'',i.fullBalance!==null?'Full '+M.money(i.fullBalance):'',i.paidOn?'paid '+shortDate(i.paidOn):''].filter(Boolean).join(' · ');
-    return `<li class="history-row"><span class="history-main"><strong>${dateText(i.date)}</strong><small>${facts}</small></span><span class="history-end"><strong>${i.paidAmount!==null?M.money(i.paidAmount):'Not recorded'}</strong>${kind?`<span class="badge history-kind ${cls}">${kind}</span>`:''}</span></li>`;}).join('');
+function cardHistory(d){
+  if(!E.isCreditCard(d)||d.repeat==='none')return '';
+  const items=E.seriesHistory([...state.history,...state.data],d),s=E.historySummary(items);
+  const summary=s.count?`${s.count} payment${s.count===1?'':'s'} · ${M.money(s.total)} paid${s.average!==null?` · average ${M.money(s.average)}`:''}`:'No payments yet. Mark this one paid to start the history.';
+  const rows=items.map(i=>{const kind=E.paymentKind(i.paidAmount,i.amount);
+    return `<li class="history-row"><span class="history-main"><strong>${dateText(i.date)}</strong><small>Minimum ${M.money(i.amount)}${i.paidOn?' · paid '+shortDate(i.paidOn):''}</small></span><span class="history-end"><strong>${i.paidAmount!==null?M.money(i.paidAmount):'Not recorded'}</strong>${kind?`<span class="badge history-kind ${kind==='Below minimum'?'overdue':kind==='Above minimum'?'paid':''}">${kind}</span>`:''}</span></li>`;}).join('');
   return `<section class="detail-note payment-history" aria-labelledby="payment-history-title"><h2 class="section-title" id="payment-history-title">Payment history</h2><p class="history-summary">${summary}</p>${rows?`<ol class="history-rows">${rows}</ol>`:''}</section>`;
 }
 let paymentDone=null;
 // Resolves to centavos, null (amount not recorded) or undefined (cancelled).
-function payment(d,mode){
+function cardPayment(d){
   const el=$('#payment-dialog');phThemeDialog(el);
-  const start=mode==='edit'?d.paidAmount??null:d.amount??d.fullBalance??null;
-  $('#payment-title').textContent=mode==='edit'?'Edit amount paid':'How much did you pay?';
-  $('#payment-context').textContent=`${d.title} · due ${dateText(d.date)}`;
-  const chips=[];
-  if(d.amount!==null&&d.amount!==undefined)chips.push([d.fullBalance!=null?'Minimum':'Amount due',d.amount]);
-  if(d.fullBalance!=null)chips.push(['Full balance',d.fullBalance]);
-  $('#payment-chips').innerHTML=chips.map(([label,value])=>`<button type="button" class="chip" data-pay="chip" data-value="${M.inputAmount(value)}" aria-pressed="${value===start}">${label} ${M.money(value)}</button>`).join('')+'<button type="button" class="chip" data-pay="other" aria-pressed="false">Other amount</button>';
-  const input=$('#payment-amount');input.value=M.inputAmount(start);input.setAttribute('aria-invalid','false');$('#payment-error').textContent='';
-  $('#payment-save').textContent=mode==='edit'?'Save amount':'Mark paid';
-  el.returnValue='';el.showModal();input.focus();
+  $('#payment-context').textContent=`${d.title} · minimum ${M.money(d.amount)} · due ${dateText(d.date)}`;
+  const input=$('#payment-amount');input.value=M.inputAmount(d.amount??null);input.setAttribute('aria-invalid','false');$('#payment-error').textContent='';
+  el.returnValue='';el.showModal();input.focus();input.select();
   return new Promise(resolve=>{paymentDone=resolve;el.addEventListener('close',()=>{if(paymentDone===resolve){paymentDone=null;resolve(undefined);}},{once:true});});
-}
-function paymentChip(b){
-  const input=$('#payment-amount');
-  if(b.dataset.pay==='cancel'){$('#payment-dialog').close();return;}
-  input.value=b.dataset.pay==='chip'?b.dataset.value:'';input.setAttribute('aria-invalid','false');$('#payment-error').textContent='';
-  for(const chip of document.querySelectorAll('#payment-chips .chip'))chip.setAttribute('aria-pressed',String(chip===b));
-  input.focus();
 }
 function savePayment(event){
   event.preventDefault();const raw=$('#payment-amount').value.trim();let value=null;
@@ -143,13 +125,18 @@ function savePayment(event){
     value=r.value;}
   const done=paymentDone;paymentDone=null;$('#payment-dialog').close();done?.(value);
 }
-function draft(editing){const d=editing?selected():null,days=d?.reminderDays||[0,1];return{title:d?.title||'',category:d?.category||'Bill',categoryId:d?.categoryId||'ph.other.general',providerLabel:d?phProviderName(d):'',amount:d?M.inputAmount(d.amount):'',date:d?.date||M.TODAY,notes:d?.notes||'',paid:d?.paid||false,fullBalance:d?M.inputAmount(d.fullBalance??null):'',paidAmount:d?M.inputAmount((d.paid?d.paidAmount:d.amount)??null):'',repeat:d?.repeat||'none',repeatEvery:d?.repeatEvery||1,repeatUnit:d?.repeatUnit||'months',repeatDay1:d?.repeatDay1||15,repeatDay2:d?.repeatDay2||30,reminderDays:[...days],reminderExtra:days.filter(n=>![0,1,3,7].includes(n)).join(', ')};}
+// Records a card payment and, for a repeating card, adds next month's due once.
+function payCard(d,paidAmount){
+  const r=E.payOccurrence(d,paidAmount,M.TODAY);Object.assign(d,r.patch);
+  if(r.next)state.data.push({...r.next,createdOrder:state.data.length,created:'04 Nov 2026, 01:41 UTC',updated:'04 Nov 2026, 01:41 UTC'});
+  return r.next;
+}
+function draft(editing){const d=editing?selected():null,days=d?.reminderDays||[0,1];return{title:d?.title||'',category:d?.category||'Bill',categoryId:d?.categoryId||'ph.other.general',providerLabel:d?phProviderName(d):'',amount:d?M.inputAmount(d.amount):'',date:d?.date||M.TODAY,notes:d?.notes||'',paid:d?.paid||false,repeat:d?.repeat||'none',repeatEvery:d?.repeatEvery||1,repeatUnit:d?.repeatUnit||'months',repeatDay1:d?.repeatDay1||15,repeatDay2:d?.repeatDay2||30,reminderDays:[...days],reminderExtra:days.filter(n=>![0,1,3,7].includes(n)).join(', ')};}
 
 function amountPreview(){if(!state.form.amount.trim())return '';const r=M.parseAmount(editorAmount(),state.form.category);return r.error?'Use a valid PHP amount.':`Will save as ${M.money(r.value)}.`;}
 function repeatPreview(){const d=state.form,days=[Number(d.repeatDay1),Number(d.repeatDay2)];
   if(d.repeat==='twicemonthly'){if(!E.validTwiceDays(days))return 'Choose two different days.';const next=E.nextOccurrence(d.date,d.repeat,1,'months',days),after=next&&E.nextOccurrence(next,d.repeat,1,'months',days);return next?`Next preview: ${dateText(next)}${after?`, then ${dateText(after)}`:''}. No future dues are generated.`:'No next date within the supported calendar.';}
   const next=E.nextOccurrence(d.date,d.repeat,Number(d.repeatEvery),d.repeatUnit);return d.repeat==='none'?'One date, no repeat preference.':next?`Next preview: ${dateText(next)}. No future dues are generated.`:'No next date within the supported calendar.';}
-function balanceSummary(f){const r=f.fullBalance.trim()?M.parseAmount(DuewiseEssential.normalizeAmount(f.fullBalance),'Bill'):null;return r?(r.error?'Check the amount':M.money(r.value)):'Optional · credit cards';}
 function editorSection(id,label,value,body,extra=''){
   return `<details id="${id}" class="editor-disclosure ${extra}" data-editor-section="${id}" ${state.editorOpen?.[id]?'open':''}><summary><span class="summary-label">${label}</span><span class="summary-value" data-editor-value="${id}">${esc(value)}</span></summary><div class="editor-disclosure-content">${body}</div></details>`;
 }
@@ -165,7 +152,7 @@ function focusEditorError(input){
 function editorAmount(){return DuewiseEssential.normalizeAmount(state.form.amount);}
 function refreshEditorSummaries(){
   if(!state.form||!app('#due-form'))return;
-  const f=state.form,values={'balance-options':balanceSummary(f),'type-options':`Type: ${f.category}`,'repeat-options':repeatSummary(f),'reminder-options':DuewiseEssential.reminderSummary(f,state.reminder),'extra-details':[f.providerLabel.trim(),f.notes.trim()?'Notes added':''].filter(Boolean).join(' · ')||'Optional','custom-reminder-options':f.reminderExtra.trim()||'Optional'};
+  const f=state.form,values={'type-options':`Type: ${f.category}`,'repeat-options':repeatSummary(f),'reminder-options':DuewiseEssential.reminderSummary(f,state.reminder),'extra-details':[f.providerLabel.trim(),f.notes.trim()?'Notes added':''].filter(Boolean).join(' · ')||'Optional','custom-reminder-options':f.reminderExtra.trim()||'Optional'};
   for(const [id,value] of Object.entries(values)){const el=app(`[data-editor-value="${id}"]`);if(el)el.textContent=value;}
 }
 function editor(){
@@ -173,8 +160,6 @@ function editor(){
   const f=state.form||(state.form=draft(state.page==='edit')),required=['Bill','Subscription'].includes(f.category);
   const repeatBody=`<div class="field"><label for="due-repeat">Repeat <span class="optional-label">optional</span></label><select id="due-repeat" name="repeat">${Object.entries(repeats).map(([k,v])=>`<option value="${k}" ${k===f.repeat?'selected':''}>${v}</option>`).join('')}</select>${phScheduleFields(f)}<p id="repeat-preview" class="hint" aria-live="polite">${repeatPreview()}</p></div>`;
   const reminderBody=`<p class="reminder-state">${state.reminder.enabled?`App reminders are on at ${esc(state.reminder.time)} Manila; quiet hours ${esc(state.reminder.quietStart)}–${esc(state.reminder.quietEnd)}.`:'App reminders are off. Selected offsets are saved as preferences only.'} This HTML schedules no notifications.</p>${phReminderFields(f)}`;
-  // Payment history preview: optional statement balance, collapsed so title, amount and date stay first.
-  const balanceBody=`<div class="field"><label for="due-full-balance">Full balance <span class="optional-label">optional</span></label><input id="due-full-balance" name="fullBalance" inputmode="decimal" value="${esc(f.fullBalance)}" placeholder="e.g. 12480.00" aria-describedby="full-balance-hint full-balance-error"><p id="full-balance-hint" class="hint">For credit cards: the statement balance. The amount above is then your minimum due, and Mark paid offers both.</p><span id="full-balance-error" class="error" role="status"></span></div>`;
   const extraBody=phProviderFields(f)+`<div class="field"><label for="due-notes">Notes <span class="optional-label">optional</span></label><textarea id="due-notes" name="notes" rows="3" placeholder="A little context for later">${esc(f.notes)}</textarea></div>`;
   return `<p class="editor-instructions">Required fields are marked.</p><form id="due-form" class="essential-form" data-editor-token="${state.editorToken||0}" novalidate>
     <div class="field"><label for="due-title">What is due? <span class="required-label">required</span></label><input id="due-title" name="title" value="${esc(f.title)}" placeholder="e.g. Electricity bill" required aria-describedby="title-error"><span id="title-error" class="error" role="status"></span></div>
@@ -182,11 +167,10 @@ function editor(){
     <details id="type-options" class="editor-disclosure editor-type" data-editor-section="type-options" ${state.editorOpen?.['type-options']?'open':''}><summary><span data-editor-value="type-options">Type: ${esc(f.category)}</span><span class="type-change">Change</span></summary><div class="editor-disclosure-content"><div class="field"><label for="due-category">Due type</label><select id="due-category" name="category">${M.categories.map(c=>`<option ${c===f.category?'selected':''}>${c}</option>`).join('')}</select><p class="hint">Bill and Subscription require an amount. Task and Other can have no amount. Category stays separate.</p></div></div></details>
     <div class="field"><label for="due-date">Due date <span class="required-label">required</span></label><input id="due-date" name="date" type="date" value="${esc(f.date)}" min="0001-01-01" max="9999-12-31" required aria-describedby="date-error date-hint"><p id="date-hint" class="hint">${M.validDate(f.date)?dateText(f.date):'Choose a date'} · Manila. Past dates are allowed.</p><span id="date-error" class="error" role="status"></span></div>
     ${phCategoryFields(f)}
-    ${editorSection('balance-options','Full balance',balanceSummary(f),balanceBody).replace('<details ',`<details ${required?'':'hidden '}`)}
     ${editorSection('repeat-options','Repeat',repeatSummary(f),repeatBody)}
     ${editorSection('reminder-options','Reminders',DuewiseEssential.reminderSummary(f,state.reminder),reminderBody)}
     ${editorSection('extra-details','Biller & notes',[f.providerLabel.trim(),f.notes.trim()?'Notes added':''].filter(Boolean).join(' · ')||'Optional',extraBody)}
-    ${state.page==='edit'?`<label class="check-row" for="due-paid"><span>Paid · applies on Save</span><input id="due-paid" name="paid" type="checkbox" ${f.paid?'checked':''}></label><div class="field" id="paid-amount-field" ${f.paid?'':'hidden'}><label for="due-paid-amount">Amount paid <span class="optional-label">optional</span></label><input id="due-paid-amount" name="paidAmount" inputmode="decimal" value="${esc(f.paidAmount)}" aria-describedby="paid-amount-error"><span id="paid-amount-error" class="error" role="status"></span></div>`:'<p class="tiny-copy">New dues start unpaid.</p>'}
+    ${state.page==='edit'?`<label class="check-row" for="due-paid"><span>Paid · applies on Save</span><input id="due-paid" name="paid" type="checkbox" ${f.paid?'checked':''}></label>`:'<p class="tiny-copy">New dues start unpaid.</p>'}
   </form>`;
 }
 function settings(mini=false){
@@ -292,23 +276,11 @@ function saveDueNow(event){
   if(offsets.error){app('#reminder-extra').setAttribute('aria-invalid','true');focusEditorError(app('#reminder-extra'));return;}
   const provider=catalog.resolveProvider(f.providerLabel);app('#provider-error').textContent=provider.error||'';
   if(provider.error){app('#due-provider').setAttribute('aria-invalid','true');focusEditorError(app('#due-provider'));return;}
-  const amountValue=M.parseAmount(DuewiseEssential.normalizeAmount(f.amount),f.category).value,allowsFull=['Bill','Subscription'].includes(f.category);
-  let fullValue=null;app('#full-balance-error').textContent='';app('#due-full-balance').setAttribute('aria-invalid','false');
-  if(allowsFull&&f.fullBalance.trim()){const r=M.parseAmount(DuewiseEssential.normalizeAmount(f.fullBalance),'Bill'),error=r.error||(!E.validFullBalance(amountValue,r.value)?'Full balance can\u2019t be less than the amount due.':'');
-    if(error){app('#full-balance-error').textContent=error;app('#due-full-balance').setAttribute('aria-invalid','true');focusEditorError(app('#due-full-balance'));return;}fullValue=r.value;}
-  let paidValue=null;const paidInput=app('#due-paid-amount');if(paidInput){app('#paid-amount-error').textContent='';paidInput.setAttribute('aria-invalid','false');}
-  if(paidInput&&f.paid&&f.paidAmount.trim()){const r=M.parseAmount(DuewiseEssential.normalizeAmount(f.paidAmount),'Bill');
-    if(r.error){app('#paid-amount-error').textContent='Enter a valid PHP amount, or leave it blank.';paidInput.setAttribute('aria-invalid','true');focusEditorError(paidInput);return;}paidValue=r.value;}
   const editing=state.page==='edit',d=editing?selected():null;if(editing&&!d)return;
-  const patch={title:f.title.trim(),category:f.category,categoryId:f.categoryId,providerId:provider.value?.id||null,providerText:provider.value?.name||'',amount:M.parseAmount(DuewiseEssential.normalizeAmount(f.amount),f.category).value,date:f.date,notes:f.notes.trim()?f.notes:'',repeat:f.repeat,repeatEvery:Number(f.repeatEvery),repeatUnit:f.repeatUnit,...(f.repeat==='twicemonthly'?(([repeatDay1,repeatDay2])=>({repeatDay1,repeatDay2}))(twiceDays(f)):{}),reminderDays:offsets.value,fullBalance:allowsFull?fullValue:null,updated:'04 Nov 2026, 01:41 UTC'};
-  let nextNote='';
-  if(editing){const was=d.paid;Object.assign(d,patch);
-    if(!was&&f.paid){const r=E.payOccurrence(d,paidValue,M.TODAY);Object.assign(d,r.patch);
-      if(r.next){state.data.push({...r.next,createdOrder:state.data.length,created:'04 Nov 2026, 01:41 UTC',updated:'04 Nov 2026, 01:41 UTC'});nextNote=` Next one added for ${dateText(r.next.date)}.`;}}
-    else if(was&&!f.paid)Object.assign(d,E.unpay());
-    else if(was&&f.paid)d.paidAmount=paidValue;}
-  else{const id='sample-'+Date.now();state.data.push({id,seriesId:id,...patch,paid:false,paidAmount:null,paidOn:null,createdOrder:state.data.length,created:'04 Nov 2026, 01:41 UTC'});}
-  const target=state.formReturn;state.form=null;state.sampleMode='normal';navigate(target);toast(`Sample due saved.${nextNote} Your custom categories and billers stay in this browser.`);
+  const patch={title:f.title.trim(),category:f.category,categoryId:f.categoryId,providerId:provider.value?.id||null,providerText:provider.value?.name||'',amount:M.parseAmount(DuewiseEssential.normalizeAmount(f.amount),f.category).value,date:f.date,notes:f.notes.trim()?f.notes:'',repeat:f.repeat,repeatEvery:Number(f.repeatEvery),repeatUnit:f.repeatUnit,...(f.repeat==='twicemonthly'?(([repeatDay1,repeatDay2])=>({repeatDay1,repeatDay2}))(twiceDays(f)):{}),reminderDays:offsets.value,paid:editing?f.paid:false,updated:'04 Nov 2026, 01:41 UTC'};
+  // A card ticked paid in the editor records its minimum; unticking clears the payment.
+  if(editing){const was=d.paid;Object.assign(d,patch);if(E.isCreditCard(d)&&!was&&d.paid){d.paid=false;payCard(d,d.amount);}else if(E.isCreditCard(d)&&was&&!d.paid)Object.assign(d,E.unpay());}else state.data.push({id:'sample-'+Date.now(),...patch,createdOrder:state.data.length,created:'04 Nov 2026, 01:41 UTC'});
+  const target=state.formReturn;state.form=null;state.sampleMode='normal';navigate(target);toast('Sample due saved. Your custom categories and billers stay in this browser.');
 }
 
 async function act(name){
@@ -322,16 +294,12 @@ async function act(name){
   if(name==='reminders'){navigate('reminders');return;}
   if(name==='save-settings'){state.prefs={...state.settingsDraft};state.modes[state.concept]=state.prefs.appearance==='system'?(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'):state.prefs.appearance;renderInspector();renderPhone();toast('Sample preferences saved for this session.');return;}
   if(name==='reschedule'){navigate('edit');app('#due-date').focus();return;}
-  if(name==='quick-paid'){const d=selected();if(!d)return;
-    if(d.paid){if(await confirm('Mark unpaid?',`Mark “${d.title}” as unpaid? Its recorded payment${d.paidAmount!=null?' of '+M.money(d.paidAmount):''} is cleared. A next one already added stays.`,'Mark unpaid')){Object.assign(d,E.unpay());d.updated='04 Nov 2026, 01:41 UTC';renderPhone();toast('Marked unpaid. Its payment record was cleared.');}return;}
-    // A due with no amount at all (such as a Task) is marked paid without asking.
-    const paidAmount=d.amount!==null||d.fullBalance!=null?await payment(d,'pay'):null;
-    if(paidAmount===undefined)return;
-    const r=E.payOccurrence(d,paidAmount,M.TODAY);Object.assign(d,r.patch);d.updated='04 Nov 2026, 01:41 UTC';
-    if(r.next)state.data.push({...r.next,createdOrder:state.data.length,created:'04 Nov 2026, 01:41 UTC',updated:'04 Nov 2026, 01:41 UTC'});
-    renderPhone();toast(`${paidAmount!==null?`Paid ${M.money(paidAmount)}.`:'Marked paid.'}${r.next?` Next one added for ${dateText(r.next.date)}.`:''}`);return;}
-  if(name==='edit-payment'){const d=selected();if(!d||!d.paid)return;const paidAmount=await payment(d,'edit');if(paidAmount===undefined)return;
-    d.paidAmount=paidAmount;d.updated='04 Nov 2026, 01:41 UTC';renderPhone();toast(paidAmount!==null?`Payment updated to ${M.money(paidAmount)}.`:'Payment amount cleared.');return;}
+  if(name==='quick-paid'){const d=selected();
+    // Credit cards ask how much was paid, defaulting to the minimum due; other dues keep the plain confirmation.
+    if(d&&E.isCreditCard(d)&&!d.paid){const paidAmount=await cardPayment(d);if(paidAmount===undefined)return;
+      const next=payCard(d,paidAmount);d.updated='04 Nov 2026, 01:41 UTC';renderPhone();
+      toast(`${paidAmount!==null?`Paid ${M.money(paidAmount)}.`:'Marked paid.'}${next?` Next one added for ${dateText(next.date)}.`:''}`);return;}
+    if(d&&await confirm(d.paid?'Mark unpaid?':'Mark paid?',`Update the sample status of “${d.title}”? This records a status only and makes no payment.`,d.paid?'Mark unpaid':'Mark paid')){d.paid=!d.paid;if(!d.paid&&E.isCreditCard(d))Object.assign(d,E.unpay());d.updated='04 Nov 2026, 01:41 UTC';renderPhone();toast('Sample status updated.');}return;}
   if(name==='delete'){const d=selected();if(d&&await confirm(`Delete “${d.title}”?`,'Remove this saved sample from the active list. There is no Undo or restore. Unsaved edits will be discarded.','Delete due',true)){d.deleted=true;state.form=null;navigate('details');toast('Sample due deleted.');}return;}
   if(name==='disable-reminders'){state.reminder.enabled=false;renderPhone();toast('Reminders disabled in the simulation.');return;}
   if(name==='test-notification'){await confirm('Test notification preview','Duewise\nYou have a due-date reminder.\n\nNo title, amount or notes are included. No OS notification is sent.','Close preview');return;}
@@ -339,7 +307,7 @@ async function act(name){
 }
 document.addEventListener('click',event=>{
   const b=event.target.closest('button');if(!b||b.closest('[inert]'))return;
-  if(b.dataset.pay){paymentChip(b);return;}
+  if(b.dataset.pay==='cancel'){$('#payment-dialog').close();return;}
   if(b.dataset.view){state.view=b.dataset.view;render();}
   else if(b.dataset.explore){openConcept(b.dataset.explore);$('#explore-view').scrollIntoView({block:'start'});}
   else if(b.dataset.concept){openConcept(b.dataset.concept);}
@@ -360,7 +328,6 @@ document.addEventListener('input',event=>{
   const el=event.target;
   if(el.id==='concept-notes'){preferences.notes[state.concept]=el.value;persist();}
   if(el.id==='dues-search'){state.query=el.value;updateResults();}
-  if(el.id==='payment-amount')for(const chip of document.querySelectorAll('#payment-chips .chip'))chip.setAttribute('aria-pressed',String(chip.dataset.value===el.value.trim()));
   if(el.closest('#phone #due-form')&&el.name){state.form[el.name]=el.type==='checkbox'?el.checked:el.value;if(el.name==='amount')app('#amount-preview').textContent=amountPreview();if(el.name==='date'){app('#date-hint').textContent=(M.validDate(el.value)?dateText(el.value):'Choose a date')+' · Asia/Manila. Past dates are allowed.';app('#repeat-preview').textContent=repeatPreview();}}
   refreshEditorSummaries();
   if(el.closest('#phone #reminder-form')&&el.name)state.reminderDraft[el.name]=el.type==='checkbox'?el.checked:el.value;
@@ -373,8 +340,6 @@ document.addEventListener('change',event=>{
   if(el.id==='sample-state'){state.sampleMode=el.value;renderPhone();}
   if(el.id==='category-filter'){state.category=el.value;updateResults();}
   if(el.id==='due-category'){state.form.category=el.value;const required=['Bill','Subscription'].includes(el.value);app('#due-amount').required=required;app('#due-amount').setAttribute('aria-required',String(required));app('#amount-requirement').textContent=required?'required':'optional';app('#amount-rule').textContent=required?'Required for '+el.value+'.':'Blank means no amount; zero is a recorded amount.';app('#amount-preview').textContent=state.form.amount.trim()?amountPreview():'';validate('amount');}
-  if(el.id==='due-category'&&app('#balance-options'))app('#balance-options').hidden=!['Bill','Subscription'].includes(el.value);
-  if(el.id==='due-paid'&&app('#paid-amount-field')){app('#paid-amount-field').hidden=!el.checked;if(el.checked&&!app('#due-paid-amount').value.trim()){app('#due-paid-amount').value=state.form.amount;state.form.paidAmount=state.form.amount;}}
   if(el.id==='due-repeat'){state.form.repeat=el.value;app('#custom-repeat-fields').hidden=el.value!=='custom';app('#twice-repeat-fields').hidden=el.value!=='twicemonthly';app('#repeat-preview').textContent=repeatPreview();}
   if(['repeat-every','repeat-unit','repeat-day-1','repeat-day-2'].includes(el.id))app('#repeat-preview').textContent=repeatPreview();
   if(el.classList.contains('reminder-offset')&&state.form)state.form.reminderDays=Array.from(document.querySelectorAll('#phone .reminder-offset:checked'),e=>Number(e.value));

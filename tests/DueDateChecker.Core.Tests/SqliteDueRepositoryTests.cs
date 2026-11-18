@@ -28,7 +28,7 @@ public sealed class SqliteDueRepositoryTests : IDisposable
     [Fact]
     public void Initialize_sets_user_version_and_creates_the_dues_table()
     {
-        Assert.Equal(7, ReadUserVersion());
+        Assert.Equal(8, ReadUserVersion());
         Assert.Equal(1L, Scalar("SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'dues'"));
     }
 
@@ -37,7 +37,7 @@ public sealed class SqliteDueRepositoryTests : IDisposable
     {
         new DatabaseInitializer(_dbPath).Initialize();
 
-        Assert.Equal(7, ReadUserVersion());
+        Assert.Equal(8, ReadUserVersion());
     }
 
     [Fact]

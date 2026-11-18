@@ -32,10 +32,11 @@
 
             <!-- Summary: month total, its scope, and the next unpaid date. -->
             <VerticalStackLayout Spacing="4" IsVisible="{Binding HasSummary}" AutomationId="DashboardSummary">
-                <Label Text="{Binding MonthLabel}" Style="{StaticResource CaptionLabel}" FontFamily="JakartaSemibold" />
-                <Label Text="{Binding UpcomingTotalText}" Style="{StaticResource HeroAmount}" AutomationId="DashboardUpcomingTotal"
-                       SemanticProperties.Description="{Binding UpcomingDescription}" />
-                <Label Text="{Binding UpcomingMetaText}" Style="{StaticResource SupportingLabel}" />
+                <!-- UX33 (2026-11-16): what is due before the next payday, overdue included. -->
+                <Label Text="{Binding PaydayLabel}" Style="{StaticResource CaptionLabel}" FontFamily="JakartaSemibold" AutomationId="DashboardPaydayLabel" />
+                <Label Text="{Binding PaydayTotalText}" Style="{StaticResource HeroAmount}" AutomationId="DashboardUpcomingTotal"
+                       SemanticProperties.Description="{Binding PaydayDescription}" />
+                <Label Text="{Binding PaydayMetaText}" Style="{StaticResource SupportingLabel}" />
                 <BoxView Style="{StaticResource Divider}" Margin="0,10,0,0" />
                 <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" MinimumHeightRequest="52" IsVisible="{Binding HasNext}">
                     <Label Text="{Binding NextDateText}" Style="{StaticResource CaptionLabel}" VerticalOptions="Center" AutomationId="DashboardNextDate" />
@@ -129,7 +130,7 @@
                        IsVisible="{Binding ShowNoAhead}" />
             </VerticalStackLayout>
 
-            <Label Text="Counts are global. Amounts cover known unpaid dues from today to month end."
+            <Label Text="Counts are global. The amount covers known unpaid dues before your next payday, overdue included."
                    Style="{StaticResource CaptionLabel}" IsVisible="{Binding HasSummary}" />
         </VerticalStackLayout>
     </ScrollView>

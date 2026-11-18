@@ -149,7 +149,7 @@ public sealed class TwiceMonthlyTests : IDisposable
     {
         new DatabaseInitializer(_path).Initialize();
 
-        Assert.Equal(7L, Scalar("PRAGMA user_version"));
+        Assert.Equal(8L, Scalar("PRAGMA user_version"));
         Assert.Equal("repeat_day_2|INTEGER|0|NULL",
             Snapshot("SELECT name, type, \"notnull\", dflt_value FROM pragma_table_info('dues') WHERE name = 'repeat_day_2'"));
         Assert.Equal("ix_dues_active_due_date\nix_dues_repeat_source",
@@ -172,7 +172,7 @@ public sealed class TwiceMonthlyTests : IDisposable
         new DatabaseInitializer(_path).Initialize();
         new DatabaseInitializer(_path).Initialize();
 
-        Assert.Equal(7L, Scalar("PRAGMA user_version"));
+        Assert.Equal(8L, Scalar("PRAGMA user_version"));
         Assert.Equal(before, Snapshot(Original));
         Assert.Equal("NULL\nNULL\nNULL", Snapshot("SELECT repeat_day_2 FROM dues ORDER BY rowid"));
         var monthly = (await new SqliteDueRepository(_path).GetAsync(Guid.Parse("00000000-0000-0000-0000-000000000001")))!;
@@ -238,7 +238,7 @@ public sealed class TwiceMonthlyTests : IDisposable
     // ---- TM09: export and import ----
 
     [Fact]
-    public async Task Export_writes_version_three_with_both_days_and_import_restores_them()
+    public async Task Export_writes_both_days_and_import_restores_them()
     {
         new DatabaseInitializer(_path).Initialize();
         new DatabaseInitializer(_target).Initialize();
@@ -247,7 +247,7 @@ public sealed class TwiceMonthlyTests : IDisposable
 
         var file = DueArchive.Write(await new SqliteDueArchive(_path).ReadAllAsync(), Now);
         var json = JsonNode.Parse(file)!;
-        Assert.Equal(3, (int)json["version"]!);
+        Assert.Equal(DueArchive.CurrentVersion, (int)json["version"]!);
         Assert.Equal(19, (int)json["dues"]![0]!["repeatDay2"]!);
         Assert.Equal(4, (int)json["dues"]![0]!["repeatDay"]!);
 

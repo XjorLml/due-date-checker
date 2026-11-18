@@ -11,7 +11,8 @@ public sealed class ReminderTests : IDisposable
     private static readonly TimeZoneInfo Zone = TimeZoneInfo.FindSystemTimeZoneById("Asia/Manila");
     private static readonly DateTimeOffset Now = new(2026, 10, 18, 0, 0, 0, TimeSpan.Zero);
     private static Due Item(DateOnly? date = null) => Due.Create("Test due", Money.FromCentavos(0), date ?? new(2026, 10, 20), Now);
-    private static ReminderSettings Enabled => new(Enabled: true);
+    // These tests cover the day-before and due-date rules; overdue reminders (UX30) have their own tests.
+    private static ReminderSettings Enabled => new(Enabled: true, Overdue: false);
 
     [Fact]
     public void Default_off_and_opt_in_two_dates_use_Manila_nine_am()
@@ -33,7 +34,7 @@ public sealed class ReminderTests : IDisposable
     [InlineData(480, 1320, 480, 2, 8)] // Quiet end is exclusive.
     public void Quiet_hours_shift_and_expiration_are_explicit(int minute, int start, int end, int count, int hour)
     {
-        var plans = ReminderPlanner.Plan([Item()], new(true, true, minute, start, end), Zone);
+        var plans = ReminderPlanner.Plan([Item()], new(true, true, minute, start, end, Overdue: false), Zone);
         Assert.Equal(count, plans.Count);
         Assert.All(plans, x => Assert.Equal(hour, TimeZoneInfo.ConvertTime(x.At, Zone).Hour));
         Assert.All(plans, x => Assert.True(DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(x.At, Zone).DateTime) <= x.DueDate));
@@ -117,7 +118,7 @@ public sealed class ReminderTests : IDisposable
         Assert.Equal(due, await repository.GetAsync(due.Id));
         var store = new SqliteReminderStore(_path); Assert.Equal(new(), await store.ReadSettingsAsync()); Assert.Empty(await store.ReadOccurrencesAsync());
         using var check = new SqliteConnection($"Data Source={_path}"); check.Open(); using var commandCheck = check.CreateCommand();
-        commandCheck.CommandText = "PRAGMA user_version"; Assert.Equal(7L, commandCheck.ExecuteScalar());
+        commandCheck.CommandText = "PRAGMA user_version"; Assert.Equal(8L, commandCheck.ExecuteScalar());
     }
 
     [Fact]

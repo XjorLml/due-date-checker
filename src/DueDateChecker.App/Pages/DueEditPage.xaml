@@ -178,6 +178,16 @@
                                        AutomationId="RepeatDaysError" />
                             </VerticalStackLayout>
                             <Label Text="{Binding RepeatHelpText}" Style="{StaticResource CaptionLabel}" AutomationId="RepeatHelp" />
+                            <!-- UX32 (2026-11-16): electricity, water or card bills whose amount changes each month. -->
+                            <Grid ColumnDefinitions="*,Auto" MinimumHeightRequest="48" IsVisible="{Binding CanVaryAmount}">
+                                <VerticalStackLayout VerticalOptions="Center" AutomationProperties.IsInAccessibleTree="False">
+                                    <Label Text="Amount changes each month" />
+                                    <Label Text="The next one starts as “Amount needed” for you to fill in." Style="{StaticResource CaptionLabel}" />
+                                </VerticalStackLayout>
+                                <CheckBox Grid.Column="1" IsChecked="{Binding AmountVaries}" IsEnabled="{Binding CanEdit}" AutomationId="AmountVaries"
+                                          Color="{AppThemeBinding Light={StaticResource PrimaryLight}, Dark={StaticResource PrimaryDark}}"
+                                          SemanticProperties.Description="Amount changes each month. The next one starts as amount needed" />
+                            </Grid>
                         </VerticalStackLayout>
                     </VerticalStackLayout>
                 </Border>

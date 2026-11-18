@@ -27,7 +27,7 @@ public sealed class ReminderPaymentTests : IDisposable
         var due = Due.Create("Sample due", noAmount ? null : Money.FromCentavos(12345), new(2026, 11, 8), _clock.Now,
             "PRIVATE", noAmount ? DueCategory.Task : DueCategory.Bill, repeats ? RepeatRule.Monthly : RepeatRule.Never);
         await _database.RunAsync(() => _writes.AddAsync(due));
-        await _coordinator.SaveSettingsAsync(new(true));
+        await _coordinator.SaveSettingsAsync(new(true, Overdue: false)); // N2 day-of rules; overdue is tested in UxImprovements3Tests
         _clock.Now = _clock.Now.AddHours(1);
         Assert.True(await _coordinator.ReconcileAsync());
         var receipt = Assert.Single(await _store.ReadOccurrencesAsync(), x => x.DeliveredAt.HasValue);
@@ -102,7 +102,7 @@ public sealed class ReminderPaymentTests : IDisposable
         if (altered != due) await _database.RunAsync(() => _writes.UpdateAsync(altered));
         if (change == "deleted") await _database.RunAsync(() => _writes.SoftDeleteAsync(due.Id, _clock.Now));
         if (change == "disabled") await _coordinator.SaveSettingsAsync(new(false));
-        if (change == "settings") await _coordinator.SaveSettingsAsync(new(true, MinuteOfDay: 600));
+        if (change == "settings") await _coordinator.SaveSettingsAsync(new(true, MinuteOfDay: 600, Overdue: false));
         if (change == "overdue") _clock.Now = _clock.Now.AddDays(1);
         if (change == "wrong-key") token = token with { Key = token.Key + "invalid" };
         if (change == "wrong-version") token = token with { Version = new string('0', 64) };

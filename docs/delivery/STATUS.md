@@ -6,6 +6,16 @@ Last documentation/source inspection: **2026-11-08**. See the native notificatio
 
 ## Current focus
 
+**UX Wave 6 implemented, 2026-11-16 (latest source):** the user's "implement 1-5" from the [UX review](UX-REVIEW-2026-11-16.md):
+- corrected Reminders privacy text;
+- a Sound & alert style card with two Android channels ("Due today", banner and sound; "Coming up");
+- a test reminder before enabling;
+- overdue reminders 1, 7, 14, 21 and 28 days late;
+- paydays with a "Before payday" Dashboard figure that includes overdue (settles UX18);
+- "Amount changes each month" for repeating bills.
+
+Schema 8 and export format 4 ([PRD](../PRD.md#ux-review-decisions-2026-11-16), [ADR 012](../adr/012-reminder-channels-and-overdue.md), [evidence](evidence/UX-WAVE6-2026-11-16.md)). Agent-observed: **Core 219/220 and App 337/337** on a Linux copy with runtime 11 (the one failure is the pre-existing MoneyTests case); Android Debug build 0 warnings/errors. On the emulator: the 7→8 upgrade, both channels created and the old one deleted, the test reminder while off, real "1 day late" and "Amount needed" reminders at High importance, the payday figure, Settings Paydays and the editor switch. Mark as paid on a live overdue notification, dark mode at 200% and phone/TalkBack remain pending.
+
 **Twice-a-month repeat implemented, 2026-11-16 (latest source):** after the user's "implement it": repeat code 4 with two picked days (default 15 and 30), migration 007 (table rebuild, schema 7), export format 3, editor day pickers, row/Details/reminder text ([evidence](evidence/TWICE-MONTHLY-2026-11-16.md), [ADR 011](../adr/011-twice-monthly-repeat.md)). Agent-observed: **Core 211/212 and App 322/322** on a Linux copy with runtime 11 (the one failure is a pre-existing runtime-11 MoneyTests case; Windows test runs were blocked by Application Control again); Android Debug build 0 warnings/errors; emulator real 6→7 upgrade with rows unchanged, editor, equal-day error, save, payment adding one 30 Nov occurrence and no duplicate, dark at 200%. Two defects found and fixed (switch-to-Monthly anchor; Repeat row label squeezed at 200%). Phone/TalkBack/intended-key acceptance pending.
 
 **Twice-a-month repeat decided, 2026-11-16 (documentation only, historical):** the user decided and authorized a "Twice a month" repeat for Bill and Subscription. The user picks the two days (default 15 and 30), to fit Philippine pay cutoffs. The decision is user-reported in the chat and was recorded by the agent in the [PRD](../PRD.md#twice-a-month-repeat-2026-11-16) and the [spec](../../specs/f07-twice-monthly/spec.md) (TM01–TM10, [plan](../../specs/f07-twice-monthly/plan.md), [tasks](../../specs/f07-twice-monthly/tasks.md)). **Implementation has not started**; there is no code, test, build or device evidence. SDD, DESIGN, TEST-PLAN and the ADR are updated with the implementation.

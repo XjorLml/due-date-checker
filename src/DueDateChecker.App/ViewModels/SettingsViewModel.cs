@@ -11,6 +11,10 @@ public partial class SettingsViewModel(AppPreferencesService preferences, Remind
     public IReadOnlyList<string> WeekStarts { get; } = Array.AsReadOnly(new[] { "Monday", "Sunday" });
     [ObservableProperty] private int _selectedThemeIndex;
     [ObservableProperty] private int _selectedWeekStartIndex;
+    /// <summary>UX33 (2026-11-16): the two paydays the Dashboard totals up to; 15 and 30 by default.</summary>
+    public IReadOnlyList<int> PaydayOptions { get; } = Array.AsReadOnly(Enumerable.Range(1, 31).ToArray());
+    [ObservableProperty] private int? _firstPayday = 15;
+    [ObservableProperty] private int? _secondPayday = 30;
     [ObservableProperty] private string _message = "";
     [ObservableProperty] private bool _hasLoadError;
     /// <summary>Read-only summary of the saved F05 reminder settings for the Reminders row (PRD F04).</summary>
@@ -24,6 +28,8 @@ public partial class SettingsViewModel(AppPreferencesService preferences, Remind
         {
             SelectedThemeIndex = (int)preferences.Current.Theme;
             SelectedWeekStartIndex = (int)preferences.Current.WeekStart;
+            FirstPayday = preferences.Current.PaydayFirst;
+            SecondPayday = preferences.Current.PaydaySecond;
             _hasDraft = true;
         }
         Message = loaded ? "" : preferences.Error;
@@ -39,7 +45,14 @@ public partial class SettingsViewModel(AppPreferencesService preferences, Remind
             Message = "Choose an appearance and a week start before saving.";
             return;
         }
-        var value = new AppPreferences((ThemePreference)SelectedThemeIndex, (WeekStartPreference)SelectedWeekStartIndex);
+        // PD01: two different paydays, stored earlier first.
+        if (FirstPayday is not { } a || SecondPayday is not { } b || a == b || !AppPreferences.ValidPaydays(Math.Min(a, b), Math.Max(a, b)))
+        {
+            Message = "Choose two different paydays.";
+            return;
+        }
+        var value = new AppPreferences((ThemePreference)SelectedThemeIndex, (WeekStartPreference)SelectedWeekStartIndex,
+            Math.Min(a, b), Math.Max(a, b));
         Message = preferences.Save(value) ? "Preferences saved." : preferences.Error;
     }
 

@@ -19,7 +19,8 @@ public sealed record DueListItem(Due Due, DueStatus Status) : IDueRow
     /// <summary>Shown wherever a due has no amount (F07). Zero is never shown this way; it stays ₱0.00.</summary>
     public const string NoAmountText = "No amount";
 
-    public string AmountText => Due.Amount?.ToString() ?? NoAmountText;
+    /// <summary>UX32: a repeating bill whose amount changes each month waits for its amount instead.</summary>
+    public string AmountText => Due.Amount?.ToString() ?? (Due.AmountVaries ? ReminderText.AmountNeeded : NoAmountText);
     /// <summary>UX14: Details shows an absent amount as quiet text, not in the large amount style.</summary>
     public bool HasAmount => Due.Amount is not null;
     public string DateText => Due.DueDate.ToString("dd MMM yyyy", CultureInfo.InvariantCulture);

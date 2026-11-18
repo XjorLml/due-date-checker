@@ -28,9 +28,9 @@ public partial class DueEditViewModel : ObservableObject
 
     // UX22 (decided 2026-11-07 with the prototype alignment): the form as it opened, so leaving can
     // tell whether it would discard anything. Text compares trimmed, so whitespace alone is no change.
-    private readonly record struct FormSnapshot(string Title, DueCategory? Category, string Amount, DateTime? Date, RepeatRule? Repeat, string Notes, bool IsPaid, string CategoryId, int? FirstDay, int? SecondDay);
+    private readonly record struct FormSnapshot(string Title, DueCategory? Category, string Amount, DateTime? Date, RepeatRule? Repeat, string Notes, bool IsPaid, string CategoryId, int? FirstDay, int? SecondDay, bool AmountVaries);
     private FormSnapshot _baseline;
-    private FormSnapshot Snapshot() => new((Title ?? "").Trim(), SelectedCategory, (AmountText ?? "").Trim(), SelectedDate?.Date, SelectedRepeat, (Notes ?? "").Trim(), IsPaid, SelectedCategoryId, FirstRepeatDay, SecondRepeatDay);
+    private FormSnapshot Snapshot() => new((Title ?? "").Trim(), SelectedCategory, (AmountText ?? "").Trim(), SelectedDate?.Date, SelectedRepeat, (Notes ?? "").Trim(), IsPaid, SelectedCategoryId, FirstRepeatDay, SecondRepeatDay, AmountVaries && CanVaryAmount);
     /// <summary>True when leaving now would discard typed input: the form differs from how it opened.
     /// False while loading, after Save or Delete, and for an unavailable due.</summary>
     public bool HasChanges => CanEdit && Snapshot() != _baseline;
@@ -62,6 +62,7 @@ public partial class DueEditViewModel : ObservableObject
     {
         "" => "",
         DueListItem.NoAmountText => "Will save with no amount.",
+        ReminderText.AmountNeeded => "Will save as “Amount needed” until you add it.",
         var preview => $"Will save as {preview}."
     };
     public string DateHintText => SelectedDate is { } date
@@ -105,7 +106,30 @@ public partial class DueEditViewModel : ObservableObject
     // A shown error is re-checked as the days change, so fixing them clears it; none appears before Save.
     partial void OnFirstRepeatDayChanged(int? value) { if (HasRepeatDaysError) ValidateRepeatDays(); }
     partial void OnSecondRepeatDayChanged(int? value) { if (HasRepeatDaysError) ValidateRepeatDays(); }
-    partial void OnSelectedRepeatChanged(RepeatRule? value) { if (HasRepeatDaysError) ValidateRepeatDays(); }
+    partial void OnSelectedRepeatChanged(RepeatRule? value)
+    {
+        if (HasRepeatDaysError) ValidateRepeatDays();
+        // AV01: only a repeating due can wait for its amount; choosing Never turns the switch off.
+        if (!CanVaryAmount) AmountVaries = false;
+        NotifyAmountRule();
+    }
+
+    /// <summary>UX32 (2026-11-16): a repeating Bill/Subscription whose amount changes each month may be
+    /// saved without one; its next occurrence then starts without an amount too.</summary>
+    [ObservableProperty] private bool _amountVaries;
+    public bool CanVaryAmount => CanChooseRepeat && (SelectedRepeat ?? RepeatRule.Never) != RepeatRule.Never;
+    private bool WaitsForAmount => AmountVaries && CanVaryAmount;
+    partial void OnAmountVariesChanged(bool value)
+    {
+        NotifyAmountRule();
+        if (HasAmountError) ValidateAmount();
+    }
+    private void NotifyAmountRule()
+    {
+        foreach (var name in new[] { nameof(CanVaryAmount), nameof(IsAmountRequired), nameof(AmountRequirementText), nameof(AmountPlaceholder),
+            nameof(AmountDescription), nameof(AmountPreview), nameof(AmountPreviewDescription), nameof(AmountPreviewLine), nameof(AmountFieldTag) })
+            OnPropertyChanged(name);
+    }
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanChooseRepeat))]
     [NotifyPropertyChangedFor(nameof(IsTwiceMonthly))]
@@ -278,23 +302,26 @@ public partial class DueEditViewModel : ObservableObject
     // F07 optional amounts: Bill/Subscription need an amount, Task/Other may leave it blank.
     // A missing or unsupported category is treated as required, the safer reading.
     private string? CategoryName => SelectedCategory is { } category && Enum.IsDefined(category) ? category.ToString() : null;
-    public bool IsAmountRequired => CategoryName is null || Due.RequiresAmount(SelectedCategory!.Value);
+    public bool IsAmountRequired => CategoryName is null || Due.RequiresAmount(SelectedCategory!.Value) && !WaitsForAmount;
     private bool IsAmountBlank => string.IsNullOrWhiteSpace(AmountText);
     public string AmountRequirementText => IsAmountRequired
         ? CategoryName is { } name ? $"Required for {name}." : "Required."
+        : WaitsForAmount ? "Optional: fill it in when the bill arrives."
         : $"Optional for {CategoryName}. Blank means no amount; zero is a recorded amount.";
     // Short on purpose: a single-line Entry cannot wrap, and at 200% text a longer hint was cut off.
     public string AmountPlaceholder => IsAmountRequired ? "1250.50" : "Optional";
     public string AmountDescription => IsAmountRequired
         ? CategoryName is { } name ? $"Amount in Philippine pesos, required for {name}" : "Amount in Philippine pesos, required"
+        : WaitsForAmount ? "Amount in Philippine pesos, optional until the bill arrives"
         : $"Amount in Philippine pesos, optional for {CategoryName}. Leave blank for no amount";
     public string AmountPreview => IsAmountBlank && !IsAmountRequired
-        ? DueListItem.NoAmountText
+        ? WaitsForAmount ? ReminderText.AmountNeeded : DueListItem.NoAmountText
         : TryGetAmount(out var amount) ? amount.ToString() : "";
     public string AmountPreviewDescription => AmountPreview switch
     {
         "" => "",
         DueListItem.NoAmountText => "Will be saved with no amount",
+        ReminderText.AmountNeeded => "Will be saved as amount needed until you add it",
         var preview => $"Amount to save after rounding to centavos, {preview}"
     };
     public string DeleteConfirmationMessage => $"Delete “{_loadedTitle}”? It will be removed from your dues list. You cannot undo this in the app.";
@@ -337,6 +364,7 @@ public partial class DueEditViewModel : ObservableObject
             SelectedRepeat = due.Repeat;
             (FirstRepeatDay, SecondRepeatDay) = due is { Repeat: RepeatRule.TwiceMonthly, RepeatDay: { } first, RepeatDay2: { } second }
                 ? (first, second) : Recurrence.DefaultTwiceMonthlyDays;
+            AmountVaries = due.AmountVaries;
             IsLoaded = true;
             _baseline = Snapshot();
         }
@@ -377,6 +405,7 @@ public partial class DueEditViewModel : ObservableObject
             // The picker is hidden for Task/Other and reset on a type change; this also covers a stale value.
             var repeat = Due.CanRepeat(category) ? SelectedRepeat ?? RepeatRule.Never : RepeatRule.Never;
             (int, int)? twiceDays = repeat == RepeatRule.TwiceMonthly ? (FirstRepeatDay!.Value, SecondRepeatDay!.Value) : null;
+            var amountVaries = AmountVaries && repeat != RepeatRule.Never;
             var now = _clock.GetUtcNow();
             Due? due;
             if (IsEditMode)
@@ -396,7 +425,7 @@ public partial class DueEditViewModel : ObservableObject
                     {
                         Title = title, Amount = amount, DueDate = dueDate, Notes = notes,
                         IsPaid = isPaid, UpdatedAt = now, Category = category, CategoryId = categoryId,
-                        Repeat = repeat, RepeatDay = firstDay, RepeatDay2 = secondDay
+                        Repeat = repeat, RepeatDay = firstDay, RepeatDay2 = secondDay, AmountVaries = amountVaries
                     };
                     // RC04: switching an unpaid repeating due to paid here adds its next one too.
                     if (Recurrence.NextOnPayment(current, edited, now) is { } next)
@@ -417,7 +446,7 @@ public partial class DueEditViewModel : ObservableObject
             }
             else
             {
-                due = Due.Create(title, amount, dueDate, now, notes, category, repeat, categoryId, twiceDays);
+                due = Due.Create(title, amount, dueDate, now, notes, category, repeat, categoryId, twiceDays, amountVaries);
                 await _database.RunAsync(() => _repository.AddAsync(due));
                 CompletionMessage = "Due saved.";
             }
@@ -495,6 +524,7 @@ public partial class DueEditViewModel : ObservableObject
         if (HasAmountError) ValidateAmount();
         // RC06: Task and Other cannot repeat, so leaving Bill/Subscription clears the choice.
         if (!CanChooseRepeat) SelectedRepeat = RepeatRule.Never;
+        NotifyAmountRule();
     }
 
     /// <summary>Blank is "no amount" (null) for Task/Other and a field error for Bill/Subscription.

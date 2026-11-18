@@ -11,6 +11,11 @@ public partial class ReminderSettingsViewModel(ReminderCoordinator coordinator, 
     [ObservableProperty] private TimeSpan _quietStart = TimeSpan.FromHours(22);
     [ObservableProperty] private TimeSpan _quietEnd = TimeSpan.FromHours(8);
     [ObservableProperty] private bool _dayBefore = true;
+    /// <summary>UX30: also remind 1, 7, 14, 21 and 28 days after an unpaid due date.</summary>
+    [ObservableProperty] private bool _overdue = true;
+    /// <summary>UX29: the current Android alert style of each reminder channel.</summary>
+    [ObservableProperty] private string _dueTodayStyle = "";
+    [ObservableProperty] private string _comingUpStyle = "";
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(EnabledText))]
     [NotifyPropertyChangedFor(nameof(IsOff))]
@@ -43,7 +48,7 @@ public partial class ReminderSettingsViewModel(ReminderCoordinator coordinator, 
             if (value < TimeSpan.Zero || value >= TimeSpan.FromDays(1)) throw new ArgumentOutOfRangeException(nameof(value));
             return (int)value.TotalMinutes;
         }
-        return new(enabled, DayBefore, Minutes(ReminderTime), Minutes(QuietStart), Minutes(QuietEnd));
+        return new(enabled, DayBefore, Minutes(ReminderTime), Minutes(QuietStart), Minutes(QuietEnd), Overdue);
     }
     private void UpdateStatus()
     {
@@ -60,6 +65,12 @@ public partial class ReminderSettingsViewModel(ReminderCoordinator coordinator, 
             BackgroundText = "Android battery/background status is unavailable. Retry or open Android app settings.";
             MakerStepsText = "";
         }
+        try
+        {
+            DueTodayStyle = platform.GetAlertStyle(ReminderChannel.DueToday);
+            ComingUpStyle = platform.GetAlertStyle(ReminderChannel.ComingUp);
+        }
+        catch (Exception) { DueTodayStyle = ComingUpStyle = ""; }
         ScheduleText = coordinator.NextAt is { } next
             ? $"Next check: {TimeZoneInfo.ConvertTime(next, TimeZoneInfo.FindSystemTimeZoneById("Asia/Manila")):dd MMM yyyy HH:mm} Asia/Manila. Android may deliver later."
             : "No future reminder is currently scheduled.";
@@ -73,9 +84,12 @@ public partial class ReminderSettingsViewModel(ReminderCoordinator coordinator, 
         {
             var settings = await coordinator.ReadSettingsAsync();
             if (!HasLoaded)
-            { ReminderTime = TimeSpan.FromMinutes(settings.MinuteOfDay); QuietStart = TimeSpan.FromMinutes(settings.QuietStart); QuietEnd = TimeSpan.FromMinutes(settings.QuietEnd); DayBefore = settings.DayBefore; }
+            { ReminderTime = TimeSpan.FromMinutes(settings.MinuteOfDay); QuietStart = TimeSpan.FromMinutes(settings.QuietStart); QuietEnd = TimeSpan.FromMinutes(settings.QuietEnd); DayBefore = settings.DayBefore; Overdue = settings.Overdue; }
             Enabled = settings.Enabled; HasLoaded = true; OnPropertyChanged(nameof(CanEdit));
             await coordinator.ReconcileAsync(); UpdateStatus(); Message = coordinator.LastError;
+            // AL02: said once, after the old single reminder channel was replaced.
+            if (TakeChannelNotice())
+                Message = "Reminders now use two Android channels, Due today and Coming up. If you changed the reminder sound before, set it again under Sound & alert style.";
         }
         catch (Exception) { Message = "Couldn't load reminder settings. Your saved dues are unchanged. Retry."; }
         finally { IsBusy = false; }
@@ -117,17 +131,40 @@ public partial class ReminderSettingsViewModel(ReminderCoordinator coordinator, 
         catch (Exception) { Message = "Couldn't disable reminders. Retry."; }
         finally { IsBusy = false; }
     }
+    private bool TakeChannelNotice()
+    {
+        try { return platform.TakeChannelNotice(); }
+        catch (Exception) { return false; }
+    }
+    /// <summary>AL04: a test works before reminders are enabled, so the sound can be heard before deciding.</summary>
     [RelayCommand]
-    private void Test()
+    private async Task TestAsync()
     {
         if (!Eligible()) return;
         try
         {
-            if (!Enabled || !platform.GetAccess().Allowed) { Message = "Enable reminders and allow Android notifications first."; return; }
-            platform.PostTest(); Message = "Test notification sent. Android may hide alerts if the device is muted.";
+            if (!platform.GetAccess().Allowed)
+            {
+                await platform.RequestPermissionAsync();
+                if (!platform.GetAccess().Allowed)
+                { UpdateStatus(); Message = "Android notifications are blocked. Open Android notification settings to allow them."; return; }
+            }
+            platform.PostTest(); UpdateStatus();
+            Message = "Test reminder sent. It uses the Due today sound. Android may hide alerts while the phone is muted or in Do Not Disturb.";
         }
-        catch (Exception) { Message = "Couldn't send the test notification. Check Android settings and retry."; }
+        catch (Exception) { Message = "Couldn't send the test reminder. Check Android settings and retry."; }
     }
+    [RelayCommand]
+    private void OpenDueTodaySound() => OpenChannel(ReminderChannel.DueToday, "Due today");
+    [RelayCommand]
+    private void OpenComingUpSound() => OpenChannel(ReminderChannel.ComingUp, "Coming up");
+    private void OpenChannel(ReminderChannel channel, string name)
+    {
+        try { platform.OpenChannelSettings(channel); }
+        catch (Exception) { Message = $"Couldn't open Android settings for {name}. Open Duewise's notification settings in Android instead."; }
+    }
+    /// <summary>Refreshes Android-owned state after the user returns from Android settings.</summary>
+    public void RefreshStatus() { if (HasLoaded) UpdateStatus(); }
     [RelayCommand]
     private void OpenSystemSettings()
     { try { platform.OpenSettings(); } catch (Exception) { Message = "Couldn't open Android notification settings."; } }

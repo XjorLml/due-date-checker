@@ -1,6 +1,6 @@
 # Duewise — Product Design System
 
-**Version:** 2.3.0 · **Status:** Normative · **Platforms:** Android (v1) · **Baseline:** 2026-11-05 (Focus adoption; supersedes 1.0.0 indigo baseline of 2026-10-16)
+**Version:** 2.4.0 · **Status:** Normative · **Platforms:** Android (v1) · **Baseline:** 2026-11-05 (Focus adoption; supersedes 1.0.0 indigo baseline of 2026-10-16)
 
 All dimensions are logical **dp** (Android) unless marked `px` (asset pixels), `sp` (scalable type), or `ms`. At 1× density, 1 dp corresponds to one reference pixel. Never hardcode physical pixels for layouts. Token paths in prose use `colors.light.text`; generated implementation constants may use camelCase.
 
@@ -8,6 +8,7 @@ All dimensions are logical **dp** (Android) unless marked `px` (asset pixels), `
 
 | Version | Date | Change |
 |---|---|---|
+| 2.4.0 | 2026-11-16 | [UX review decisions (2026-11-16)](#ux-review-decisions-2026-11-16): Reminders gains a Sound & alert style card, an "Also when overdue" switch and corrected privacy text; Settings gains Paydays; the Dashboard headline becomes "Before payday"; the editor gains "Amount changes each month"; "Amount needed" joins "No amount". Behavior is owned by the [PRD](PRD.md#ux-review-decisions-2026-11-16). |
 | 2.3.0 | 2026-11-16 | [Twice-a-month repeat](#twice-a-month-repeat-2026-11-16): the editor's Repeat row adds "Twice a month" with First day / Second day pickers; rows, Details and spoken text name it. Behavior is owned by [PRD TM](PRD.md#twice-a-month-repeat-2026-11-16). |
 | 2.2.0 | 2026-11-07 | [Prototype alignment](#prototype-alignment-2026-11-07): every page takes the live prototype's look and layout (headers, rows, Dashboard sections, search on Dues, Calendar counts, Details, editor, Settings, Reminders); new prototype features stay deferred. |
 | 2.1.1 | 2026-11-07 | Bottom bar completed to the selected Focus look. The 2.0.0 adoption had left out the floating rounded card, the lime pill behind the selected icon, Jakarta captions and the prototype's Dashboard and Dues glyphs; found when the user compared the build with the prototype. §6 and §7 bottom bar updated. No behavior change. |
@@ -151,6 +152,21 @@ Presentation for [PRD TM](PRD.md#twice-a-month-repeat-2026-11-16), previewed fir
 | Due row | The repeat line reads "⟲ Twice a month". Spoken text says "repeats twice a month". |
 | Details | The Repeats fact reads "Twice a month on days 15 and 30". |
 | Reminder | Unlocked reminder text ends "· repeats twice a month" ([N1](PRD.md#notification-decisions-2026-11-07)). |
+
+### UX review decisions (2026-11-16)
+
+Presentation for the [PRD decisions](PRD.md#ux-review-decisions-2026-11-16) from the [2026-11-16 review](delivery/UX-REVIEW-2026-11-16.md); contracts are in the [SDD](SDD.md#ux-review-2026-11-16-contract).
+
+| Area | Presentation decision |
+|---|---|
+| Reminders · Your schedule | The caption reads "On each due date, with optional nudges the day before and while a due is overdue." A second check row, "Also when overdue" with the caption "1 day late, then weekly for 4 weeks", follows "Also one day before". |
+| Reminders · Sound & alert style | This card sits after Quiet hours, outside the collapsed readiness section. It explains "Android keeps a sound for each kind of reminder. Tap one to choose its ringtone, vibration or banner." It has two settings rows (title, caption, current state such as "Banner · Default (Pixie Dust)", chevron): **Due today** ("On the due date and when overdue") and **Coming up** ("The day before"). Below them is a secondary "Play a test reminder" button. After the channel change the page message explains it once. |
+| Reminders · readiness | The privacy caption reads "Unlocked, a reminder shows the due's title, amount and date. The lock screen only says you have a due. Notes are never shown. Android may delay reminders…". The test button moved to the Sound card, and "Android notification settings" opens the app's notification page. |
+| Notifications | The due date and overdue reminders arrive as banners on "Due today". An overdue title reads "{Title} is 1 day late" / "… 7 days late". A due waiting for its amount reads "Amount needed · {date} · repeats monthly". |
+| Settings · Paydays | This card follows Start of week: the title, the caption "Dashboard totals what's due before your next payday. Shorter months use their last day.", and "First payday" / "Second payday" pickers stacked in field borders. The draft line names appearance, week start and paydays. |
+| Dashboard summary | The eyebrow reads "Before payday · 30 Nov" over the hero amount. The supporting line reads "3 unpaid · ₱850.00 overdue · 1 without an amount, excluded" (parts shown only when they apply). The footnote reads "Counts are global. The amount covers known unpaid dues before your next payday, overdue included." |
+| Editor · Repeat row | For a repeating Bill or Subscription a check row "Amount changes each month" appears, captioned "The next one starts as “Amount needed” for you to fill in.". While it is ticked the Amount tag reads "optional", the hint "Optional: fill it in when the bill arrives." and a blank preview "Will save as “Amount needed” until you add it.". |
+| Rows and Details | A due waiting for its amount shows "Amount needed" in the quiet absent-amount style used for "No amount". |
 
 ## 2. Brand Identity
 

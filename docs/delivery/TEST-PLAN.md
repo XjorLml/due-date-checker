@@ -201,6 +201,24 @@ Use [TM01–TM10](../../specs/f07-twice-monthly/spec.md#acceptance-scenarios), [
 
 On the emulator or phone, preserve data and use only uniquely named temporary dues. Install over the previous build and confirm that the 6→7 upgrade keeps every due. Create a Bill with Repeat set to Twice a month and check that the pickers show 15 and 30. Choose the same day twice and confirm Save is refused with the error. Save with 15 and 30 on a date such as the 20th, mark it paid on Details, and check "Next one added for 30 …". Mark it unpaid and paid again and confirm no second occurrence. Check the row's "Twice a month" line, the Details fact, an export file carrying `repeatDay2`, and both themes at normal and 200% text. Delete only the temporary dues.
 
+## UX Wave 6 verification (UX28–UX33)
+
+Use the [scenarios](../../specs/ux-improvements-3/spec.md#acceptance-scenarios), the [PRD decisions](../PRD.md#ux-review-decisions-2026-11-16), the [SDD contract](../SDD.md#ux-review-2026-11-16-contract) and [ADR 012](../adr/012-reminder-channels-and-overdue.md).
+
+**Automated tests:**
+- Core [UxImprovements3Tests](../../tests/DueDateChecker.Core.Tests/UxImprovements3Tests.cs) covers overdue offsets and times, the per-reminder deadline and quiet hours, overdue text and kinds, the stored overdue setting, the "amount changes" domain rules and next occurrence, the migration-8 upgrade, and the export-4 round trip and refusals.
+- App [UxImprovements3Tests](../../tests/DueDateChecker.App.Tests/UxImprovements3Tests.cs) covers delivery and Mark as paid of an overdue reminder through the coordinator, turning overdue off, the Reminders page (styles, one-time notice, channel buttons, refresh, saving overdue), preference formats 1 and 2, Settings paydays, the Dashboard payday total and live updates, the editor switch, and Details payment of a varying bill.
+- Existing reminder tests run with overdue off to keep their day-before and due-date scope.
+
+**On the device**, preserve data and use only uniquely named temporary dues:
+1. Install over the previous build. Confirm schema 8, that the old "Due reminders" channel is gone with "Due today" (High) and "Coming up" (Default) present, and the one-time message.
+2. Open Sound & alert style: check both rows' state, open each Android page, change a sound, return and see it updated.
+3. Play a test reminder with reminders off.
+4. With a temporary due dated yesterday and the reminder time a few minutes ahead, confirm the "… is 1 day late" banner, its Mark as paid, and a tap opening Details.
+5. Check "Before payday" on the Dashboard against the temporary dues, and change the paydays in Settings.
+6. Save a repeating bill with "Amount changes each month" and no amount, then mark it paid and check that the next one shows "Amount needed".
+7. Check dark mode and 200% text, then remove the temporary dues and restore the reminder settings.
+
 ## UX Wave 3 verification: export and import (UX05)
 
 Use [EX01–EX08](../../specs/f04-export-import/spec.md#acceptance-scenarios), [PRD UX05](../PRD.md#ux-review-decisions-2026-11-06), the [SDD contract](../SDD.md#ux05-export-and-import-contract) and [ADR 010](../adr/010-export-import-file.md). Automated: Core [ExportImportTests](../../tests/DueDateChecker.Core.Tests/ExportImportTests.cs) cover the format, round trip, every refusal, the empty rule with tombstone replacement and the single transaction. App [ExportImportTests](../../tests/DueDateChecker.App.Tests/ExportImportTests.cs) cover the Settings flow with a fake file service, messages, cancels, races and reminder refresh. The Android file dialogs exist only on a device. Executed 2026-11-06 on the emulator: [evidence](evidence/UX-WAVE3-2026-11-06.md).

@@ -163,7 +163,7 @@ public sealed class RecurrenceTests : IDisposable
     {
         new DatabaseInitializer(_path).Initialize();
 
-        Assert.Equal(7L, Scalar("PRAGMA user_version"));
+        Assert.Equal(8L, Scalar("PRAGMA user_version"));
         Assert.Equal("repeat_rule|INTEGER|1|0\nrepeat_day|INTEGER|0|NULL\nrepeat_source_id|TEXT|0|NULL",
             Snapshot("SELECT name, type, \"notnull\", dflt_value FROM pragma_table_info('dues') WHERE name IN ('repeat_rule', 'repeat_day', 'repeat_source_id') ORDER BY cid"));
         Assert.Equal(1L, Scalar("SELECT COUNT(*) FROM sqlite_master WHERE type = 'index' AND name = 'ix_dues_repeat_source'"));
@@ -184,7 +184,7 @@ public sealed class RecurrenceTests : IDisposable
         new DatabaseInitializer(_path).Initialize();
         new DatabaseInitializer(_path).Initialize();
 
-        Assert.Equal(7L, Scalar("PRAGMA user_version"));
+        Assert.Equal(8L, Scalar("PRAGMA user_version"));
         Assert.Equal(before, Snapshot(Original));
         Assert.Equal("0|NULL|NULL\n0|NULL|NULL", Snapshot("SELECT repeat_rule, repeat_day, repeat_source_id FROM dues ORDER BY rowid"));
         var due = (await new SqliteDueRepository(_path).GetAsync(Guid.Parse("00000000-0000-0000-0000-000000000001")))!;

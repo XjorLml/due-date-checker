@@ -71,9 +71,10 @@ public static class Recurrence
     public static Due? NextOccurrence(Due due, DateTimeOffset now)
     {
         if (NextDate(due.DueDate, due.Repeat, due.RepeatDay, due.RepeatDay2) is not { } date) return null;
-        var next = new Due(Guid.NewGuid(), due.Title, due.Amount, date, due.Notes, IsPaid: false,
+        // UX32: an amount that changes each month is not carried forward; the next one waits for its bill.
+        var next = new Due(Guid.NewGuid(), due.Title, due.AmountVaries ? null : due.Amount, date, due.Notes, IsPaid: false,
             CreatedAt: now, UpdatedAt: now, DeletedAt: null, due.Category, due.Repeat, due.RepeatDay, RepeatSourceId: due.Id,
-            CategoryId: due.CategoryId, RepeatDay2: due.RepeatDay2);
+            CategoryId: due.CategoryId, RepeatDay2: due.RepeatDay2, AmountVaries: due.AmountVaries);
         next.Validate();
         return next;
     }

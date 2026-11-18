@@ -29,7 +29,8 @@ public sealed record Due(
     int? RepeatDay = null,
     Guid? RepeatSourceId = null,
     string CategoryId = PhilippineCategories.OtherId,
-    int? RepeatDay2 = null)
+    int? RepeatDay2 = null,
+    bool AmountVaries = false)
 {
     private readonly string _title = ValidateTitle(Title);
     private readonly DueCategory _category = ValidateCategory(Category);
@@ -66,11 +67,11 @@ public sealed record Due(
     /// ignored for other repeats.</param>
     public static Due Create(string title, Money? amount, DateOnly dueDate, DateTimeOffset now, string? notes = null,
         DueCategory category = DueCategory.Other, RepeatRule repeat = RepeatRule.Never,
-        string categoryId = PhilippineCategories.OtherId, (int, int)? twiceMonthlyDays = null)
+        string categoryId = PhilippineCategories.OtherId, (int, int)? twiceMonthlyDays = null, bool amountVaries = false)
     {
         var (first, second) = Recurrence.DaysFor(repeat, dueDate, twiceMonthlyDays);
         var due = new Due(Guid.NewGuid(), title, amount, dueDate, notes, IsPaid: false, CreatedAt: now, UpdatedAt: now, DeletedAt: null,
-            Category: category, Repeat: repeat, RepeatDay: first, CategoryId: categoryId, RepeatDay2: second);
+            Category: category, Repeat: repeat, RepeatDay: first, CategoryId: categoryId, RepeatDay2: second, AmountVaries: amountVaries);
         due.Validate();
         return due;
     }
@@ -84,7 +85,13 @@ public sealed record Due(
     /// <summary>Throws when the finished record breaks a rule that involves more than one property.</summary>
     public void Validate()
     {
-        if (Amount is null && RequiresAmount(Category))
+        // UX32 (2026-11-16): a repeating bill whose amount changes each month may wait for its amount.
+        if (AmountVaries && Repeat == RepeatRule.Never)
+        {
+            throw new ArgumentException("Only a repeating due can have an amount that changes each month.", nameof(AmountVaries));
+        }
+
+        if (Amount is null && RequiresAmount(Category) && !AmountVaries)
         {
             throw new ArgumentException($"A {Category} due requires an amount.", nameof(Amount));
         }

@@ -14,6 +14,7 @@ Four items were decided on 2026-11-07, when the user asked to align the app with
 | UX22 | A — Ask before discarding | Yes | PRD workflow "Back/Cancel" ([PRD](../../docs/PRD.md#prototype-alignment-decisions-2026-11-07)) |
 | UX24 | The prototype's "1 due" / "2 dues" under the day number | Not one of the listed options (A was a corner badge) | DESIGN calendar grid |
 | UX25 | C — Keep: Save stays, drawn as the prototype's fixed bottom-right Save | No (A was recommended) | None; the PRD F04 draft rule stays |
+| UX18 | Settled 2026-11-16 by UX33: the Dashboard headline now totals what is due before the next payday, overdue included, and states the overdue amount ([PRD](../../docs/PRD.md#ux-review-decisions-2026-11-16)) | Not one of the listed options | PRD F02 summary rule |
 
 ## Options
 

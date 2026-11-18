@@ -4,6 +4,9 @@ namespace DueDateChecker.App.Services;
 
 public sealed record NotificationAccess(bool Allowed, string Description);
 
+/// <summary>UX29 (2026-11-16): reminders use two Android channels so each can have its own sound and banner.</summary>
+public enum ReminderChannel { DueToday, ComingUp }
+
 /// <param name="Manufacturer">Android <c>Build.MANUFACTURER</c>; empty when unknown.</param>
 /// <param name="Brand">Android <c>Build.BRAND</c>. Redmi and POCO phones report the manufacturer
 /// Xiaomi with their own brand, so both are checked.</param>
@@ -47,4 +50,10 @@ public interface IReminderPlatform
     void CancelDue(Guid id);
     void Post(ReminderOccurrence occurrence, ReminderText text);
     void PostTest();
+    /// <summary>The channel's current alert style for the Sound &amp; alert card, e.g. "Banner · Chime".</summary>
+    string GetAlertStyle(ReminderChannel channel) => "";
+    /// <summary>Opens Android's settings for one reminder channel, where its sound and banner are chosen.</summary>
+    void OpenChannelSettings(ReminderChannel channel) => OpenSettings();
+    /// <summary>True once after the old single channel was replaced (AL02); false afterwards.</summary>
+    bool TakeChannelNotice() => false;
 }

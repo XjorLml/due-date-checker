@@ -11,10 +11,10 @@ public sealed class SqliteReminderStore(string databasePath) : IReminderStore
     {
         using var connection = SqliteConnections.Open(databasePath);
         using var command = connection.CreateCommand();
-        command.CommandText = "SELECT enabled,day_before,minute_of_day,quiet_start,quiet_end FROM reminder_settings WHERE id=1";
+        command.CommandText = "SELECT enabled,day_before,minute_of_day,quiet_start,quiet_end,overdue FROM reminder_settings WHERE id=1";
         using var reader = await command.ExecuteReaderAsync();
         if (!await reader.ReadAsync()) throw new InvalidOperationException("Reminder settings unavailable.");
-        var settings = new ReminderSettings(reader.GetInt64(0) != 0, reader.GetInt64(1) != 0, reader.GetInt32(2), reader.GetInt32(3), reader.GetInt32(4));
+        var settings = new ReminderSettings(reader.GetInt64(0) != 0, reader.GetInt64(1) != 0, reader.GetInt32(2), reader.GetInt32(3), reader.GetInt32(4), reader.GetInt64(5) != 0);
         settings.Validate(); return settings;
     }
     public async Task SaveSettingsAsync(ReminderSettings settings)
@@ -22,9 +22,10 @@ public sealed class SqliteReminderStore(string databasePath) : IReminderStore
         settings.Validate();
         using var connection = SqliteConnections.Open(databasePath);
         using var command = connection.CreateCommand();
-        command.CommandText = "UPDATE reminder_settings SET enabled=@enabled,day_before=@before,minute_of_day=@minute,quiet_start=@start,quiet_end=@end WHERE id=1";
+        command.CommandText = "UPDATE reminder_settings SET enabled=@enabled,day_before=@before,minute_of_day=@minute,quiet_start=@start,quiet_end=@end,overdue=@overdue WHERE id=1";
         command.Parameters.AddWithValue("@enabled", settings.Enabled ? 1 : 0); command.Parameters.AddWithValue("@before", settings.DayBefore ? 1 : 0);
         command.Parameters.AddWithValue("@minute", settings.MinuteOfDay); command.Parameters.AddWithValue("@start", settings.QuietStart); command.Parameters.AddWithValue("@end", settings.QuietEnd);
+        command.Parameters.AddWithValue("@overdue", settings.Overdue ? 1 : 0);
         if (await command.ExecuteNonQueryAsync() != 1) throw new InvalidOperationException("Reminder settings unavailable.");
     }
     public async Task<IReadOnlyList<ReminderOccurrence>> ReadOccurrencesAsync()

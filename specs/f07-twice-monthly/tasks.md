@@ -12,7 +12,7 @@ See the [spec](spec.md) and [plan](plan.md).
 - [x] Emulator checks: real 6→7 upgrade, editor, equal-day error, save, Details, payment and no duplicate, dark at 200% (found and fixed a Repeat row layout defect); cleanup.
 - [x] SDD, DESIGN, TEST-PLAN, ADR 011, STATUS and PRD status line updated.
 - [ ] Phone check with the intended signed build, including TalkBack on the day pickers (pending the phone's signing-key situation).
-- [ ] Suites on Windows/.NET 10 or in CI.
+- [x] Suites on .NET 10 in CI: run `44335469445` (push to `main`, `c3a2019`, 2026-11-18) passed the Core and App tests, observed through GitHub's public API. The MoneyTests case that fails only on runtime 11 passes there.
 
 Deviations from the [plan](plan.md):
 

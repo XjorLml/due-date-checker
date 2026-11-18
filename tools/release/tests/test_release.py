@@ -14,25 +14,62 @@ SPEC = importlib.util.spec_from_file_location('duewise_release', Path(__file__).
 release = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(release)
 SHA = 'a'*40
-ENV = {'RELEASE_VERSION': '1.0.0', 'VERSION_CODE': '2', 'GITHUB_SHA': SHA, 'GH_REPO': 'owner/repo'}
+ENV = {'RELEASE_VERSION': '1.0.0', 'GITHUB_SHA': SHA, 'GH_REPO': 'owner/repo'}
 
 
 class InputTests(unittest.TestCase):
     def test_valid_inputs_define_safe_asset_and_tag_names(self):
-        self.assertEqual(release.inputs('1.20.300', '2'),
-                         {'version': '1.20.300', 'code': '2', 'tag': 'v1.20.300', 'apk': 'Duewise-v1.20.300.apk'})
-        self.assertEqual(release.inputs('0.0.0', '2100000000')['code'], '2100000000')
+        self.assertEqual(release.inputs('1.20.300'),
+                         {'version': '1.20.300', 'code': '1020300', 'tag': 'v1.20.300', 'apk': 'Duewise-v1.20.300.apk'})
 
     def test_rejects_invalid_versions_and_injection(self):
-        for version in ['v1.0.0', '../1.0.0', '1.0', '01.0.0', '1.0.0-beta', '1.0.0\nother=x', '1.0.0; echo bad', '$(whoami)', '1/2/3']:
-            with self.subTest(version=version), self.assertRaises(ValueError): release.inputs(version, '2')
+        for version in ['v1.0.0', '../1.0.0', '1.0', '01.0.0', '1.0.0-beta', '1.0.0\nother=x', '1.0.0; echo bad', '$(whoami)', '1/2/3',
+                        '0.0.0', '2100.0.0', '1.1000.0', '1.0.1000', '']:
+            with self.subTest(version=version), self.assertRaises(ValueError): release.inputs(version)
 
-    def test_rejects_invalid_android_codes(self):
-        for code in ['0', '-1', '02', '2.0', '2100000001', '9999999999999', '2\nother=x', '2;echo bad']:
-            with self.subTest(code=code), self.assertRaises(ValueError): release.inputs('1.0.0', code)
+    def test_android_code_grows_with_every_later_version_and_stays_in_range(self):
+        ordered = ['0.0.1', '1.0.0', '1.0.1', '1.0.999', '1.1.0', '1.999.999', '2.0.0', '2099.999.999']
+        codes = [release.version_code(v) for v in ordered]
+        self.assertEqual(codes, sorted(codes)); self.assertEqual(len(set(codes)), len(codes))
+        self.assertEqual(release.version_code('1.0.0'), 1_000_000)  # above the codes 1 and 2 used so far
+        self.assertLessEqual(codes[-1], 2_100_000_000)
 
     def test_rejects_invalid_source_sha(self):
         with patch.dict(os.environ, ENV | {'GITHUB_SHA': 'develop'}), self.assertRaises(ValueError): release.context()
+
+
+class VersionTests(unittest.TestCase):
+    def test_default_is_next_patch_after_the_highest_existing_version(self):
+        self.assertEqual(release.next_version([], []), '1.0.0')
+        self.assertEqual(release.next_version(['1.0.0', '1.2.3', '1.10.0'], []), '1.10.1')
+        self.assertEqual(release.next_version(['1.4.999'], []), '1.5.0')
+
+    def test_a_rerun_of_a_released_commit_reuses_its_version(self):
+        self.assertEqual(release.next_version(['1.0.0', '1.0.1'], ['1.0.0']), '1.0.0')
+        self.assertEqual(release.next_version(['1.0.0'], ['1.0.0'], '1.0.0'), '1.0.0')
+        with self.assertRaises(ValueError): release.next_version(['1.0.0'], ['1.0.0'], '2.0.0')
+
+    def test_requested_version_must_be_newer_than_every_existing_one(self):
+        self.assertEqual(release.next_version(['1.0.4'], [], '1.1.0'), '1.1.0')
+        for requested in ['1.0.4', '1.0.3', '0.9.9']:
+            with self.subTest(requested=requested), self.assertRaises(ValueError):
+                release.next_version(['1.0.4'], [], requested)
+        with self.assertRaises(ValueError): release.next_version([], [], 'v1.0.0')
+
+    def test_only_valid_version_tags_count(self):
+        self.assertEqual(release.versions_in(['v1.0.0', 'v1.2', 'release-3', 'v01.0.0', ' v2.0.1 ', 'v1.0.0-beta']), ['1.0.0', '2.0.1'])
+
+    def test_choose_reads_tags_and_releases_including_drafts(self):
+        outputs = {('git', 'tag', '--list', 'v*'): 'v1.0.0\nv1.0.1\nnot-a-version\n',
+                   ('git', 'tag', '--list', 'v*', '--points-at', 'HEAD'): '',
+                   ('gh', 'release', 'list'): json.dumps([{'tagName': 'v1.0.2'}, {'tagName': 'v1.0.1'}])}
+        def fake_run(args):
+            key = tuple(args[:3]) if args[0] == 'gh' else tuple(args)
+            return outputs[key]
+        with patch.object(release, 'run', side_effect=fake_run):
+            values = release.choose('owner/repo', '')
+        self.assertEqual((values['version'], values['code'], values['previous']), ('1.0.3', '1000003', 'v1.0.2'))
+        with self.assertRaises(ValueError): release.choose('bad repo', '')
 
 
 class SigningTests(unittest.TestCase):
@@ -98,23 +135,23 @@ class SigningTests(unittest.TestCase):
 
 
 class MetadataTests(unittest.TestCase):
-    BADGING = "package: name='com.lem.duedatechecker' versionCode='2' versionName='1.0.0'\n"
+    BADGING = "package: name='com.lem.duedatechecker' versionCode='1000000' versionName='1.0.0'\n"
     FINGERPRINT = 'b'*64
     SIGNING = 'Signer #1 certificate SHA-256 digest: '+FINGERPRINT+'\n'
 
     def test_accepts_verified_matching_identity(self):
-        release.verify_metadata(self.BADGING, self.SIGNING, self.FINGERPRINT, '1.0.0', '2')
+        release.verify_metadata(self.BADGING, self.SIGNING, self.FINGERPRINT, '1.0.0', '1000000')
 
     def test_rejects_wrong_package_version_code_debug_flag_and_signer(self):
         badgings = [self.BADGING.replace('com.lem.duedatechecker','other.app'),
-                    self.BADGING.replace("versionCode='2'", "versionCode='1'"),
+                    self.BADGING.replace("versionCode='1000000'", "versionCode='2'"),
                     self.BADGING.replace('1.0.0','0.9.0'), self.BADGING+'application-debuggable\n']
         for badging in badgings:
             with self.subTest(badging=badging), self.assertRaises(ValueError):
-                release.verify_metadata(badging, self.SIGNING, self.FINGERPRINT, '1.0.0', '2')
+                release.verify_metadata(badging, self.SIGNING, self.FINGERPRINT, '1.0.0', '1000000')
         for signing in ['', self.SIGNING.replace('b'*64,'c'*64), self.SIGNING+self.SIGNING]:
             with self.subTest(signing=signing), self.assertRaises(ValueError):
-                release.verify_metadata(self.BADGING, signing, self.FINGERPRINT, '1.0.0', '2')
+                release.verify_metadata(self.BADGING, signing, self.FINGERPRINT, '1.0.0', '1000000')
 
     def test_package_exports_only_signed_apk_checksum_and_traceable_notes(self):
         with tempfile.TemporaryDirectory() as temp, patch.dict(os.environ, ENV | {'ANDROID_KEY_ALIAS':'upload'}):
@@ -127,13 +164,19 @@ class MetadataTests(unittest.TestCase):
                 if Path(str(args[0])).name == 'apksigner': return 'Signer #1 certificate SHA-256 digest: '+fingerprint
                 if args[0] == 'keytool':
                     self.assertIn('-storepass:env', args); (root/release.CERT_FILE).write_bytes(cert); return ''
+                if args[0] == 'git':
+                    self.assertEqual(args[-1], 'v0.9.0..'+SHA); return '- feat: twice a month (abc1234)'
                 return self.BADGING
-            with patch.object(release,'run',side_effect=fake_run): release.package(publish,output,root,root)
+            with patch.dict(os.environ,{'PREVIOUS_TAG':'v0.9.0'}),patch.object(release,'run',side_effect=fake_run):
+                release.package(publish,output,root,root)
             self.assertEqual({p.name for p in output.iterdir()}, {'Duewise-v1.0.0.apk','Duewise-v1.0.0.apk.sha256','RELEASE-NOTES.md'})
             target = output/'Duewise-v1.0.0.apk'
             self.assertEqual(target.read_bytes(),apk.read_bytes())
             self.assertEqual(target.with_suffix('.apk.sha256').read_text(),hashlib.sha256(apk.read_bytes()).hexdigest()+'  '+target.name+'\n')
-            self.assertIn('<!-- duewise-source:'+SHA+' -->',(output/'RELEASE-NOTES.md').read_text())
+            notes=(output/'RELEASE-NOTES.md').read_text()
+            self.assertIn('<!-- duewise-source:'+SHA+' -->',notes)
+            self.assertIn('## Changes since v0.9.0\n\n- feat: twice a month (abc1234)',notes)
+            self.assertIn('(build 1000000)',notes)
 
     def test_missing_or_ambiguous_signed_output_fails(self):
         with tempfile.TemporaryDirectory() as temp, patch.dict(os.environ,ENV):
@@ -143,11 +186,14 @@ class MetadataTests(unittest.TestCase):
             with self.assertRaises(ValueError): release.package(root,root/'out',root,root)
 
 
-class DraftTests(unittest.TestCase):
-    def test_guard_accepts_only_new_or_same_commit_draft(self):
-        release.guard_release(None,None,SHA)
-        release.guard_release({'isDraft':True,'description':'<!-- duewise-source:'+SHA+' -->'},SHA,SHA)
-        for current, tag in [({'isDraft':False},SHA), (None,'b'*40),
+class PublishTests(unittest.TestCase):
+    MINE={'isDraft':False,'description':'<!-- duewise-source:'+SHA+' -->'}
+
+    def test_guard_allows_new_same_commit_draft_and_reports_same_commit_published(self):
+        self.assertFalse(release.guard_release(None,None,SHA))
+        self.assertFalse(release.guard_release({'isDraft':True,'description':'<!-- duewise-source:'+SHA+' -->'},SHA,SHA))
+        self.assertTrue(release.guard_release(self.MINE,SHA,SHA))
+        for current, tag in [(None,'b'*40), ({'isDraft':False,'description':'manual'},SHA),
                              ({'isDraft':True,'description':'manual draft'},None),
                              ({'isDraft':True,'description':'<!-- duewise-source:'+'b'*40+' -->'},None)]:
             with self.subTest(current=current), self.assertRaises(ValueError): release.guard_release(current,tag,SHA)
@@ -170,28 +216,36 @@ class DraftTests(unittest.TestCase):
         (root/'RELEASE-NOTES.md').write_text('<!-- duewise-source:'+SHA+' -->')
         return apk
 
-    def test_new_release_is_always_draft_at_exact_built_sha(self):
+    def test_new_release_is_published_as_latest_at_exact_built_sha(self):
         with tempfile.TemporaryDirectory() as temp,patch.dict(os.environ,ENV):
             root=Path(temp);self.fixture(root)
             with patch.object(release,'release_state',return_value=(None,None)),patch.object(release,'run') as run:
-                release.draft(root)
+                release.publish(root)
                 args=run.call_args.args[0]
                 self.assertEqual(args[:4],['gh','release','create','v1.0.0'])
-                self.assertIn('--draft',args);self.assertEqual(args[args.index('--target')+1],SHA)
+                self.assertNotIn('--draft',args);self.assertIn('--latest',args)
+                self.assertEqual(args[args.index('--target')+1],SHA)
 
-    def test_same_source_retry_replaces_only_draft_assets(self):
+    def test_same_source_draft_is_completed_and_published(self):
         current={'isDraft':True,'description':'<!-- duewise-source:'+SHA+' -->'}
         with tempfile.TemporaryDirectory() as temp,patch.dict(os.environ,ENV):
             root=Path(temp);self.fixture(root)
             with patch.object(release,'release_state',return_value=(current,SHA)),patch.object(release,'run') as run:
-                release.draft(root)
+                release.publish(root)
                 self.assertEqual(run.call_count,2)
                 self.assertEqual(run.call_args_list[0].args[0][2],'upload')
-                self.assertIn('--draft=true',run.call_args_list[1].args[0])
+                self.assertIn('--draft=false',run.call_args_list[1].args[0])
 
-    def test_published_release_cannot_trigger_any_write(self):
-        with patch.dict(os.environ,ENV),patch.object(release,'release_state',return_value=({'isDraft':False},SHA)),patch.object(release,'run') as run:
-            with self.assertRaises(ValueError): release.draft(Path('unused'))
+    def test_rerun_after_publishing_writes_nothing(self):
+        with patch.dict(os.environ,ENV),patch.object(release,'release_state',return_value=(self.MINE,SHA)),patch.object(release,'run') as run:
+            release.publish(Path('unused'))
+            release.publish(Path('unused'),check_only=True)
+            run.assert_not_called()
+
+    def test_another_sources_release_cannot_trigger_any_write(self):
+        other={'isDraft':False,'description':'<!-- duewise-source:'+'b'*40+' -->'}
+        with patch.dict(os.environ,ENV),patch.object(release,'release_state',return_value=(other,'b'*40)),patch.object(release,'run') as run:
+            with self.assertRaises(ValueError): release.publish(Path('unused'))
             run.assert_not_called()
 
     def test_downloaded_tampered_apk_or_wrong_notes_cannot_be_uploaded(self):
@@ -201,7 +255,7 @@ class DraftTests(unittest.TestCase):
                 if tamper=='apk': apk.write_bytes(b'tampered')
                 else: (root/'RELEASE-NOTES.md').write_text('<!-- duewise-source:'+'b'*40+' -->')
                 with patch.object(release,'release_state',return_value=(None,None)),patch.object(release,'run') as run:
-                    with self.assertRaises(ValueError): release.draft(root)
+                    with self.assertRaises(ValueError): release.publish(root)
                     run.assert_not_called()
 
 

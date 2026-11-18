@@ -20,6 +20,8 @@ On 2026-11-16, [011: Twice-a-month repeat as a fifth rule with a second day colu
 
 On 2026-11-16, [012: Two reminder channels, overdue reminders by date, and a waiting amount](012-reminder-channels-and-overdue.md) records the storage and Android choices for the UX review decisions of that day (new channel IDs, overdue occurrences, `amount_varies`, paydays as a preference). The user decided the product scope; the technical choices are marked as not separately approved. The number is new.
 
+On 2026-11-18, [013: Automatic release on every merge to main](013-automatic-release.md) records the user's choice of automatic, immediately published releases and the version, build-number and pull-request gate details. The user decided the trigger and publication; the other details are marked as not separately approved. The number is new.
+
 ## Recording a decision
 
 Create an ADR for a significant architecture choice or change, using `NNN-short-title.md`. Check the historical number references before assigning an ID; reconcile them explicitly rather than silently reusing them.

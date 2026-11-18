@@ -1,6 +1,7 @@
-"""GitHub draft-release helper. Secrets stay in environment variables/runner temp.
+"""GitHub release helper. Secrets stay in environment variables/runner temp.
 
-Only the `draft` command writes to GitHub. All releases remain unpublished.
+Only the `publish` command writes to GitHub. Since 2026-11-18 every merge to main publishes the
+next patch version automatically (docs/delivery/GITHUB-RELEASE.md, ADR 013).
 """
 import argparse
 import base64
@@ -22,16 +23,85 @@ class ReleaseError(ValueError):
     """A controlled, credential-free diagnostic safe for runner logs."""
 
 
-def inputs(version, code):
-    if not re.fullmatch(r'(0|[1-9][0-9]{0,3})\.(0|[1-9][0-9]{0,3})\.(0|[1-9][0-9]{0,3})', version):
-        raise ReleaseError('Version must be three numeric parts, for example 1.0.0 (no v prefix).')
-    if not re.fullmatch(r'[1-9][0-9]{0,9}', code) or int(code) > 2_100_000_000:
-        raise ReleaseError('Android version code must be an integer from 1 to 2100000000.')
+VERSION = re.compile(r'(0|[1-9][0-9]{0,3})\.(0|[1-9][0-9]{0,2})\.(0|[1-9][0-9]{0,2})')
+
+
+def parse(version):
+    """Three numeric parts: major 0-2099, minor and patch 0-999 (so the Android code stays in range)."""
+    match = VERSION.fullmatch(version or '')
+    if not match or int(match[1]) > 2099 or version == '0.0.0':
+        raise ReleaseError('Version must be three numeric parts, for example 1.0.0 (no v prefix); '
+                           'major up to 2099, minor and patch up to 999.')
+    return tuple(int(part) for part in match.groups())
+
+
+def version_code(version):
+    """Android versionCode derived from the version, so every later version has a larger code."""
+    major, minor, patch = parse(version)
+    return major * 1_000_000 + minor * 1_000 + patch
+
+
+def inputs(version):
+    code = str(version_code(version))
     return {'version': version, 'code': code, 'tag': 'v'+version, 'apk': f'Duewise-v{version}.apk'}
 
 
+def next_version(existing, at_head, requested=''):
+    """The version to release for this commit.
+
+    `existing` holds every version already used by a tag or release (drafts included); `at_head` the
+    versions whose tag already points at this commit. A rerun for the same commit reuses its version.
+    Otherwise a requested version must be newer than all existing ones, and the default is the next
+    patch after the highest (1.0.0 when nothing exists).
+    """
+    used = sorted({parse(v) for v in existing})
+    head = sorted({parse(v) for v in at_head})
+    if head:
+        if requested and parse(requested) not in head:
+            raise ReleaseError('This commit is already released under another version.')
+        return '.'.join(map(str, head[-1]))
+    if requested:
+        if used and parse(requested) <= used[-1]:
+            raise ReleaseError('The requested version must be newer than every existing release.')
+        return '.'.join(map(str, parse(requested)))
+    if not used:
+        return '1.0.0'
+    major, minor, patch = used[-1]
+    return f'{major}.{minor + 1}.0' if patch >= 999 else f'{major}.{minor}.{patch + 1}'
+
+
+def versions_in(names):
+    """Valid vX.Y.Z names only; anything else (other tags, typos) is ignored."""
+    found = []
+    for name in names:
+        name = name.strip()
+        if name.startswith('v'):
+            try:
+                parse(name[1:])
+                found.append(name[1:])
+            except ReleaseError:
+                pass
+    return found
+
+
+def choose(repo, requested):
+    """Reads tags and GitHub releases (drafts too) and returns the outputs for this run."""
+    if not re.fullmatch(r'[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+', repo):
+        raise ReleaseError('Invalid GitHub repository.')
+    tags = run(['git', 'tag', '--list', 'v*']).splitlines()
+    at_head = run(['git', 'tag', '--list', 'v*', '--points-at', 'HEAD']).splitlines()
+    releases = [item['tagName'] for item in json.loads(run(['gh', 'release', 'list', '--repo', repo,
+                                                             '--limit', '1000', '--json', 'tagName']) or '[]')]
+    existing = versions_in(tags + releases)
+    version = next_version(existing, versions_in(at_head), requested)
+    previous = [v for v in existing if parse(v) < parse(version)]
+    values = inputs(version)
+    values['previous'] = 'v'+'.'.join(map(str, max(parse(v) for v in previous))) if previous else ''
+    return values
+
+
 def context():
-    values = inputs(os.environ['RELEASE_VERSION'], os.environ['VERSION_CODE'])
+    values = inputs(os.environ['RELEASE_VERSION'])
     sha = os.environ['GITHUB_SHA']
     if not re.fullmatch(r'[0-9a-f]{40}', sha):
         raise ReleaseError('Expected the full selected GitHub commit SHA.')
@@ -76,6 +146,13 @@ def verify_metadata(badging, signing, cert, version, code):
         raise ReleaseError('APK signing certificate does not match the supplied keystore.')
 
 
+def changes(previous, sha):
+    """Commit subjects since the previous release, newest first, merges left out."""
+    span = f'{previous}..{sha}' if previous else sha
+    lines = run(['git', 'log', '--no-merges', '--max-count=50', '--pretty=format:- %s (%h)', span]).strip()
+    return lines or '- No code changes listed.'
+
+
 def package(publish_dir, output_dir, sdk, temp):
     values, sha = context()
     candidates = list(publish_dir.glob('*-Signed.apk'))
@@ -98,14 +175,18 @@ def package(publish_dir, output_dir, sdk, temp):
     shutil.copyfile(apk, target)
     checksum = hashlib.sha256(target.read_bytes()).hexdigest()
     target.with_suffix('.apk.sha256').write_text(f'{checksum}  {target.name}\n', encoding='utf-8')
+    previous = os.environ.get('PREVIOUS_TAG', '')
     notes = (f'<!-- duewise-source:{sha} -->\n\n'
              f'Duewise {values["version"]} for Android (build {values["code"]}).\n\n'
+             f'## Changes{" since " + previous if previous else ""}\n\n{changes(previous, sha)}\n\n'
+             f'## Checks\n\n'
              f'- Source commit: `{sha}`\n'
              f'- Core, App and release-tool automated tests passed in this workflow.\n'
              f'- Release APK signature verified against the supplied keystore.\n'
              f'- Signing certificate SHA-256: `{fingerprint}`\n'
              f'- APK SHA-256: `{checksum}`\n\n'
-             'Draft for review. Automated checks do not establish phone, accessibility or notification-delivery acceptance.\n')
+             'Published automatically after these checks. They do not establish phone, accessibility or '
+             'notification-delivery acceptance.\n')
     (output_dir / 'RELEASE-NOTES.md').write_text(notes, encoding='utf-8')
     if os.environ.get('GITHUB_STEP_SUMMARY'):
         with Path(os.environ['GITHUB_STEP_SUMMARY']).open('a', encoding='utf-8') as stream:
@@ -141,20 +222,23 @@ def release_state(repo, tag):
 
 
 def guard_release(release, tag_sha, sha):
+    """Returns True when this exact source is already published (a rerun has nothing to do)."""
     if tag_sha is not None and tag_sha != sha:
         raise ReleaseError('This version tag points to another commit. Choose a new version.')
-    if release is not None:
-        if not release['isDraft']:
-            raise ReleaseError('This release is already published; it will not be modified.')
-        if f'<!-- duewise-source:{sha} -->' not in (release.get('description') or ''):
-            raise ReleaseError('Existing draft belongs to another/unknown source. Choose a new version.')
+    if release is None:
+        return False
+    if f'<!-- duewise-source:{sha} -->' not in (release.get('description') or ''):
+        raise ReleaseError('An existing release with this version belongs to another/unknown source.')
+    return not release['isDraft']
 
 
-def draft(output_dir, check_only=False):
+def publish(output_dir, check_only=False):
     values, sha = context()
     repo = os.environ['GH_REPO']
     release, tag_sha = release_state(repo, values['tag'])
-    guard_release(release, tag_sha, sha)
+    if guard_release(release, tag_sha, sha):
+        print(f'{values["tag"]} is already published from this commit; nothing to do.')
+        return
     if check_only:
         print('Release/tag preflight passed.')
         return
@@ -169,29 +253,33 @@ def draft(output_dir, check_only=False):
     assets = [str(apk), str(checksum_path)]
     if release is None:
         run(['gh', 'release', 'create', values['tag'], *assets, '--repo', repo, '--target', sha,
-             '--title', 'Duewise '+values['version'], '--notes-file', notes_path, '--draft'])
+             '--title', 'Duewise '+values['version'], '--notes-file', notes_path, '--latest'])
     else:
-        # Only a same-source unpublished draft may have its generated assets replaced.
+        # A same-source draft (an interrupted run, or one prepared by hand) is completed and published.
         run(['gh', 'release', 'upload', values['tag'], *assets, '--repo', repo, '--clobber'])
-        run(['gh', 'release', 'edit', values['tag'], '--repo', repo, '--notes-file', notes_path, '--draft=true'])
-    print('Draft release ready: '+values['tag']+' (not published).')
+        run(['gh', 'release', 'edit', values['tag'], '--repo', repo, '--notes-file', notes_path,
+             '--draft=false', '--latest'])
+    print('Published release: '+values['tag'])
     if os.environ.get('GITHUB_STEP_SUMMARY'):
         with Path(os.environ['GITHUB_STEP_SUMMARY']).open('a', encoding='utf-8') as stream:
-            stream.write(f'\nDraft release prepared for `{values["tag"]}` from `{sha}`. Review it under Releases before publishing.\n')
+            stream.write(f'\nPublished `{values["tag"]}` from `{sha}`.\n')
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('command', choices=['inputs', 'decode', 'package', 'check', 'draft', 'clean'])
+    parser.add_argument('command', choices=['version', 'inputs', 'decode', 'package', 'check', 'publish', 'clean'])
     parser.add_argument('--publish-dir', type=Path, default=Path('artifacts/release-build'))
     parser.add_argument('--output-dir', type=Path, default=Path('artifacts/github-release'))
     args = parser.parse_args()
-    if args.command == 'inputs':
-        values, _ = context()
+    if args.command in ('version', 'inputs'):
+        if args.command == 'version':
+            values = choose(os.environ['GH_REPO'], os.environ.get('REQUESTED_VERSION', '').strip())
+        else:
+            values, _ = context()
         with Path(os.environ['GITHUB_OUTPUT']).open('a', encoding='utf-8') as stream:
             for key, value in values.items(): stream.write(f'{key}={value}\n')
-    elif args.command in ('check', 'draft'):
-        draft(args.output_dir, check_only=args.command == 'check')
+    elif args.command in ('check', 'publish'):
+        publish(args.output_dir, check_only=args.command == 'check')
     else:
         temp = Path(os.environ['RUNNER_TEMP'])
         if args.command == 'decode': decode_keystore(temp, os.environ)

@@ -1,11 +1,18 @@
 # V1.4 / PRD R08: run the unit tests on every push. See specs/v1.4-ci/spec.md.
+# Since 2026-11-18 every merge to main is released automatically (release.yml), so pull requests
+# also run the tests, the release-tool and documentation checks, and an unsigned Android build.
 name: CI
 
 on:
   push:
+  pull_request:
 
 permissions:
   contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
@@ -23,3 +30,47 @@ jobs:
 
       - name: App tests
         run: dotnet test tests/DueDateChecker.App.Tests/DueDateChecker.App.Tests.csproj
+
+  checks:
+    name: Release tool and documentation checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Release helper tests
+        run: python3 -m unittest discover -s tools/release/tests -v
+
+      - name: Documentation links
+        run: python3 tools/check_docs.py
+
+  android:
+    name: Android build (unsigned)
+    # A merge to main ships, so a change heading for main must build first.
+    if: github.event_name == 'pull_request' && github.base_ref == 'main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: 'true'
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: microsoft
+          java-version: '21'
+
+      - name: Install MAUI Android workload and SDK packages
+        run: |
+          dotnet workload install maui-android
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0" "platform-tools"
+
+      - name: Release build without signing
+        run: |
+          dotnet build src/DueDateChecker.App/DueDateChecker.App.csproj -c Release -f net10.0-android \
+            -p:AndroidKeyStore=false -p:AndroidSdkBuildToolsVersion=36.0.0 \
+            "-p:AndroidSdkDirectory=$ANDROID_HOME" "-p:JavaSdkDirectory=$JAVA_HOME"

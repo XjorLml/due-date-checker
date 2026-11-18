@@ -1,25 +1,32 @@
-# Manual R01/R08 delivery extension. Setup: docs/delivery/GITHUB-RELEASE.md.
-name: Android draft release
+# Automatic Android release (decided 2026-11-18): every merge to main that changes the app is tested,
+# built, signed, verified and published as the next patch version. Setup: docs/delivery/GITHUB-RELEASE.md.
+name: Android release
 
 on:
+  push:
+    branches: [main]
+    # Documentation-only merges do not ship a new APK version.
+    paths-ignore:
+      - 'docs/**'
+      - 'specs/**'
+      - 'prototypes/**'
+      - '.vibe-wise/**'
+      - 'tools/developer-dashboard/**'
+      - '**/*.md'
   workflow_dispatch:
     inputs:
       version:
-        description: 'Release version, for example 1.0.0 (no v prefix)'
-        required: true
-        default: '1.0.0'
-        type: string
-      version_code:
-        description: 'Android build number: increase for each distributed version'
-        required: true
-        default: '2'
+        description: 'Optional version for a minor/major bump, for example 1.2.0 (no v prefix). Leave empty for the next patch.'
+        required: false
+        default: ''
         type: string
 
 permissions:
   contents: read
 
+# One release at a time, in merge order, so two merges never pick the same version.
 concurrency:
-  group: android-release-${{ inputs.version }}
+  group: android-release
   cancel-in-progress: false
 
 defaults:
@@ -28,37 +35,42 @@ defaults:
 
 jobs:
   build:
-    name: Test and sign Android APK
+    name: Test, sign and verify Android APK
+    # Releases come only from main, also when started by hand.
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     outputs:
       version: ${{ steps.release.outputs.version }}
-      code: ${{ steps.release.outputs.code }}
-      tag: ${{ steps.release.outputs.tag }}
       apk: ${{ steps.release.outputs.apk }}
       artifact: ${{ steps.artifact.outputs.name }}
     env:
-      RELEASE_VERSION: ${{ inputs.version }}
-      VERSION_CODE: ${{ inputs.version_code }}
       DOTNET_CLI_TELEMETRY_OPTOUT: '1'
       DOTNET_NOLOGO: 'true'
+      GH_REPO: ${{ github.repository }}
     steps:
       - uses: actions/checkout@v7
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
-
-      - name: Validate release inputs
-        id: release
-        run: python3 tools/release/release.py inputs
+          # Tags and history are needed to choose the version and list changes since the last release.
+          fetch-depth: 0
+          fetch-tags: true
 
       - name: Release helper tests
         run: python3 -m unittest discover -s tools/release/tests -v
 
+      - name: Choose version
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REQUESTED_VERSION: ${{ inputs.version }}
+        run: python3 tools/release/release.py version
+
       - name: Check for conflicting release or tag
         env:
           GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
+          RELEASE_VERSION: ${{ steps.release.outputs.version }}
         run: python3 tools/release/release.py check
 
       - uses: actions/setup-dotnet@v6
@@ -94,6 +106,8 @@ jobs:
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          RELEASE_VERSION: ${{ steps.release.outputs.version }}
+          VERSION_CODE: ${{ steps.release.outputs.code }}
         run: |
           dotnet publish src/DueDateChecker.App/DueDateChecker.App.csproj \
             -c Release -f net10.0-android \
@@ -110,10 +124,12 @@ jobs:
             "-p:ApplicationVersion=$VERSION_CODE" \
             -o artifacts/release-build
 
-      - name: Verify signature, identity, versions and checksum
+      - name: Verify signature, identity, versions and checksum; write release notes
         env:
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          RELEASE_VERSION: ${{ steps.release.outputs.version }}
+          PREVIOUS_TAG: ${{ steps.release.outputs.previous }}
         run: python3 tools/release/release.py package
 
       - name: Remove temporary signing material
@@ -137,7 +153,7 @@ jobs:
           retention-days: 7
 
   release:
-    name: Attach APK to draft GitHub release
+    name: Publish GitHub release
     needs: build
     runs-on: ubuntu-24.04
     timeout-minutes: 10
@@ -147,7 +163,6 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       GH_REPO: ${{ github.repository }}
       RELEASE_VERSION: ${{ needs.build.outputs.version }}
-      VERSION_CODE: ${{ needs.build.outputs.code }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -159,5 +174,5 @@ jobs:
           name: ${{ needs.build.outputs.artifact }}
           path: artifacts/github-release
 
-      - name: Create or refresh same-source draft
-        run: python3 tools/release/release.py draft
+      - name: Publish release with APK and checksum
+        run: python3 tools/release/release.py publish

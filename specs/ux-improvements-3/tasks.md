@@ -11,4 +11,4 @@ See the [spec](spec.md), [plan](plan.md) and [ADR 012](../../docs/adr/012-remind
 - [x] PRD, SDD, DESIGN, TEST-PLAN, ADR 012, STATUS updated.
 - [ ] Mark as paid tapped on a live overdue notification (covered by App tests; the emulator tap hit the notification body).
 - [ ] Phone check with the intended signed build, including TalkBack on the new rows and a changed ringtone.
-- [ ] Suites on Windows/.NET 10 or in CI.
+- [x] Suites on .NET 10 in CI: run `44335469445` (push to `main`, `c3a2019`, 2026-11-18) passed the Core and App tests, observed through GitHub's public API. The MoneyTests case that fails only on runtime 11 passes there.

@@ -6,6 +6,16 @@ Last documentation/source inspection: **2026-11-08**. See the native notificatio
 
 ## Current focus
 
+**Automatic release CI/CD, 2026-11-18 (latest source, not yet on GitHub):** at the user's request ("make ci/cd with automatic release", choosing every merge to `main` and immediate publication).
+- **Release workflow:** tests, signs, verifies and **publishes** the next patch version on each app-changing merge to `main`. Android codes are derived from the version, the notes list the changes since the previous release, reruns are idempotent, and a manual run allows minor/major bumps.
+- **CI:** now also runs on pull requests, adds the release-helper and documentation-link checks, and builds Android unsigned for pull requests into `main`.
+- **Docs:** [spec GR08–GR13](../../specs/github-release/spec.md#automatic-release-2026-11-18), [ADR 013](../adr/013-automatic-release.md), [guide](GITHUB-RELEASE.md).
+- **Agent-observed:** 28 release-helper tests pass; both workflows parse as YAML. actionlint was not run (downloading it was not permitted in this session).
+- **Not yet run:** no workflow has run on GitHub.
+- **Signing checks (2026-11-18, agent-observed, values never printed):** the current keystore password is in no commit on any local branch, reflog or GitHub branch/pull request, and no keystore file was ever committed. Rotation is optional ([guide](GITHUB-RELEASE.md#before-the-first-automatic-release)).
+- **Hosted (agent-observed through GitHub's public API):** the user's manual draft-release run `44342499904` on `main` (`c3a2019`) succeeded on 2026-11-18. Its build/sign and draft jobs passed; an earlier run `44340221811` failed at the draft step, cause not visible without sign-in. CI passed on `main` and `develop`.
+- **Before merging to `main`:** ideally protect `main` with the CI checks, and run actionlint on both workflows.
+
 **UX Wave 6 implemented, 2026-11-16 (latest source):** the user's "implement 1-5" from the [UX review](UX-REVIEW-2026-11-16.md):
 - corrected Reminders privacy text;
 - a Sound & alert style card with two Android channels ("Due today", banner and sound; "Coming up");

@@ -8,6 +8,8 @@ Verification gate: [optional CI gate](../../docs/delivery/TEST-PLAN.md#acceptanc
 
 On every push to any branch, a GitHub Actions workflow runs the Core and App test projects on a GitHub-hosted Linux runner and reports pass/fail on the pushed commit.
 
+Extended 2026-11-18 with the [automatic release](../github-release/spec.md#automatic-release-2026-11-18) (GR13): CI also runs on pull requests, adds release-helper tests and the documentation link check, and builds the Android app unsigned for pull requests into `main`.
+
 Decisions confirmed by the user on 2026-10-17:
 
 - Run both test projects. R08 names the Core tests; the App harness is included because it compiles the real view models and dispatcher without MAUI or Android.

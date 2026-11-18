@@ -195,6 +195,14 @@ Decided by the user on 2026-11-16 ("implement 1-5") from the five ordered recomm
 
 Still deferred from that review: "Remind me later" (UX31), calendar status marks (UX34), payment records (UX35), a bundled sound, and full-screen or exact alarms.
 
+### Payment history (proposed 2026-11-19)
+
+**Status: proposed, not approved.** The user asked to track the amounts paid on a due, such as a credit card where the amount field holds the minimum, and to check a prototype first. The user chose one payment per due, an optional full balance with quick chips, and a dialog that asks only for the amount. The other details were proposed by Claude ([spec decision log](../specs/payment-history/spec.md#decision-log)). It is previewed in the [design exploration](../specs/payment-history/spec.md#prototype-preview); **the native app is unchanged, and every rule elsewhere in this PRD stays in force until the user approves.** Scenarios: [PY01–PY12](../specs/payment-history/spec.md#acceptance-scenarios).
+
+| ID | Proposed behavior | Would replace when approved |
+|---|---|---|
+| PY | Marking a due paid asks "How much did you pay?", prefilled with the amount due. Chips offer "Minimum", "Full balance" (when set) and "Other amount". A due with no amount skips the question; a blank answer records "amount not recorded". The due stores that one payment and the date it was marked paid; Edit amount changes it, and Mark as unpaid clears it. Bill and Subscription may store an optional full balance of at least the amount due, which is not copied to the next occurrence. Details shows the payment and, for a repeating due, a Payment history with a count, total and average. Paid rows show the amount paid. Notification Mark as paid records the amount due. | R05 "Set paid/unpaid status" and F01 "writes only the payment status" (adds the amount paid); UX01 one tap (adds the dialog); N2 confirmation text; UX35 deferral (in part); F02 "not … payment history" (for Details only — the Dashboard figures are unchanged) |
+
 ## Error and recovery requirements
 
 | Condition | Required user-visible result |
@@ -254,5 +262,6 @@ The 2026-11-04 HTML design exploration under `prototypes/design-exploration/` pr
 | F07 optional amounts | [SDD optional amount contract](SDD.md#f07-optional-amount-contract) | [Optional amount spec](../specs/f07-optional-amounts/spec.md) | [Optional amount verification](delivery/TEST-PLAN.md#f07-optional-amount-verification); [tasks](../specs/f07-optional-amounts/tasks.md) |
 | F07 twice a month | [SDD twice-a-month contract](SDD.md#twice-a-month-repeat-contract) | [Twice-a-month spec](../specs/f07-twice-monthly/spec.md) | [TM verification](delivery/TEST-PLAN.md#twice-a-month-repeat-verification-tm01tm10); [evidence](delivery/evidence/TWICE-MONTHLY-2026-11-16.md); [tasks](../specs/f07-twice-monthly/tasks.md) |
 | UX review 2026-11-16 | [SDD UX 2026-11-16 contract](SDD.md#ux-review-2026-11-16-contract) | [UX improvements 3 spec](../specs/ux-improvements-3/spec.md) | [Verification](delivery/TEST-PLAN.md#ux-wave-6-verification-ux28ux33); [evidence](delivery/evidence/UX-WAVE6-2026-11-16.md); [tasks](../specs/ux-improvements-3/tasks.md) |
+| Payment history (proposed) | Native contract not written (proposal) | [Payment history spec](../specs/payment-history/spec.md) | Prototype checks in [tasks](../specs/payment-history/tasks.md); native verification after approval |
 | F05 reminders | [SDD reminder contract](SDD.md#f05-reminder-contract) | [Reminders spec](../specs/f05-reminders/spec.md) | [Reminder verification](delivery/TEST-PLAN.md#f05-reminder-verification); [tasks](../specs/f05-reminders/tasks.md) |
 | F04 preferences | [SDD preference contract](SDD.md#f04-preference-contract) | [Preferences spec](../specs/f04-preferences/spec.md) | [Preference verification](delivery/TEST-PLAN.md#f04-preference-verification); [tasks](../specs/f04-preferences/tasks.md) |

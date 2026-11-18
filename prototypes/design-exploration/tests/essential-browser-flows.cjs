@@ -79,5 +79,44 @@ module.exports=async({send,evaluate,waitFor,click,input,page,dims,shot,noOverflo
   for(const origin of ['dashboard','calendar','dues','settings']){
     await page(origin);await click('#app-nav .floating-add');await input('#due-title','Quick '+origin);await input('#due-amount','1');await click('#app-actions [type=submit]');assert.equal(await evaluate('state.page'),origin);assert.equal(await evaluate("document.querySelector('#app-nav [aria-current=page]').dataset.page"),origin);
   }
-  console.log('PASS: essential-first default Add/Edit, earlier core fields, collapsed controls, draft/disclosure retention, normal dirty exits, revealed errors, PHP paste, amount policies, schedules, twice-a-month days and origin returns. 30-second human acceptance remains unmeasured.');
+  // Payment history preview (proposed 2026-11-19, specs/payment-history): amount paid, chips, history, edit, unpay.
+  const dialogOpen=id=>`document.querySelector('#${id}').open`;
+  await page('dues');await click('#phone [data-due="card"]');
+  assert.ok(await evaluate("document.querySelector('#phone .payment-history .history-summary').textContent.startsWith('5 payments')"));
+  assert.equal(await evaluate("document.querySelectorAll('#phone .history-row').length"),5);
+  assert.ok(await evaluate("document.querySelector('#phone .detail-sub').textContent.includes('Full balance')"));
+  await click('#phone [data-action=quick-paid]');await waitFor(dialogOpen('payment-dialog'));
+  assert.equal(await evaluate("document.querySelector('#payment-amount').value"),'1500.00','prefilled with the minimum due');
+  assert.equal(await evaluate("[...document.querySelectorAll('#payment-chips .chip')].map(c=>c.textContent).join('|')"),'Minimum ₱1,500.00|Full balance ₱12,480.00|Other amount');
+  await click('#payment-chips .chip:nth-of-type(2)');
+  assert.equal(await evaluate("document.querySelector('#payment-amount').value"),'12480.00');
+  await shot('payment-dialog');
+  await input('#payment-amount','12,48x');await click('#payment-save');
+  assert.ok(await evaluate(dialogOpen('payment-dialog')+"&&document.querySelector('#payment-amount').getAttribute('aria-invalid')==='true'&&document.querySelector('#payment-error').textContent.length>0"),'an invalid amount is refused');
+  await input('#payment-amount','5,000');await click('#payment-save');await waitFor("state.data.find(d=>d.id==='card').paid");
+  const paidCard=await evaluate("state.data.find(d=>d.id==='card')");
+  assert.deepEqual([paidCard.paid,paidCard.paidAmount,paidCard.paidOn],[true,'500000','2026-11-04']);
+  assert.ok(await evaluate("state.data.some(d=>d.id==='card-2027-01-03'&&!d.paid&&d.fullBalance===null)"),'next month added without a statement balance');
+  assert.ok(await evaluate("document.querySelector('#phone .paid-line').textContent.includes('Paid ₱5,000.00')"));
+  assert.equal(await evaluate("document.querySelectorAll('#phone .history-row').length"),6);
+  await evaluate("document.querySelector('#phone .payment-history').scrollIntoView({block:'start'})");await shot('payment-history');
+  assert.ok(await evaluate("document.querySelector('#app-toast').textContent.startsWith('Paid ₱5,000.00. Next one added')"));
+  await click('#phone [data-action=edit-payment]');await waitFor(dialogOpen('payment-dialog'));
+  assert.equal(await evaluate("document.querySelector('#payment-amount').value"),'5000.00');
+  await input('#payment-amount','6000');await click('#payment-save');await waitFor("state.data.find(d=>d.id==='card').paidAmount==='600000'");
+  assert.equal(await evaluate("state.data.find(d=>d.id==='card').paidAmount"),'600000');
+  await click('#phone [data-action=edit-payment]');await waitFor(dialogOpen('payment-dialog'));
+  await input('#payment-amount','1');await click('#payment-dialog [data-pay=cancel]');await waitFor('!'+dialogOpen('payment-dialog'));
+  assert.equal(await evaluate("state.data.find(d=>d.id==='card').paidAmount"),'600000','cancel keeps the recorded amount');
+  await click('#phone [data-action=quick-paid]');await waitFor(dialogOpen('confirmation'));await click('#confirmation-yes');await waitFor("!state.data.find(d=>d.id==='card').paid");
+  assert.deepEqual(await evaluate("(({paid,paidAmount,paidOn})=>[paid,paidAmount,paidOn])(state.data.find(d=>d.id==='card'))"),[false,null,null]);
+  assert.equal(await evaluate("state.data.filter(d=>d.seriesId==='card').length"),2,'unpaying keeps the next month already added');
+  await page('dues');await click('#phone [data-due="project"]');await click('#phone [data-action=quick-paid]');await waitFor('selected().paid');
+  assert.equal(await evaluate(dialogOpen('payment-dialog')),false,'a due with no amount is marked paid without the dialog');
+  assert.deepEqual(await evaluate("(({paid,paidAmount})=>[paid,paidAmount])(selected())"),[true,null]);
+  await page('dues');await click('#phone [data-due="card"]');await click('#app-header [data-page=edit]');
+  await input('#due-full-balance','1000');await click('#app-actions [type=submit]');
+  assert.ok(await evaluate("state.page==='edit'&&document.querySelector('#full-balance-error').textContent.includes('less than the amount due')"),'full balance below the minimum is refused');
+  await leave(true);
+  console.log('PASS: essential-first default Add/Edit, earlier core fields, collapsed controls, draft/disclosure retention, normal dirty exits, revealed errors, PHP paste, amount policies, schedules, twice-a-month days, payment amounts and history, and origin returns. 30-second human acceptance remains unmeasured.');
 };

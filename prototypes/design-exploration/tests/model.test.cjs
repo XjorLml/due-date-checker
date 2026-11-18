@@ -15,7 +15,7 @@ test('upcoming amount includes today, excludes overdue/paid, and distinguishes a
 });
 test('date/count charts reconcile and use exact integer aggregation beyond per-record money limits',()=>{
   const o=E.overview(E.seed());
-  assert.equal(o.categories.reduce((n,c)=>n+c.count,0),6);
+  assert.equal(o.categories.reduce((n,c)=>n+c.count,0),7); // includes the payment-history credit card (2026-11-19)
   assert.equal(E.sum(o.weeks.map(w=>({amount:w.amount}))),E.sum(o.monthOpen));
   assert.equal(E.sum([{amount:'9223372036854775807'},{amount:'9223372036854775807'},{amount:null}]),'18446744073709551614');
   const empty=E.overview([]);assert.equal(empty.next,null);assert.equal(empty.aheadAmount,'0');assert.equal(empty.withoutAmount,0);
@@ -29,7 +29,7 @@ test('repeat preview clamps month ends, handles leap/year bounds, and creates no
   assert.equal(E.nextOccurrence('9999-12-25','weekly'),null);
   assert.equal(E.nextOccurrence('2026-02-30','monthly'),null);
   assert.equal(E.nextOccurrence(M.TODAY,'none'),null);
-  const data=E.seed();E.nextOccurrence(data[0].date,data[0].repeat);assert.equal(data.length,6);
+  const data=E.seed();E.nextOccurrence(data[0].date,data[0].repeat);assert.equal(data.length,7);
 });
 test('weekly dates retain exact agenda membership for either week start and safe bounds',()=>{
   assert.deepEqual(E.weekDates('2026-11-04','monday'),['2026-11-02','2026-11-03','2026-11-04','2026-11-05','2026-11-06','2026-11-07','2026-11-08']);
@@ -58,4 +58,38 @@ test('twice a month (PRD TM) follows two picked days, falls back at month end an
   assert.equal(E.nextOccurrence('9999-12-30','twicemonthly',1,'months',[15,30]),null);
   for(const days of [[15,15],[0,30],[15,32],[15.5,30],[15]])assert.equal(E.nextOccurrence('2026-11-01','twicemonthly',1,'months',days),null);
   const rent=E.seed().find(d=>d.id==='rent');assert.equal(rent.repeat,'twicemonthly');assert.deepEqual([rent.repeatDay1,rent.repeatDay2],[4,19]);
+});
+test('payment history (proposed 2026-11-19): kinds, full balance rule, series history and summary',()=>{
+  assert.equal(E.paymentKind('1248000','150000','1248000'),'Full balance');
+  assert.equal(E.paymentKind('1300000','150000','1248000'),'Full balance');
+  assert.equal(E.paymentKind('150000','150000','1248000'),'Minimum');
+  assert.equal(E.paymentKind('500000','150000','1248000'),'Above minimum');
+  assert.equal(E.paymentKind('100000','150000','1248000'),'Less than due');
+  assert.equal(E.paymentKind('100000','150000',null),'Less than due');
+  assert.equal(E.paymentKind('150000','150000',null),null);
+  assert.equal(E.paymentKind(null,'150000','1248000'),null);
+  assert.ok(E.validFullBalance('150000','1248000'));assert.ok(E.validFullBalance('150000',null));assert.ok(E.validFullBalance(null,'1'));
+  assert.ok(!E.validFullBalance('150000','149999'));
+  const data=E.seed(),card=data.find(d=>d.id==='card'),rows=[...E.seedHistory(),...data];
+  const history=E.seriesHistory(rows,card);
+  assert.deepEqual(history.map(h=>h.date),['2026-11-03','2026-10-03','2026-09-03','2026-08-03','2026-07-03']);
+  assert.ok(E.seriesHistory(rows,data.find(d=>d.id==='water')).every(h=>h.id==='water'),'series do not mix');
+  assert.deepEqual(E.seriesHistory([...rows,{...card,id:'gone',paid:true,deleted:true,paidAmount:'1'}],card).length,5,'deleted rows are left out');
+  assert.deepEqual(E.historySummary(history),{count:5,recorded:5,total:'3402000',average:'680400'});
+  assert.deepEqual(E.historySummary([{paidAmount:null},{paidAmount:'9223372036854775807'},{paidAmount:'9223372036854775807'}]),
+    {count:3,recorded:2,total:'18446744073709551614',average:'9223372036854775807'});
+  assert.deepEqual(E.historySummary([]),{count:0,recorded:0,total:'0',average:null});
+});
+test('payment history: paying records one payment and a repeating due adds its next occurrence once',()=>{
+  const card=E.seed().find(d=>d.id==='card');
+  const r=E.payOccurrence(card,'1248000','2026-11-04');
+  assert.deepEqual(r.patch,{paid:true,paidAmount:'1248000',paidOn:'2026-11-04',nextAdded:true});
+  assert.equal(r.next.date,'2027-01-03');assert.equal(r.next.seriesId,'card');assert.equal(r.next.amount,'150000');
+  assert.equal(r.next.fullBalance,null,'a statement balance is not carried to the next month');
+  assert.deepEqual([r.next.paid,r.next.paidAmount,r.next.paidOn],[false,null,null]);
+  assert.equal(E.payOccurrence({...card,...r.patch,...E.unpay()},'1','2026-11-05').next,null,'paid, unpaid and paid again adds nothing more');
+  const task=E.seed().find(d=>d.id==='project');
+  assert.deepEqual(E.payOccurrence(task,null,'2026-11-04'),{patch:{paid:true,paidAmount:null,paidOn:'2026-11-04'},next:null});
+  const rent=E.seed().find(d=>d.id==='rent');assert.equal(E.payOccurrence(rent,'1250000','2026-11-04').next.date,'2026-11-19');
+  assert.deepEqual(E.unpay(),{paid:false,paidAmount:null,paidOn:null});
 });

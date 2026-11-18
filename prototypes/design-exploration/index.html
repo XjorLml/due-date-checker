@@ -99,6 +99,12 @@
     <form id="catalog-editor-form" novalidate><div class="field"><label id="catalog-name-label" for="catalog-name">Category name</label><input id="catalog-name" required autocomplete="off" aria-describedby="catalog-name-error"><span id="catalog-name-error" class="error" role="status"></span></div><div id="catalog-icon-fields"><div class="field"><label for="catalog-icon">Icon <span class="optional-label">optional</span></label><select id="catalog-icon"></select></div><fieldset class="color-options"><legend>Color <span class="optional-label">optional</span></legend><div id="catalog-color"></div></fieldset></div></form>
     <footer class="sheet-footer"><button id="catalog-delete" type="button" class="app-button danger" hidden>Delete</button><button type="button" class="app-button" data-ph="close-editor">Cancel</button><button type="submit" form="catalog-editor-form" class="app-button primary">Save</button></footer>
   </dialog>
+  <!-- Payment history preview (proposed 2026-11-19): one recorded payment per due. -->
+  <dialog id="payment-dialog" class="catalog-editor" aria-labelledby="payment-title">
+    <header class="sheet-header"><h2 id="payment-title">How much did you pay?</h2><button type="button" class="icon-button" data-pay="cancel" aria-label="Cancel payment">×</button></header>
+    <form id="payment-form" class="payment-form" novalidate><p id="payment-context" class="payment-context"></p><div id="payment-chips" class="payment-chips" role="group" aria-label="Quick amounts"></div><div class="field"><label for="payment-amount">Amount paid (PHP)</label><input id="payment-amount" inputmode="decimal" autocomplete="off" aria-describedby="payment-hint payment-error"><p id="payment-hint" class="hint">Prefilled with the amount due. Leave blank if you don't know it.</p><span id="payment-error" class="error" role="status"></span></div></form>
+    <footer class="sheet-footer"><button type="button" class="app-button" data-pay="cancel">Cancel</button><button id="payment-save" type="submit" form="payment-form" class="app-button primary">Mark paid</button></footer>
+  </dialog>
   <noscript><p class="noscript">Enable JavaScript to compare and interact with the four concepts. The <a href="AUDIT.md">audit</a> is available without JavaScript.</p></noscript>
 </body>
 </html>

@@ -6,6 +6,8 @@ Last documentation/source inspection: **2026-11-08**. See the native notificatio
 
 ## Current focus
 
+**Payment history proposed and previewed, 2026-11-19 (prototype only):** the user asked to track the amounts paid on a due, for example a credit card whose amount is the minimum. The user chose one payment per due, an optional full balance with Minimum/Full chips, and a dialog that asks only for the amount. These are recorded as a [proposed PRD section](../PRD.md#payment-history-proposed-2026-11-19) and [spec PY01–PY12](../../specs/payment-history/spec.md), with a [prototype preview](../../specs/payment-history/spec.md#prototype-preview) (Dues → BPI Credit Card → Mark paid). Agent-observed: prototype unit tests 17/17 and all five headless-Edge browser suites passed. **The native app and its tests are unchanged; implementation awaits the user's approval after checking the prototype.**
+
 **Automatic release CI/CD, 2026-11-18 (latest source, not yet on GitHub):** at the user's request ("make ci/cd with automatic release", choosing every merge to `main` and immediate publication).
 - **Release workflow:** tests, signs, verifies and **publishes** the next patch version on each app-changing merge to `main`. Android codes are derived from the version, the notes list the changes since the previous release, reruns are idempotent, and a manual run allows minor/major bumps.
 - **CI:** now also runs on pull requests, adds the release-helper and documentation-link checks, and builds Android unsigned for pull requests into `main`.

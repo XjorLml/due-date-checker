@@ -95,7 +95,7 @@
     frequent(dues){const counts=new Map();dues.filter(d=>!d.deleted).forEach(d=>counts.set(d.categoryId,(counts.get(d.categoryId)||0)+1));return this.all().filter(c=>counts.has(c.id)).sort((a,b)=>counts.get(b.id)-counts.get(a.id)||a.name.localeCompare(b.name,'en-PH')).slice(0,4);}
   }
   function localizeSeed(dues){
-    const ids={internet:['ph.utilities.internet','provider.pldt'],rent:['ph.housing.rent',null],project:['ph.other.general',null],music:['ph.subscriptions.streaming','provider.spotify'],electric:['ph.utilities.electricity','provider.meralco'],water:['ph.utilities.water','provider.maynilad']};
+    const ids={internet:['ph.utilities.internet','provider.pldt'],rent:['ph.housing.rent',null],project:['ph.other.general',null],music:['ph.subscriptions.streaming','provider.spotify'],electric:['ph.utilities.electricity','provider.meralco'],water:['ph.utilities.water','provider.maynilad'],card:['ph.credit.card','provider.bpi']};
     return dues.map(d=>({...d,categoryId:ids[d.id]?.[0]||'ph.other.general',providerId:ids[d.id]?.[1]||null,providerText:'',repeatEvery:1,repeatUnit:'months',reminderDays:[1,0]}));
   }
   const api={groups,categories,providers,icons,colors,normalize,key,Catalog,localizeSeed};

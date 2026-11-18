@@ -11,6 +11,9 @@
 | Presentation/service tests | State transitions, retry, concurrency, committed outcomes | XAML, handlers, Shell, permissions or OS lifecycle |
 | Actual App target build | Compilation, generated bindings, resource packaging for that target | Runtime behavior or user acceptance |
 | Signed Release device checks | Observed behavior on the recorded artifact/device | Other OS versions, devices, or unchecked scenarios |
+| HTTP client tests, if an API is used | Request building, error mapping, timeout/retry decisions with a fake `HttpMessageHandler` | Real server behavior, TLS or device networking |
+| API integration tests, if the app has its own API | Endpoints, authorization, validation and server data through `WebApplicationFactory` with an isolated test database | Hosting configuration, real networks or released apps |
+| Contract compatibility, if an API is used | Reviewed OpenAPI diff; older client types read newer responses | Clients or versions that were not tested |
 | Acceptance decision | Owner's decision against required gates | Untested functionality outside that decision |
 
 With source-linked App tests, note that the App assembly and DI graph are not loaded. Keep compiler/package settings aligned and build the real target separately. Use isolated temporary databases, controllable clocks, and synthetic data; do not rely solely on mocks for persistence contracts.
@@ -28,6 +31,20 @@ With source-linked App tests, note that the App assembly and DI graph are not lo
 | TP07 / {{ReleaseRequirement}} | Verify signed package, install/update, start normally | {{Intended identity, data preservation, successful launch}} | {{Release artifact/device}} |
 
 Remove nonapplicable rows explicitly and add domain-specific boundaries: date rollover/timezone/DST when relevant, amount precision/overflow, deterministic query ties, unsupported schema, permissions, offline transitions, and post-commit follow-up failure. Avoid asserting only that a method was called; observe state and persisted effects.
+
+## Remote API procedures
+
+Only when the app calls a remote API ([API](../API.md)); otherwise remove these rows. TP12 extends the TP07 Release check to network configuration.
+
+| Procedure / requirement | Preconditions and action | Expected observable result | Boundary / environment |
+|---|---|---|---|
+| TP08 / {{Requirement}} | Turn on airplane mode, or stop the API, during a load and during a save; reconnect and retry | {{Offline or error state shown; input kept; retry succeeds}} | {{HTTP client tests + native}} |
+| TP09 / {{Requirement}} | Lose the response after a create is sent (timeout), then retry | {{Exactly one record exists; the app reports the real outcome}} | {{HTTP client + API integration}} |
+| TP10 / {{Requirement}} | Expire or revoke the session, then act; sign in as a second user | {{Refresh or sign-in prompt; draft kept; no other user's data reachable}} | {{API integration + native}} |
+| TP11 / {{Requirement}} | Run the previous released app, or its client types, against the new API | {{Previous app keeps working or shows the defined update message}} | {{Contract tests + device}} |
+| TP12 / {{Requirement}} | Inspect the Release package and its network configuration | {{Production URL only; no cleartext exception, certificate bypass or secret}} | {{Release artifact}} |
+
+`System.Text.Json` skips unknown properties by default, but rejects unknown enum names when enums travel as strings. Include a "newer server" response fixture in TP11.
 
 ## Execution and native matrix
 

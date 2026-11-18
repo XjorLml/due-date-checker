@@ -35,7 +35,17 @@ List only selected or explicitly deferred platforms. Keep capability differences
 | Failure/downgrade | {{Preserve data on failure; unsupported newer-schema behavior; recovery}} |
 | Retention and backup | {{Implement the approved retention/export/encryption/backup policy}} |
 
-Mark storage sections not applicable if there is no persistence. For SQL, specify parameterization, constraints, transaction boundaries, migration immutability, and how tests exercise existing files. Keep migration definitions with source; document their guarantees here rather than copying SQL.
+Mark storage sections not applicable if there is no persistence. With a remote API, say whether each row describes the server database, the device's local copy, or both. For SQL, specify parameterization, constraints, transaction boundaries, migration immutability, and how tests exercise existing files. Keep migration definitions with source; document their guarantees here rather than copying SQL.
+
+## Remote API, if used
+
+[API](API.md) owns the client–server rules, and the committed OpenAPI document owns endpoint shapes. Record here only how the app is built around them. Delete this section with API.md if there is no remote API.
+
+| Contract | Definition |
+|---|---|
+| Client boundary | {{TypedClientInterfaceInCore; HttpClient registration and handlers at the composition root}} |
+| Source of truth | {{ServerOnly, DeviceCacheOfServerData or OfflineQueue; which side wins}} |
+| Background sync | {{NoneOrOsSpecificContract; lifecycle owner}} |
 
 ## Navigation and screen state
 

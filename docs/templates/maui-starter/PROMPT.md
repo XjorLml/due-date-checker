@@ -12,6 +12,7 @@ First release workflows: {{InitialWorkflows}}
 Target platforms: {{PlatformsOrUndecided}}
 Available development/build hosts: {{Hosts}}
 Storage/offline/network needs: {{DataNeedsOrUndecided}}
+Server: {{NoServerOwnAspNetCoreApiOrThirdPartyApi}}
 Languages, currency, date/timezone policy: {{LocalePolicyOrUndecided}}
 Distribution channel: {{DistributionOrUndecided}}
 Requested scope: {{DocumentationOnlyOrScaffoldAndFirstSlice}}
@@ -23,7 +24,9 @@ the proposal; preserve established specifications instead of duplicating them.
 
 Create/customize the documentation index, PRD, SDD, DESIGN, SETUP, DEVELOPMENT,
 RELEASE, delivery status/test plan/evidence template, ADR index/template, feature
-spec/plan/tasks, root README, and AGENTS.md. Keep relative links valid. Record
+spec/plan/tasks, root README, and AGENTS.md. With a server, also customize API.md
+and follow the structure's client-server baseline; without one, delete API.md
+and the links that the checker then reports. Keep relative links valid. Record
 unknowns and ask concise questions for decisions that block implementation;
 continue work that does not depend on those answers.
 

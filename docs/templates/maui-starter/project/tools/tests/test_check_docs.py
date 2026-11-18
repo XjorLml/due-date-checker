@@ -59,6 +59,16 @@ class LinkChecks(unittest.TestCase):
         self.assertEqual(checker.check(self.root).errors, [])
         self.assertEqual(len(checker.check(self.root, ready=True).errors), 1)
 
+    def test_ready_skips_reusable_templates_but_not_their_links_or_copies(self):
+        self.write('docs/adr/TEMPLATE.md', '# ADR {{NNN}}\n[broken](missing.md)\n')
+        self.write('specs/feature-template/spec.md', '# {{FeatureName}}\n')
+        self.write('specs/sign-in/spec.md', '# {{FeatureName}}\n')
+        result = checker.check(self.root, ready=True)
+        self.assertEqual(len(result.errors), 2, result.errors)
+        self.assertTrue(any('sign-in' in e and 'unresolved placeholder' in e for e in result.errors))
+        self.assertTrue(any('TEMPLATE.md:2: missing target' in e for e in result.errors))
+        self.assertEqual(result.template_placeholders, 2)
+
     def test_explicit_paths_missing_root_and_escape_fail(self):
         self.write('README.md', '[outside](../outside.md)\n')
         self.assertTrue(checker.check(self.root).errors)
